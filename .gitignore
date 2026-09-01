@@ -1,0 +1,29 @@
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+Thumbs.db
+
+# Backend (Maven)
+server/target/
+server/upload/
+server/HELP.md
+server/dump.rdb
+
+# Frontend (Node)
+web/node_modules/
+web/dist/
+web/dist-ssr/
+web/coverage/
+web/logs/
+web/*.local
+web/package-lock.json
+web/yarn.lock
+web/src-tauri/target/
+
+# Logs / runtime
+*.log
+dump.rdb
