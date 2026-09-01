@@ -12,7 +12,7 @@ spring:
     url: jdbc:mysql://127.0.0.1:3306/admin_layui?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=${app.timezone}
     # url: jdbc:mysql://43.138.111.127:3306/md_test?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=${app.timezone}
     username: admin_layui
-    password: xxxxxxx
+    password: jTxHS6pdtZb4DD5t
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       pool-name: HikariCP

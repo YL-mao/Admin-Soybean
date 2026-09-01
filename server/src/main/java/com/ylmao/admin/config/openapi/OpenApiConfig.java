@@ -27,7 +27,7 @@ public class OpenApiConfig {
     public OpenAPI adminOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Admin Layui 管理后台 API")
+                        .title("Admin 管理后台 API")
                         .description("""
                                 同域 Thymeleaf 后台默认走 Cookie（名称 saToken）；脚本/跨域可用同名请求头。
                                 文档仅展示带 @ResponseBody / @RestController 的 JSON 接口；页面跳转不收录。

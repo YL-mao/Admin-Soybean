@@ -9,11 +9,11 @@
         <relativePath/> 
     </parent>
     <groupId>com.ylmao</groupId>
-    <artifactId>admin-layui</artifactId>
+    <artifactId>admin</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>admin-layui</name>
+    <name>admin</name>
     <packaging>jar</packaging>
-    <description>admin-layui</description>
+    <description>admin</description>
 
     <properties>
         <!-- Build and run this project on the downloaded JDK 25 runtime. -->

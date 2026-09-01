@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <code>com.ylmao</code> · <code>admin-layui</code> · Java 25 · Fork and rename packages/branding for your product
+  <code>com.ylmao</code> · <code>admin</code> · Java 25 · Fork and rename packages/branding for your product
 </p>
 
 ---
@@ -139,11 +139,11 @@ Admin account is defined in `doc/admin-layui.sql` (`sys_user`); change the passw
 Artifact:
 
 ```text
-target/admin-layui-0.0.1-SNAPSHOT.jar
+target/admin-0.0.1-SNAPSHOT.jar
 ```
 
 ```bash
-java -jar target/admin-layui-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+java -jar target/admin-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 ```
 
 ## Deployment notes

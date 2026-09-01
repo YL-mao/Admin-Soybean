@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <code>com.ylmao</code> · <code>admin-layui</code> · Java 25 · 可 fork 后按业务改包名与品牌
+  <code>com.ylmao</code> · <code>admin</code> · Java 25 · 可 fork 后按业务改包名与品牌
 </p>
 
 ---
@@ -141,11 +141,11 @@ mysql -u <user> -p <database> < doc/admin-layui.sql
 产物：
 
 ```text
-target/admin-layui-0.0.1-SNAPSHOT.jar
+target/admin-0.0.1-SNAPSHOT.jar
 ```
 
 ```bash
-java -jar target/admin-layui-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+java -jar target/admin-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 ```
 
 ## 部署要点
