@@ -1,29 +1,38 @@
-# IDE / OS
+# Monorepo 总控：通用忽略；web/、server/ 另有各自规则
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE（各端如需提交推荐配置，在对应目录 .gitignore 里用 ! 放行）
 .idea/
-.vscode/
 *.iml
 *.iws
 *.ipr
-.DS_Store
-Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Backend (Maven)
+# 日志与运行时杂项
+*.log
+dump.rdb
+
+# 根目录本地环境（若将来增加）
+.env.local
+.env.*.local
+
+# 后端构建与本地数据（与 server/.gitignore 双保险）
 server/target/
 server/upload/
 server/HELP.md
-server/dump.rdb
 
-# Frontend (Node)
+# 前端依赖与构建（与 web/.gitignore 双保险）
 web/node_modules/
 web/dist/
 web/dist-ssr/
 web/coverage/
 web/logs/
-web/*.local
-web/package-lock.json
-web/yarn.lock
 web/src-tauri/target/
-
-# Logs / runtime
-*.log
-dump.rdb

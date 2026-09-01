@@ -1,10 +1,17 @@
-HELP.md
+# 后端（Spring Boot / Maven）
+
+# Maven
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+HELP.md
 
-### STS ###
+# 本地上传与 Redis 落盘
+/upload/
+dump.rdb
+
+# STS / Eclipse
 .apt_generated
 .classpath
 .factorypath
@@ -13,13 +20,13 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
+# IntelliJ
+.idea/
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+# NetBeans / 其它构建目录
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -29,14 +36,8 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
+# VS Code（后端一般不提交工作区配置）
 .vscode/
 
-### Node ###
-node_modules/
-
-### Upload local storage ###
-/upload/
-
-### Redis runtime files ###
-dump.rdb
+# 日志
+*.log
