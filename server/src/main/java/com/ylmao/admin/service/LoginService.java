@@ -1,6 +1,4 @@
 package com.ylmao.admin.service;
-import cn.hutool.core.util.ObjectUtil;
-
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -46,13 +44,6 @@ public class LoginService {
 
         // 验证码错误不计账号/IP 失败次数。
         captchaService.validateAndConsume(loginRequest.captcha(), request, response);
-
-        if (StpUtil.isLogin()) {
-            if (ObjectUtil.isNotNull(SaTokenUtil.getUser())) {
-                throw new BusinessException("您已登录");
-            }
-            throw new BusinessException("未知账户");
-        }
 
         // IP 白名单：跳过 IP 失败计数与自动拉黑，仍校验黑名单与账号规则。
         boolean ipWhitelisted = filterService.isIpWhitelisted(clientIp);
@@ -120,8 +111,12 @@ public class LoginService {
 
         loginFailService.clearAccountFail(dbUser.getUserAccount());
         loginFailService.clearIpFail(clientIp);
-        boolean rememberMe = loginRequest.rememberMe() != null && loginRequest.rememberMe();
-        StpUtil.login(dbUser.getUserId(), rememberMe);
+        // rememberMe 仅前端记账号密码，与 token 存活无关；统一按全局 timeout / active-timeout。
+        // 账密通过后：已有会话则先注销再建。
+        if (StpUtil.isLogin()) {
+            StpUtil.logout();
+        }
+        StpUtil.login(dbUser.getUserId());
         SaTokenUtil.setUser(dbUser);
         // Token-Session 写入在线列表所需元数据（与 OnlineSessionKeys 对齐）。
         String userAgent = request.getHeader("User-Agent");

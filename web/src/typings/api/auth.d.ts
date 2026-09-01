@@ -5,9 +5,12 @@ declare namespace Api {
    * backend api module: "auth"
    */
   namespace Auth {
+    /** 登录响应：token + 最小用户信息（暂不走 getUserInfo） */
     interface LoginToken {
       token: string;
-      refreshToken: string;
+      userId: string;
+      userName: string;
+      roles: string[];
     }
 
     interface UserInfo {

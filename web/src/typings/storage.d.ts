@@ -18,6 +18,8 @@ declare namespace StorageType {
     mixSiderFixed: CommonType.YesOrNo;
     /** The refresh token */
     refreshToken: string;
+    /** 登录成功写入的最小用户信息（暂代 getUserInfo） */
+    userInfo: Api.Auth.UserInfo;
     /** The theme color */
     themeColor: string;
     /** The dark mode */
@@ -39,5 +41,9 @@ declare namespace StorageType {
     };
     /** The last login user id */
     lastLoginUserId: string;
+    /** 登录页「记住我」：仅本地账号，不存密码 */
+    loginRemember: {
+      userAccount: string;
+    };
   }
 }

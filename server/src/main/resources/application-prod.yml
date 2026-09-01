@@ -69,3 +69,8 @@ springdoc:
     enabled: false
   swagger-ui:
     enabled: false
+
+# 生产 HTTPS 下 Cookie 仅安全通道（Sa-Token 正常已不读写 Cookie；验证码 Cookie 等另行配置）。
+sa-token:
+  cookie:
+    secure: true

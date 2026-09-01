@@ -1,48 +1,24 @@
 import { request } from '../request';
 
-/**
- * Login
- *
- * @param userName User name
- * @param password Password
- */
-export function fetchLogin(userName: string, password: string) {
+export interface AdminLoginParams {
+  userAccount: string;
+  userPassword: string;
+  captcha: string;
+}
+
+/** 管理端登录：返回 token + 最小用户信息 */
+export function fetchLogin(params: AdminLoginParams) {
   return request<Api.Auth.LoginToken>({
-    url: '/auth/login',
+    url: '/api/admin/auth/login',
     method: 'post',
-    data: {
-      userName,
-      password
-    }
+    data: params
   });
 }
 
-/** Get user info */
-export function fetchGetUserInfo() {
-  return request<Api.Auth.UserInfo>({ url: '/auth/getUserInfo' });
-}
-
-/**
- * Refresh token
- *
- * @param refreshToken Refresh token
- */
-export function fetchRefreshToken(refreshToken: string) {
-  return request<Api.Auth.LoginToken>({
-    url: '/auth/refreshToken',
-    method: 'post',
-    data: {
-      refreshToken
-    }
+/** 管理端注销 */
+export function fetchLogout() {
+  return request<null>({
+    url: '/api/admin/auth/logout',
+    method: 'post'
   });
-}
-
-/**
- * return custom backend error
- *
- * @param code error code
- * @param msg error message
- */
-export function fetchCustomBackendError(code: string, msg: string) {
-  return request({ url: '/auth/error', params: { code, msg } });
 }

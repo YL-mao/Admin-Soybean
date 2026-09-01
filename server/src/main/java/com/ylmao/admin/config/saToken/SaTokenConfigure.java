@@ -31,7 +31,9 @@ public class SaTokenConfigure implements WebMvcConfigurer {
 
     private static final Logger log = LoggerFactory.getLogger(SaTokenConfigure.class);
 
-    private static final List<String> corsOriginsDev = List.of("http://localhost:8080");
+    private static final List<String> corsOriginsDev = List.of(
+            "http://localhost:8080",
+            "http://localhost:9527");
     /** 生产部署前改为真实域名（含 https://，无路径） */
     private static final List<String> corsOriginsProd = List.of(
             "https://www.example.com",
@@ -74,6 +76,8 @@ public class SaTokenConfigure implements WebMvcConfigurer {
             "/error/**",
             // 对所有用户认证
             "/login",
+            "/api/admin/auth/login",
+            "/api/admin/auth/captchaImage",
             // 放验证码
             "/captcha/**",
             // 文件预览：匿名/登录校验在控制器内按 need_login 判断

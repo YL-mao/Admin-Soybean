@@ -1,44 +1,15 @@
-import { useAuthStore } from '@/store/modules/auth';
 import { localStg } from '@/utils/storage';
-import { fetchRefreshToken } from '../api';
 import type { RequestInstanceState } from './type';
 
 export function getAuthorization() {
   const token = localStg.get('token');
-  const Authorization = token ? `Bearer ${token}` : null;
 
-  return Authorization;
+  return token || null;
 }
 
-/** refresh token */
-async function handleRefreshToken() {
-  const { resetStore } = useAuthStore();
-
-  const rToken = localStg.get('refreshToken') || '';
-  const { error, data } = await fetchRefreshToken(rToken);
-  if (!error) {
-    localStg.set('token', data.token);
-    localStg.set('refreshToken', data.refreshToken);
-    return true;
-  }
-
-  resetStore();
-
+/** Sa-Token 使用 auto-renew 续签，无独立 refresh 接口。 */
+export async function handleExpiredRequest(_state: RequestInstanceState) {
   return false;
-}
-
-export async function handleExpiredRequest(state: RequestInstanceState) {
-  if (!state.refreshTokenPromise) {
-    state.refreshTokenPromise = handleRefreshToken();
-  }
-
-  const success = await state.refreshTokenPromise;
-
-  setTimeout(() => {
-    state.refreshTokenPromise = null;
-  }, 1000);
-
-  return success;
 }
 
 export function showErrorMsg(state: RequestInstanceState, message: string) {

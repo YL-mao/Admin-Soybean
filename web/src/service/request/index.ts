@@ -13,9 +13,7 @@ const { baseURL, otherBaseURL } = getServiceBaseURL(import.meta.env, isHttpProxy
 export const request = createFlatRequest(
   {
     baseURL,
-    headers: {
-      apifoxToken: 'XL299LiMEDZ0H5h3A29PxwQXdMJqWyY2'
-    }
+    withCredentials: true
   },
   {
     defaultState: {
@@ -26,8 +24,10 @@ export const request = createFlatRequest(
       return response.data.data;
     },
     async onRequest(config) {
-      const Authorization = getAuthorization();
-      Object.assign(config.headers, { Authorization });
+      const token = getAuthorization();
+      if (token) {
+        Object.assign(config.headers, { saToken: token });
+      }
 
       return config;
     },
@@ -89,8 +89,10 @@ export const request = createFlatRequest(
       if (expiredTokenCodes.includes(responseCode)) {
         const success = await handleExpiredRequest(request.state);
         if (success) {
-          const Authorization = getAuthorization();
-          Object.assign(response.config.headers, { Authorization });
+          const token = getAuthorization();
+          if (token) {
+            Object.assign(response.config.headers, { saToken: token });
+          }
 
           return instance.request(response.config) as Promise<AxiosResponse>;
         }
@@ -104,10 +106,15 @@ export const request = createFlatRequest(
       let message = error.message;
       let backendErrorCode = '';
 
-      // get backend error message and code
+      const responseData = error.response?.data as App.Service.Response | undefined;
+
+      // HTTP 200 但业务 code 非成功时走 BACKEND_ERROR_CODE；HTTP 4xx/5xx 且响应体为 R 时同样取 msg
       if (error.code === BACKEND_ERROR_CODE) {
-        message = error.response?.data?.msg || message;
-        backendErrorCode = String(error.response?.data?.code || '');
+        message = responseData?.msg || message;
+        backendErrorCode = String(responseData?.code || '');
+      } else if (responseData?.msg) {
+        message = responseData.msg;
+        backendErrorCode = String(responseData?.code || '');
       }
 
       // the error message is displayed in the modal

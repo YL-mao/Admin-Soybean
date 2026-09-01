@@ -686,7 +686,7 @@ INSERT INTO `sys_perm` VALUES ('1220343202867975101', '代码生成', '代码生
 INSERT INTO `sys_perm` VALUES ('1220343202867975102', '代码生成下载', '代码生成 ZIP 下载', '/gen/download', 0, '1220343202867975101', '0,1220343202867975100,1220343202867975101,1220343202867975102', 'system:gen:download', 2, '', 1, 1, 'manual', '2026-08-26 20:30:00', '', NULL, 0);
 INSERT INTO `sys_perm` VALUES ('1220343202867975103', '接口文档', '接口文档', '/apidoc/listView', 0, '1220343202867975100', '0,1220343202867975100,1220343202867975103', 'system:apidoc:view', 1, 'layui-icon layui-icon-read', 2, 1, 'manual', '2026-08-26 22:50:00', '', NULL, 0);
 
--- ----------------------------
+
 -- Table structure for sys_post
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_post`;

@@ -50,7 +50,8 @@ public class GlobalExceptionResolver {
             if (e instanceof NotPermissionException || e instanceof NotRoleException || e instanceof NotSafeException) {
                 return ajaxError(403, e.getMessage());
             }
-            return ajaxError(500, e.getMessage());
+            // 序列化等框架内部异常只记日志，不向用户暴露技术细节
+            return ajaxError(500, SYSTEM_BUSY_MSG);
         }
         if (e instanceof NotLoginException) {
             return new ModelAndView("/login");

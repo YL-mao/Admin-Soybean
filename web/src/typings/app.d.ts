@@ -484,6 +484,7 @@ declare namespace App {
         login: {
           common: {
             loginOrRegister: string;
+            userAccountPlaceholder: string;
             userNamePlaceholder: string;
             phonePlaceholder: string;
             codePlaceholder: string;
@@ -499,13 +500,11 @@ declare namespace App {
           pwdLogin: {
             title: string;
             rememberMe: string;
-            forgetPassword: string;
-            register: string;
-            otherAccountLogin: string;
-            otherLoginMode: string;
-            superAdmin: string;
-            admin: string;
-            user: string;
+            imageCodePlaceholder: string;
+            imageCodeInvalid: string;
+            refreshCaptcha: string;
+            captchaLoadFailed: string;
+            captchaLimited: string;
           };
           codeLogin: {
             title: string;

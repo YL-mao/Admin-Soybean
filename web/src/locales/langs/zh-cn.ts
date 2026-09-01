@@ -617,6 +617,7 @@ const local: App.I18n.Schema = {
     login: {
       common: {
         loginOrRegister: '登录 / 注册',
+        userAccountPlaceholder: '请输入账号',
         userNamePlaceholder: '请输入用户名',
         phonePlaceholder: '请输入手机号',
         codePlaceholder: '请输入验证码',
@@ -632,13 +633,11 @@ const local: App.I18n.Schema = {
       pwdLogin: {
         title: '密码登录',
         rememberMe: '记住我',
-        forgetPassword: '忘记密码？',
-        register: '注册账号',
-        otherAccountLogin: '其他账号登录',
-        otherLoginMode: '其他登录方式',
-        superAdmin: '超级管理员',
-        admin: '管理员',
-        user: '普通用户'
+        imageCodePlaceholder: '请输入图片验证码',
+        imageCodeInvalid: '图片验证码不正确',
+        refreshCaptcha: '点击刷新验证码',
+        captchaLoadFailed: '验证码加载失败',
+        captchaLimited: '验证码请求过于频繁，请稍后再试'
       },
       codeLogin: {
         title: '验证码登录',

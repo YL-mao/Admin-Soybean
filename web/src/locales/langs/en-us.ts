@@ -511,6 +511,7 @@ const local: App.I18n.Schema = {
     login: {
       common: {
         loginOrRegister: 'Login / Register',
+        userAccountPlaceholder: 'Please enter account',
         userNamePlaceholder: 'Please enter user name',
         phonePlaceholder: 'Please enter phone number',
         codePlaceholder: 'Please enter verification code',
@@ -526,13 +527,11 @@ const local: App.I18n.Schema = {
       pwdLogin: {
         title: 'Password Login',
         rememberMe: 'Remember me',
-        forgetPassword: 'Forget password?',
-        register: 'Register',
-        otherAccountLogin: 'Other Account Login',
-        otherLoginMode: 'Other Login Mode',
-        superAdmin: 'Super Admin',
-        admin: 'Admin',
-        user: 'User'
+        imageCodePlaceholder: 'Please enter image verification code',
+        imageCodeInvalid: 'Incorrect image verification code',
+        refreshCaptcha: 'Click to refresh captcha',
+        captchaLoadFailed: 'Failed to load captcha',
+        captchaLimited: 'Too many captcha requests, please try again later'
       },
       codeLogin: {
         title: 'Verification Code Login',
