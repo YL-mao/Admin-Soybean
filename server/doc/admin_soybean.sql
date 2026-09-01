@@ -1,17 +1,17 @@
 /*
  Navicat Premium Dump SQL
 
- Source Server         : YLmao-admin
+ Source Server         : admin_soybean
  Source Server Type    : MySQL
  Source Server Version : 80029 (8.0.29)
  Source Host           : localhost:3306
- Source Schema         : YLmao-admin
+ Source Schema         : admin_soybean
 
  Target Server Type    : MySQL
  Target Server Version : 80029 (8.0.29)
  File Encoding         : 65001
 
- Date: 31/08/2026 21:38:22
+ Date: 01/09/2026 11:20:38
 */
 
 SET NAMES utf8mb4;
@@ -400,6 +400,66 @@ CREATE TABLE `sys_job_log`  (
 -- ----------------------------
 INSERT INTO `sys_job_log` VALUES ('2079949670897569794', '1229000000000000101', 'operateLogRetention', 2, 'SUCCESS', '2026-07-22 23:20:20', '2026-07-22 23:20:20', 1, '清理操作日志 0 条', '2026-07-22 23:20:20');
 INSERT INTO `sys_job_log` VALUES ('2079952393692925954', '1229000000000000102', 'noticeExpireClean', 2, 'SUCCESS', '2026-07-22 23:31:09', '2026-07-22 23:31:09', 14, '清理过期公告 1 条', '2026-07-22 23:31:09');
+
+-- ----------------------------
+-- Table structure for sys_menu
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_menu`;
+CREATE TABLE `sys_menu`  (
+  `menu_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '主键（雪花）',
+  `parent_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0' COMMENT '父节点，根为 0',
+  `menu_path` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '树路径，如 0,id1,id2，须与 parent 链一致并以自身 menu_id 结尾',
+  `menu_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '显示名称（侧栏/授权树）',
+  `menu_desc` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '描述',
+  `menu_type` tinyint(1) NULL DEFAULT NULL COMMENT '0目录 1菜单 2按钮',
+  `route_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '前端路由 name；目录/菜单用，按钮为空',
+  `route_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '前端路由 path；目录/菜单用，按钮为空',
+  `route_comp` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '前端组件标识（component）；目录多为 layout，按钮为空',
+  `route_query` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '路由默认 query（JSON，如 {\"status\":\"1\"}）；无则空',
+  `menu_href` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '菜单外链；与站内路由二选一，无外链则空',
+  `is_blank` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0本页 1新窗口（多用于外链）',
+  `perm_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '权限标识；按钮建议必填，供 buttons[] / 接口鉴权；目录可空',
+  `menu_icon` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '图标标识（解析方式见 icon_type）',
+  `icon_type` tinyint(1) NULL DEFAULT NULL COMMENT '图标通道：1 Iconify 2 本地 SVG（可按项目扩展）',
+  `i18n_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '国际化 key，空则用 menu_name',
+  `keep_alive` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否缓存页面（0否 1是）',
+  `is_show` tinyint(1) NOT NULL DEFAULT 1 COMMENT '是否在侧栏显示（1显示 0仅注册路由不进侧栏）',
+  `active_menu` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '隐藏路由时高亮的菜单 route_name；无则空',
+  `order_num` int NOT NULL DEFAULT 0 COMMENT '排序',
+  `is_enabled` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否启用（1启用 0停用）',
+  `create_by` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '创建人',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_by` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '修改人',
+  `update_time` datetime NULL DEFAULT NULL COMMENT '修改时间',
+  `is_del` tinyint(1) NOT NULL DEFAULT 0 COMMENT '删除标识（0未删 1已删）',
+  PRIMARY KEY (`menu_id`) USING BTREE,
+  UNIQUE INDEX `uk_menu_perm_code`(`perm_code` ASC) USING BTREE,
+  UNIQUE INDEX `uk_menu_route_name`(`route_name` ASC) USING BTREE,
+  INDEX `idx_menu_parent_order`(`parent_id` ASC, `order_num` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '管理端菜单表（目录/菜单/按钮；按角色过滤后吐 SPA 路由 JSON）' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of sys_menu
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for sys_menu_role
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_menu_role`;
+CREATE TABLE `sys_menu_role`  (
+  `menu_role_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '角色菜单关联ID（雪花）',
+  `role_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '角色ID',
+  `menu_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '菜单ID',
+  `create_by` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '创建人',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`menu_role_id`) USING BTREE,
+  UNIQUE INDEX `uk_role_menu`(`role_id` ASC, `menu_id` ASC) USING BTREE,
+  INDEX `idx_menu_id`(`menu_id` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色菜单关联表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of sys_menu_role
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for sys_notice

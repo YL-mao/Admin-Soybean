@@ -25,7 +25,7 @@
 
 - Default package: `com.ylmao.admin`, entry class `AdminApp`
 - Pages & static assets: `src/main/resources/templates`, `static`
-- DB seed: `doc/admin-layui.sql`
+- DB seed: `doc/admin_soybean.sql`
 - API & dev notes: [`doc/接口文档与开发说明.md`](doc/接口文档与开发说明.md) (Chinese)
 
 ## Acknowledgements
@@ -97,7 +97,7 @@ cd admin-layui
 Create a database and import the seed:
 
 ```bash
-mysql -u <user> -p <database> < doc/admin-layui.sql
+mysql -u <user> -p <database> < doc/admin_soybean.sql
 ```
 
 `sys_config` includes site name, logo (`/static/admin/images/ylmao/logo.png`), and `security.*`; missing items can fail startup checks.
@@ -127,7 +127,7 @@ Default profile **dev**:
 
 Open **http://localhost:8085/login** (port from `application-dev.yml`).
 
-Admin account is defined in `doc/admin-layui.sql` (`sys_user`); change the password after deploy.
+Admin account is defined in `doc/admin_soybean.sql` (`sys_user`); change the password after deploy.
 
 ## Package & run
 
@@ -169,7 +169,7 @@ See FAQ below and [`doc/接口文档与开发说明.md`](doc/接口文档与开�
 ```text
 .
 ├── doc/
-│   ├── admin-layui.sql
+│   ├── admin_soybean.sql
 │   ├── nginx-admin.example.conf
 │   ├── 接口文档与开发说明.md
 │   └── ylmao/
@@ -199,7 +199,7 @@ Check Redis is running, `spring.data.redis`, firewall; clusters must use the sam
 Check DB name, credentials, MySQL access, active Spring profile.
 
 **Startup: missing `security.*` config**  
-Import or merge `security` rows from `doc/admin-layui.sql`.
+Import or merge `security` rows from `doc/admin_soybean.sql`.
 
 **Login: Jackson cannot resolve `com.md.admin.*`**  
 Stale Redis sessions after a package rename; flush dev Redis DB and log in again.

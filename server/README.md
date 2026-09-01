@@ -25,7 +25,7 @@
 
 - 后端默认包名：`com.ylmao.admin`，启动类 `AdminApp`
 - 页面与静态资源：`src/main/resources/templates`、`static`
-- 数据库种子：`doc/admin-layui.sql`
+- 数据库种子：`doc/admin_soybean.sql`
 - 开发约定：[`doc/接口文档与开发说明.md`](doc/接口文档与开发说明.md)
 
 ## 致谢
@@ -99,7 +99,7 @@ cd admin-layui
 创建数据库（名称自定，与配置一致即可），导入种子：
 
 ```bash
-mysql -u <user> -p <database> < doc/admin-layui.sql
+mysql -u <user> -p <database> < doc/admin_soybean.sql
 ```
 
 `sys_config` 中含系统名称、Logo（`/static/admin/images/ylmao/logo.png`）、`security.*` 等；缺项可能导致启动校验失败。
@@ -129,7 +129,7 @@ mysql -u <user> -p <database> < doc/admin-layui.sql
 
 浏览器访问：**http://localhost:8085/login**（端口以 `application-dev.yml` 为准）。
 
-种子中管理员账号以 `doc/admin-layui.sql` 内 `sys_user` 为准（部署后请尽快修改密码）。
+种子中管理员账号以 `doc/admin_soybean.sql` 内 `sys_user` 为准（部署后请尽快修改密码）。
 
 ## 打包与运行
 
@@ -171,7 +171,7 @@ java -jar target/admin-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 ```text
 .
 ├── doc/
-│   ├── admin-layui.sql              # 数据库全量种子
+│   ├── admin_soybean.sql              # 数据库全量种子
 │   ├── nginx-admin.example.conf     # Nginx 反代示例
 │   ├── 接口文档与开发说明.md
 │   └── ylmao/                       # Logo、favicon 源文件
@@ -201,7 +201,7 @@ java -jar target/admin-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 检查库名、账号密码、MySQL 是否允许连接、当前激活的 profile。
 
 **启动报「安全配置缺失 security.*」**  
-执行或合并 `doc/admin-layui.sql` 中 `security` 分组配置，或对照文档补全七项。
+执行或合并 `doc/admin_soybean.sql` 中 `security` 分组配置，或对照文档补全七项。
 
 **登录报 Sa-Token / Jackson 找不到 `com.md.admin.*`**  
 Redis 中残留旧会话；开发环境可清空当前 database 后重新登录（包名迁移后常见）。
