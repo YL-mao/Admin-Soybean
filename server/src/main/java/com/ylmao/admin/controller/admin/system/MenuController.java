@@ -90,7 +90,7 @@ public class MenuController extends BaseController {
         return success();
     }
 
-    @SaCheckPermission("system:menu:selectParent")
+    @SaCheckPermission(value = {"system:menu:insert", "system:menu:update"}, mode = SaMode.OR)
     @GetMapping("/selectParent")
     public R<?> selectMenuParent() {
         return okData(menuService.selectParentVoList());

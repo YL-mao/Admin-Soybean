@@ -61,7 +61,7 @@ public class RoleController extends BaseController {
     }
 
     @Log(title = "查询角色编码是否唯一", businessType = "QUERY")
-    @SaCheckPermission("system:role:checkCode")
+    @SaCheckPermission(value = {"system:role:insert", "system:role:update"}, mode = SaMode.OR)
     @GetMapping("/checkCode")
     public R<Boolean> checkRoleCodeUnique(String roleCode) {
         return R.ok(roleService.checkRoleCodeUnique(roleCode) == null);

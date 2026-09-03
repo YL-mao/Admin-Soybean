@@ -22,7 +22,7 @@ public class DeptController extends BaseController {
     private final DeptService deptService;
 
     @Log(title = "部门树查询", businessType = "QUERY")
-    @SaCheckPermission("system:dept:tree")
+    @SaCheckPermission("system:dept:select")
     @GetMapping("/tree")
     public R<?> deptTree() {
         return okData(deptService.listOptions());
