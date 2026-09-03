@@ -192,5 +192,47 @@ declare namespace Api {
       menuName: string;
       checkArr: string;
     };
+
+    /**
+     * 岗位类型（对齐 sys_post.post_type / 字典 sys_post_type）
+     *
+     * - 1: 管理岗
+     * - 2: 技术岗
+     * - 3: 运营岗
+     * - 4: 市场岗
+     */
+    type PostType = 1 | 2 | 3 | 4;
+
+    /** 岗位（对齐 PostListVo / sys_post） */
+    type Post = {
+      postId: string;
+      postCode: string;
+      postName: string;
+      postType: PostType;
+      postTypeName: string | null;
+      orderNum: number;
+      isEnabled: EnabledFlag;
+      createTime: string | null;
+    };
+
+    /** 岗位搜索（后端按 postCode / postName） */
+    type PostSearchParams = CommonType.RecordNullable<Pick<Post, 'postCode' | 'postName'> & CommonSearchParams>;
+
+    type PostInsert = {
+      postCode: string;
+      postName: string;
+      postType: PostType;
+      orderNum: number;
+      isEnabled: EnabledFlag;
+    };
+
+    type PostUpdate = PostInsert & {
+      postId: string;
+    };
+
+    type PostOption = {
+      postId: string;
+      postName: string;
+    };
   }
 }

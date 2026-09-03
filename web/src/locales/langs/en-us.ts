@@ -406,8 +406,10 @@ const local: App.I18n.Schema = {
           remark: 'Please enter remark'
         },
         postTypeOptions: {
+          manage: 'Management',
           tech: 'Technical',
-          func: 'Functional'
+          ops: 'Operations',
+          market: 'Marketing'
         }
       },
       dept: {

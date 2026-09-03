@@ -103,6 +103,82 @@ export function fetchSaveRoleMenu(data: { roleId: string; menuIds: string }) {
   });
 }
 
+/** 岗位分页列表 */
+export function fetchGetPostList(params?: Api.SystemManage.PostSearchParams) {
+  const { current, size, ...rest } = params || {};
+  return request<Api.SystemManage.Post[]>({
+    url: '/post/list',
+    method: 'get',
+    params: {
+      ...rest,
+      page: current,
+      limit: size
+    }
+  });
+}
+
+/** 新增岗位 */
+export function fetchCreatePost(data: Api.SystemManage.PostInsert) {
+  return request<null>({
+    url: '/post/add',
+    method: 'post',
+    data
+  });
+}
+
+/** 修改岗位 */
+export function fetchUpdatePost(data: Api.SystemManage.PostUpdate) {
+  return request<null>({
+    url: '/post/update',
+    method: 'put',
+    data
+  });
+}
+
+/** 删除岗位（逗号分隔 id） */
+export function fetchDeletePost(ids: string) {
+  return request<null>({
+    url: '/post/delete',
+    method: 'delete',
+    params: { ids }
+  });
+}
+
+/** 启停岗位 */
+export function fetchUpdatePostEnabled(data: { postId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
+  return request<null>({
+    url: '/post/updateEnabled',
+    method: 'patch',
+    data
+  });
+}
+
+/** 岗位名称是否可用 */
+export function fetchCheckPostNameUnique(params: { postName: string }) {
+  return request<boolean>({
+    url: '/post/checkName',
+    method: 'get',
+    params
+  });
+}
+
+/** 岗位编码是否可用 */
+export function fetchCheckPostCodeUnique(params: { postCode: string }) {
+  return request<boolean>({
+    url: '/post/checkCode',
+    method: 'get',
+    params
+  });
+}
+
+/** 岗位下拉（用户分配） */
+export function fetchGetPostOptions() {
+  return request<Api.SystemManage.PostOption[]>({
+    url: '/post/options',
+    method: 'get'
+  });
+}
+
 /** 用户分页列表（query：page/limit + userAccount/isEnabled/isLock） */
 export function fetchGetUserList(params?: Api.SystemManage.UserSearchParams) {
   const { current, size, ...rest } = params || {};

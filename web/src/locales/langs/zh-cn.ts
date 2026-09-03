@@ -402,8 +402,10 @@ const local: App.I18n.Schema = {
           remark: '请输入备注'
         },
         postTypeOptions: {
+          manage: '管理岗',
           tech: '技术岗',
-          func: '职能岗'
+          ops: '运营岗',
+          market: '市场岗'
         }
       },
       dept: {

@@ -1,4 +1,4 @@
-package com.ylmao.admin.controller.system;
+package com.ylmao.admin.controller.admin.system;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaMode;
@@ -83,5 +83,12 @@ public class PostController extends BaseController {
     public R<?> updatePostEnabled(@Valid @RequestBody PostDto.UpdateEnabled updateEnabled) {
         postService.updatePostEnabled(updateEnabled);
         return success();
+    }
+
+    /** 用户分配等下拉：返回 postId + postName */
+    @SaCheckPermission(value = {"system:user:insert", "system:user:update"}, mode = SaMode.OR)
+    @GetMapping("/options")
+    public R<?> postOptions() {
+        return okData(postService.listOptions());
     }
 }

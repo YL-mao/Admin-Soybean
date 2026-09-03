@@ -40,6 +40,21 @@ export const lockFlagOptions: CommonType.Option<Api.SystemManage.EnabledFlag, Ap
   { value: 1, label: lockFlagRecord[1] }
 ];
 
+/** 岗位类型：1 管理 2 技术 3 运营 4 市场 */
+export const postTypeRecord: Record<Api.SystemManage.PostType, App.I18n.I18nKey> = {
+  1: 'page.autobox.post.postTypeOptions.manage',
+  2: 'page.autobox.post.postTypeOptions.tech',
+  3: 'page.autobox.post.postTypeOptions.ops',
+  4: 'page.autobox.post.postTypeOptions.market'
+};
+
+export const postTypeOptions: CommonType.Option<Api.SystemManage.PostType, App.I18n.I18nKey>[] = [
+  { value: 1, label: postTypeRecord[1] },
+  { value: 2, label: postTypeRecord[2] },
+  { value: 3, label: postTypeRecord[3] },
+  { value: 4, label: postTypeRecord[4] }
+];
+
 export const menuTypeRecord: Record<Api.SystemManage.MenuType, App.I18n.I18nKey> = {
   0: 'page.manage.menu.type.directory',
   1: 'page.manage.menu.type.menu',
