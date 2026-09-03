@@ -27,6 +27,20 @@ const title = computed(() => $t('common.edit') + $t('page.manage.role.menuAuth')
 
 const tree = shallowRef<TreeOption[]>([]);
 const checks = shallowRef<string[]>([]);
+/** 默认收起；由「全部展开 / 全部收起」控制 */
+const expandedKeys = shallowRef<string[]>([]);
+const allExpandableKeys = shallowRef<string[]>([]);
+
+/** 收集有子节点的 key，供全部展开 */
+function collectExpandableKeys(nodes: TreeOption[], keys: string[] = []) {
+  nodes.forEach(node => {
+    if (node.children?.length) {
+      keys.push(String(node.key));
+      collectExpandableKeys(node.children, keys);
+    }
+  });
+  return keys;
+}
 
 /** 平铺 MenuCheck 组树，并收集已勾选 menuId */
 function buildAuthTree(list: Api.SystemManage.MenuCheck[]) {
@@ -60,6 +74,9 @@ function buildAuthTree(list: Api.SystemManage.MenuCheck[]) {
   pruneEmptyChildren(roots);
   tree.value = roots;
   checks.value = checkedKeys;
+  allExpandableKeys.value = collectExpandableKeys(roots);
+  // 打开时默认收起
+  expandedKeys.value = [];
 }
 
 function pruneEmptyChildren(nodes: TreeOption[]) {
@@ -72,16 +89,28 @@ function pruneEmptyChildren(nodes: TreeOption[]) {
   });
 }
 
+function expandAll() {
+  expandedKeys.value = [...allExpandableKeys.value];
+}
+
+function collapseAll() {
+  expandedKeys.value = [];
+}
+
 async function loadTree() {
   if (!props.roleId) {
     tree.value = [];
     checks.value = [];
+    expandedKeys.value = [];
+    allExpandableKeys.value = [];
     return;
   }
   const { error, data } = await fetchGetRoleMenuTree(props.roleId);
   if (error || !data) {
     tree.value = [];
     checks.value = [];
+    expandedKeys.value = [];
+    allExpandableKeys.value = [];
     return;
   }
   buildAuthTree(data);
@@ -108,15 +137,19 @@ watch(visible, val => {
 
 <template>
   <NModal v-model:show="visible" :title="title" preset="card" class="w-480px">
+    <NSpace class="pb-12px" :size="8">
+      <NButton size="small" @click="expandAll">{{ $t('page.manage.role.expandAll') }}</NButton>
+      <NButton size="small" @click="collapseAll">{{ $t('page.manage.role.collapseAll') }}</NButton>
+    </NSpace>
     <NTree
       v-model:checked-keys="checks"
+      v-model:expanded-keys="expandedKeys"
       :data="tree"
       key-field="key"
       label-field="label"
       checkable
       cascade
       expand-on-click
-      default-expand-all
       virtual-scroll
       block-line
       class="h-280px"

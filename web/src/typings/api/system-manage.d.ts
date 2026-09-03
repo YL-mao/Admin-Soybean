@@ -35,45 +35,64 @@ declare namespace Api {
       roleId: string;
     };
 
-    /** 下拉用角色（用户分配等；暂可仍走 mock） */
-    type AllRole = {
+    /** 下拉用角色（用户分配） */
+    type RoleOption = {
       roleId: string;
       roleName: string;
-      roleCode: string;
     };
 
     /**
-     * user gender
+     * 用户性别（对齐 sys_user.user_sex / 字典 sys_user_sex）
      *
-     * - "1": "male"
-     * - "2": "female"
+     * - "0": 男
+     * - "1": 女
      */
-    type UserGender = '1' | '2';
+    type UserSex = '0' | '1';
 
-    /** user */
-    type User = Common.CommonRecord<{
-      /** user name */
+    /** 用户（对齐 UserListVo / sys_user） */
+    type User = {
+      userId: string;
+      userAccount: string;
       userName: string;
-      /** user gender */
-      userGender: UserGender | null;
-      /** user nick name */
-      nickName: string;
-      /** user phone */
-      userPhone: string;
-      /** user email */
-      userEmail: string;
-      /** user role code collection */
-      userRoles: string[];
-    }>;
+      userSex: UserSex | null;
+      userSexName: string | null;
+      userEmail: string | null;
+      userPhone: string | null;
+      deptId: string | null;
+      deptName: string | null;
+      postId: string | null;
+      postName: string | null;
+      roleIds: string | null;
+      roleNames: string | null;
+      isEnabled: EnabledFlag;
+      isLock: EnabledFlag;
+      online: EnabledFlag;
+    };
 
-    /** user search params */
+    /** 用户搜索（后端支持 userAccount / isEnabled / isLock） */
     type UserSearchParams = CommonType.RecordNullable<
-      Pick<Api.SystemManage.User, 'userName' | 'userGender' | 'nickName' | 'userPhone' | 'userEmail' | 'status'> &
-        CommonSearchParams
+      Pick<User, 'userAccount' | 'isEnabled' | 'isLock'> & CommonSearchParams
     >;
 
-    /** user list */
+    /** 用户分页列表（前端表格用；实际接口 data 为数组 + 顶层 count） */
     type UserList = Common.PaginatingQueryRecord<User>;
+
+    /** 新增用户（无密码、无启停；后端默认禁用） */
+    type UserInsert = {
+      userAccount: string;
+      userName: string;
+      userSex?: string | null;
+      userEmail?: string | null;
+      userPhone?: string | null;
+      deptId?: string | null;
+      postId?: string | null;
+      roleIds?: string | null;
+    };
+
+    /** 修改用户 */
+    type UserUpdate = UserInsert & {
+      userId: string;
+    };
 
     /**
      * menu type（对齐 sys_menu.menu_type）

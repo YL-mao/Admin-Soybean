@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, toRaw } from 'vue';
+import { toRaw } from 'vue';
 import { jsonClone } from '@sa/utils';
-import { enableStatusOptions, userGenderOptions } from '@/constants/business';
-import { useFormRules, useNaiveForm } from '@/hooks/common/form';
+import { enabledFlagOptions, lockFlagOptions } from '@/constants/business';
 import { translateOptions } from '@/utils/common';
 import { $t } from '@/locales';
 
@@ -16,20 +15,7 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 
-const { formRef, validate, restoreValidation } = useNaiveForm();
-
 const model = defineModel<Api.SystemManage.UserSearchParams>('model', { required: true });
-
-type RuleKey = Extract<keyof Api.SystemManage.UserSearchParams, 'userEmail' | 'userPhone'>;
-
-const rules = computed<Record<RuleKey, App.Global.FormRule>>(() => {
-  const { patternRules } = useFormRules(); // inside computed to make locale reactive
-
-  return {
-    userEmail: patternRules.email,
-    userPhone: patternRules.phone
-  };
-});
 
 const defaultModel = jsonClone(toRaw(model.value));
 
@@ -37,63 +23,48 @@ function resetModel() {
   Object.assign(model.value, defaultModel);
 }
 
-async function reset() {
-  await restoreValidation();
-  resetModel();
-}
-
-async function search() {
-  await validate();
+function search() {
   emit('search');
 }
 </script>
 
 <template>
   <NCard :bordered="false" size="small" class="card-wrapper">
-    <NCollapse>
+    <NCollapse :default-expanded-names="['user-search']">
       <NCollapseItem :title="$t('common.search')" name="user-search">
-        <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" :label-width="80">
+        <NForm :model="model" label-placement="left" :label-width="80">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userName')" path="userName" class="pr-24px">
-              <NInput v-model:value="model.userName" :placeholder="$t('page.manage.user.form.userName')" />
-            </NFormItemGi>
             <NFormItemGi
               span="24 s:12 m:6"
-              :label="$t('page.manage.user.userGender')"
-              path="userGender"
+              :label="$t('page.manage.user.userAccount')"
+              path="userAccount"
               class="pr-24px"
             >
-              <NSelect
-                v-model:value="model.userGender"
-                :placeholder="$t('page.manage.user.form.userGender')"
-                :options="translateOptions(userGenderOptions)"
-                clearable
-              />
-            </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.nickName')" path="nickName" class="pr-24px">
-              <NInput v-model:value="model.nickName" :placeholder="$t('page.manage.user.form.nickName')" />
-            </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userPhone')" path="userPhone" class="pr-24px">
-              <NInput v-model:value="model.userPhone" :placeholder="$t('page.manage.user.form.userPhone')" />
-            </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userEmail')" path="userEmail" class="pr-24px">
-              <NInput v-model:value="model.userEmail" :placeholder="$t('page.manage.user.form.userEmail')" />
+              <NInput v-model:value="model.userAccount" :placeholder="$t('page.manage.user.form.userAccount')" />
             </NFormItemGi>
             <NFormItemGi
               span="24 s:12 m:6"
               :label="$t('page.manage.user.userStatus')"
-              path="userStatus"
+              path="isEnabled"
               class="pr-24px"
             >
               <NSelect
-                v-model:value="model.status"
+                v-model:value="model.isEnabled"
                 :placeholder="$t('page.manage.user.form.userStatus')"
-                :options="translateOptions(enableStatusOptions)"
+                :options="translateOptions(enabledFlagOptions)"
+                clearable
+              />
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userLock')" path="isLock" class="pr-24px">
+              <NSelect
+                v-model:value="model.isLock"
+                :placeholder="$t('page.manage.user.form.userLock')"
+                :options="translateOptions(lockFlagOptions)"
                 clearable
               />
             </NFormItemGi>
             <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">
-              <TableSearchActions @reset="reset" @search="search" />
+              <TableSearchActions @reset="resetModel" @search="search" />
             </NFormItemGi>
           </NGrid>
         </NForm>

@@ -17,12 +17,16 @@ export function fetchGetRoleList(params?: Api.SystemManage.RoleSearchParams) {
 /**
  * get all roles
  *
- * these roles are all enabled
- * （用户页仍用 mock；角色模块不依赖）
+ * @deprecated 改用 fetchGetRoleOptions
  */
 export function fetchGetAllRoles() {
-  return request<Api.SystemManage.AllRole[]>({
-    url: '/systemManage/getAllRoles',
+  return fetchGetRoleOptions();
+}
+
+/** 角色下拉（用户分配） */
+export function fetchGetRoleOptions() {
+  return request<Api.SystemManage.RoleOption[]>({
+    url: '/role/options',
     method: 'get'
   });
 }
@@ -99,10 +103,69 @@ export function fetchSaveRoleMenu(data: { roleId: string; menuIds: string }) {
   });
 }
 
-/** get user list */
+/** 用户分页列表（query：page/limit + userAccount/isEnabled/isLock） */
 export function fetchGetUserList(params?: Api.SystemManage.UserSearchParams) {
-  return request<Api.SystemManage.UserList>({
-    url: '/systemManage/getUserList',
+  const { current, size, ...rest } = params || {};
+  return request<Api.SystemManage.User[]>({
+    url: '/user/list',
+    method: 'get',
+    params: {
+      ...rest,
+      page: current,
+      limit: size
+    }
+  });
+}
+
+/** 新增用户 */
+export function fetchCreateUser(data: Api.SystemManage.UserInsert) {
+  return request<null>({
+    url: '/user/add',
+    method: 'post',
+    data
+  });
+}
+
+/** 修改用户 */
+export function fetchUpdateUser(data: Api.SystemManage.UserUpdate) {
+  return request<null>({
+    url: '/user/update',
+    method: 'put',
+    data
+  });
+}
+
+/** 删除用户（逗号分隔 id） */
+export function fetchDeleteUser(ids: string) {
+  return request<null>({
+    url: '/user/delete',
+    method: 'delete',
+    params: { ids }
+  });
+}
+
+/** 启停用户 */
+export function fetchUpdateUserEnabled(data: { userId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
+  return request<null>({
+    url: '/user/updateEnabled',
+    method: 'patch',
+    data
+  });
+}
+
+/** 改锁定状态（0 正常 / 1 锁定） */
+export function fetchUpdateUserLock(data: { userId: string; isLock: Api.SystemManage.EnabledFlag }) {
+  return request<null>({
+    url: '/user/updateLock',
+    method: 'patch',
+    data
+  });
+}
+
+/** 登录账号是否可用 */
+export function fetchCheckUserAccountUnique(params: { userAccount: string }) {
+  return request<boolean>({
+    url: '/user/checkAccount',
     method: 'get',
     params
   });

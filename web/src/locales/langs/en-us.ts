@@ -337,6 +337,8 @@ const local: App.I18n.Schema = {
         orderNum: 'Order',
         menuAuth: 'Menu Auth',
         buttonAuth: 'Button Auth',
+        expandAll: 'Expand All',
+        collapseAll: 'Collapse All',
         form: {
           roleName: 'Please enter role name',
           roleCode: 'Please enter role code',
@@ -349,20 +351,28 @@ const local: App.I18n.Schema = {
       },
       user: {
         title: 'User List',
-        userName: 'User Name',
+        userAccount: 'Account',
+        userName: 'Name',
         userGender: 'Gender',
+        userSex: 'Gender',
         nickName: 'Nick Name',
         userPhone: 'Phone',
         userEmail: 'Email',
         userStatus: 'User Status',
+        userLock: 'Lock Status',
         userRole: 'User Role',
+        deptName: 'Department',
+        postName: 'Post',
         form: {
-          userName: 'Please enter user name',
+          userAccount: 'Please enter account',
+          userName: 'Please enter name',
           userGender: 'Please select gender',
+          userSex: 'Please select gender',
           nickName: 'Please enter nick name',
           userPhone: 'Please enter phone',
           userEmail: 'Please enter email',
           userStatus: 'Please select user status',
+          userLock: 'Please select lock status',
           userRole: 'Please select user role'
         },
         addUser: 'Add User',
@@ -370,6 +380,10 @@ const local: App.I18n.Schema = {
         gender: {
           male: 'Male',
           female: 'Female'
+        },
+        lock: {
+          normal: 'Normal',
+          locked: 'Locked'
         }
       }
     },

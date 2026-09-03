@@ -1,4 +1,4 @@
-package com.ylmao.admin.controller.system;
+package com.ylmao.admin.controller.admin.system;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaMode;
@@ -95,6 +95,14 @@ public class UserController extends BaseController {
     @PatchMapping("/unlock")
     public R<?> unlockUser(@Valid @RequestBody UserDto.Unlock unlock) {
         userService.unlockUser(unlock.userId());
+        return success();
+    }
+
+    @Log(title = "修改用户锁定状态", businessType = "UPDATE", isSaveResponseData = true)
+    @SaCheckPermission("system:user:unlock")
+    @PatchMapping("/updateLock")
+    public R<?> updateUserLock(@Valid @RequestBody UserDto.UpdateLock updateLock) {
+        userService.updateUserLock(updateLock);
         return success();
     }
 

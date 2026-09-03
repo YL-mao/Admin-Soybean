@@ -1,10 +1,10 @@
 <script setup lang="tsx">
 import { ref } from 'vue';
-import { NButton, NPopconfirm, NTag } from 'naive-ui';
-import { enableStatusRecord, userGenderRecord } from '@/constants/business';
-import { fetchGetUserList } from '@/service/api';
+import { NButton, NPopconfirm, NSwitch, NTag } from 'naive-ui';
+import { enabledFlagRecord, lockFlagRecord, userSexRecord } from '@/constants/business';
+import { fetchDeleteUser, fetchGetUserList, fetchUpdateUserEnabled, fetchUpdateUserLock } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
-import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
+import { backendPageTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import UserOperateDrawer from './modules/user-operate-drawer.vue';
 import UserSearch from './modules/user-search.vue';
@@ -14,17 +14,15 @@ const appStore = useAppStore();
 const searchParams = ref<Api.SystemManage.UserSearchParams>({
   current: 1,
   size: 10,
-  status: null,
-  userName: null,
-  userGender: null,
-  nickName: null,
-  userPhone: null,
-  userEmail: null
+  userAccount: null,
+  isEnabled: null,
+  isLock: null
 });
 
 const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination } = useNaivePaginatedTable({
   api: () => fetchGetUserList(searchParams.value),
-  transform: response => defaultTransform(response),
+  transform: response =>
+    backendPageTransform(response, searchParams.value.current || 1, searchParams.value.size || 10),
   onPaginationParamsChange: params => {
     searchParams.value.current = params.page;
     searchParams.value.size = params.pageSize;
@@ -43,36 +41,32 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       render: (_, index) => index + 1
     },
     {
+      key: 'userAccount',
+      title: $t('page.manage.user.userAccount'),
+      align: 'center',
+      minWidth: 110
+    },
+    {
       key: 'userName',
       title: $t('page.manage.user.userName'),
       align: 'center',
       minWidth: 100
     },
     {
-      key: 'userGender',
-      title: $t('page.manage.user.userGender'),
+      key: 'userSex',
+      title: $t('page.manage.user.userSex'),
       align: 'center',
-      width: 100,
+      width: 80,
       render: row => {
-        if (row.userGender === null) {
-          return null;
+        if (row.userSex == null || !(row.userSex in userSexRecord)) {
+          return row.userSexName || null;
         }
-
-        const tagMap: Record<Api.SystemManage.UserGender, NaiveUI.ThemeColor> = {
-          1: 'primary',
-          2: 'error'
+        const tagMap: Record<Api.SystemManage.UserSex, NaiveUI.ThemeColor> = {
+          '0': 'primary',
+          '1': 'error'
         };
-
-        const label = $t(userGenderRecord[row.userGender]);
-
-        return <NTag type={tagMap[row.userGender]}>{label}</NTag>;
+        return <NTag type={tagMap[row.userSex]}>{$t(userSexRecord[row.userSex])}</NTag>;
       }
-    },
-    {
-      key: 'nickName',
-      title: $t('page.manage.user.nickName'),
-      align: 'center',
-      minWidth: 100
     },
     {
       key: 'userPhone',
@@ -84,27 +78,56 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       key: 'userEmail',
       title: $t('page.manage.user.userEmail'),
       align: 'center',
-      minWidth: 200
+      minWidth: 160
     },
     {
-      key: 'status',
+      key: 'deptName',
+      title: $t('page.manage.user.deptName'),
+      align: 'center',
+      minWidth: 100
+    },
+    {
+      key: 'roleNames',
+      title: $t('page.manage.user.userRole'),
+      align: 'center',
+      minWidth: 120
+    },
+    {
+      key: 'isLock',
+      title: $t('page.manage.user.userLock'),
+      align: 'center',
+      width: 100,
+      render: row => (
+        // 开=正常、关=锁定，与「启用」同为正向开态，避免同排一紫一灰
+        <NSwitch
+          value={row.isLock !== 1}
+          rubberBand={false}
+          onUpdateValue={value => handleUpdateLock(row, !value)}
+        >
+          {{
+            checked: () => $t(lockFlagRecord[0]),
+            unchecked: () => $t(lockFlagRecord[1])
+          }}
+        </NSwitch>
+      )
+    },
+    {
+      key: 'isEnabled',
       title: $t('page.manage.user.userStatus'),
       align: 'center',
       width: 100,
-      render: row => {
-        if (row.status === null) {
-          return null;
-        }
-
-        const tagMap: Record<Api.Common.EnableStatus, NaiveUI.ThemeColor> = {
-          1: 'success',
-          2: 'warning'
-        };
-
-        const label = $t(enableStatusRecord[row.status]);
-
-        return <NTag type={tagMap[row.status]}>{label}</NTag>;
-      }
+      render: row => (
+        <NSwitch
+          value={row.isEnabled === 1}
+          rubberBand={false}
+          onUpdateValue={value => handleUpdateEnabled(row, value)}
+        >
+          {{
+            checked: () => $t(enabledFlagRecord[1]),
+            unchecked: () => $t(enabledFlagRecord[0])
+          }}
+        </NSwitch>
+      )
     },
     {
       key: 'operate',
@@ -113,10 +136,10 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       width: 130,
       render: row => (
         <div class="flex-center gap-8px">
-          <NButton type="primary" ghost size="small" onClick={() => edit(row.id)}>
+          <NButton type="primary" ghost size="small" onClick={() => edit(row.userId)}>
             {$t('common.edit')}
           </NButton>
-          <NPopconfirm onPositiveClick={() => handleDelete(row.id)}>
+          <NPopconfirm onPositiveClick={() => handleDelete(row.userId)}>
             {{
               default: () => $t('common.confirmDelete'),
               trigger: () => (
@@ -141,25 +164,46 @@ const {
   checkedRowKeys,
   onBatchDeleted,
   onDeleted
-  // closeDrawer
-} = useTableOperate(data, 'id', getData);
+} = useTableOperate(data, 'userId', getData);
 
 async function handleBatchDelete() {
-  // request
-  console.log(checkedRowKeys.value);
-
+  const { error } = await fetchDeleteUser(checkedRowKeys.value.join(','));
+  if (error) return;
   onBatchDeleted();
 }
 
-function handleDelete(id: number) {
-  // request
-  console.log(id);
-
+async function handleDelete(userId: string) {
+  const { error } = await fetchDeleteUser(userId);
+  if (error) return;
   onDeleted();
 }
 
-function edit(id: number) {
-  handleEdit(id);
+/** 列表开关启停；无密码时后端会拒绝启用 */
+async function handleUpdateEnabled(row: Api.SystemManage.User, checked: boolean) {
+  const isEnabled: Api.SystemManage.EnabledFlag = checked ? 1 : 0;
+  const { error } = await fetchUpdateUserEnabled({ userId: row.userId, isEnabled });
+  if (error) {
+    await getData();
+    return;
+  }
+  row.isEnabled = isEnabled;
+  window.$message?.success($t('common.updateSuccess'));
+}
+
+/** 列表开关锁定：参数 locked=true 表示锁定 */
+async function handleUpdateLock(row: Api.SystemManage.User, locked: boolean) {
+  const isLock: Api.SystemManage.EnabledFlag = locked ? 1 : 0;
+  const { error } = await fetchUpdateUserLock({ userId: row.userId, isLock });
+  if (error) {
+    await getData();
+    return;
+  }
+  row.isLock = isLock;
+  window.$message?.success($t('common.updateSuccess'));
+}
+
+function edit(userId: string) {
+  handleEdit(userId);
 }
 </script>
 
@@ -183,10 +227,10 @@ function edit(id: number) {
         :data="data"
         size="small"
         :flex-height="!appStore.isMobile"
-        :scroll-x="962"
+        :scroll-x="1200"
         :loading="loading"
         remote
-        :row-key="row => row.id"
+        :row-key="row => row.userId"
         :pagination="mobilePagination"
         class="sm:h-full"
       />

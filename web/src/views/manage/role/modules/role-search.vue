@@ -35,7 +35,8 @@ function search() {
             <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.role.roleName')" path="roleName" class="pr-24px">
               <NInput v-model:value="model.roleName" :placeholder="$t('page.manage.role.form.roleName')" />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" class="pr-24px" :show-label="false" :show-feedback="false">
+            <!-- Soybean：操作行占满一行，按钮靠右下 -->
+            <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">
               <TableSearchActions @reset="resetModel" @search="search" />
             </NFormItemGi>
           </NGrid>

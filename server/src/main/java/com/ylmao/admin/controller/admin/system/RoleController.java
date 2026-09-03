@@ -76,4 +76,11 @@ public class RoleController extends BaseController {
         return success();
     }
 
+    /** 用户分配等下拉：返回 roleId + roleName */
+    @SaCheckPermission(value = {"system:user:insert", "system:user:update"}, mode = SaMode.OR)
+    @GetMapping("/options")
+    public R<?> roleOptions() {
+        return okData(roleService.listOptions());
+    }
+
 }

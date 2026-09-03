@@ -56,6 +56,12 @@ public class UserDto {
             @NotBlank(message = "用户ID不能为空") String userId
     ) { }
 
+    public record UpdateLock(
+            @NotBlank(message = "用户ID不能为空") String userId,
+            @NotNull(message = "锁定状态参数不合法") @Min(value = 0, message = "锁定状态参数不合法") @Max(value = 1, message = "锁定状态参数不合法")
+            Integer isLock
+    ) { }
+
     public record KickSessions(
             @NotBlank(message = "用户ID不能为空") String userId
     ) { }

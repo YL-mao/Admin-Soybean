@@ -269,6 +269,8 @@ const local: App.I18n.Schema = {
         orderNum: '排序',
         menuAuth: '菜单权限',
         buttonAuth: '按钮权限',
+        expandAll: '全部展开',
+        collapseAll: '全部收起',
         form: {
           roleName: '请输入角色名称',
           roleCode: '请输入角色编码',
@@ -281,20 +283,28 @@ const local: App.I18n.Schema = {
       },
       user: {
         title: '用户列表',
-        userName: '用户名',
+        userAccount: '登录账号',
+        userName: '姓名',
         userGender: '性别',
+        userSex: '性别',
         nickName: '昵称',
         userPhone: '手机号',
         userEmail: '邮箱',
         userStatus: '用户状态',
+        userLock: '锁定状态',
         userRole: '用户角色',
+        deptName: '部门',
+        postName: '岗位',
         form: {
-          userName: '请输入用户名',
+          userAccount: '请输入登录账号',
+          userName: '请输入姓名',
           userGender: '请选择性别',
+          userSex: '请选择性别',
           nickName: '请输入昵称',
           userPhone: '请输入手机号',
           userEmail: '请输入邮箱',
           userStatus: '请选择用户状态',
+          userLock: '请选择锁定状态',
           userRole: '请选择用户角色'
         },
         addUser: '新增用户',
@@ -302,6 +312,10 @@ const local: App.I18n.Schema = {
         gender: {
           male: '男',
           female: '女'
+        },
+        lock: {
+          normal: '正常',
+          locked: '锁定'
         }
       },
       menu: {

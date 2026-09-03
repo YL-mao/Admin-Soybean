@@ -19,12 +19,26 @@ export const enabledFlagOptions: CommonType.Option<Api.SystemManage.EnabledFlag,
   { value: 0, label: enabledFlagRecord[0] }
 ];
 
-export const userGenderRecord: Record<Api.SystemManage.UserGender, App.I18n.I18nKey> = {
-  '1': 'page.manage.user.gender.male',
-  '2': 'page.manage.user.gender.female'
+export const userSexRecord: Record<Api.SystemManage.UserSex, App.I18n.I18nKey> = {
+  '0': 'page.manage.user.gender.male',
+  '1': 'page.manage.user.gender.female'
 };
 
-export const userGenderOptions = transformRecordToOption(userGenderRecord);
+export const userSexOptions: CommonType.Option<Api.SystemManage.UserSex, App.I18n.I18nKey>[] = [
+  { value: '0', label: userSexRecord['0'] },
+  { value: '1', label: userSexRecord['1'] }
+];
+
+/** 锁定：0 正常 1 锁定 */
+export const lockFlagRecord: Record<Api.SystemManage.EnabledFlag, App.I18n.I18nKey> = {
+  0: 'page.manage.user.lock.normal',
+  1: 'page.manage.user.lock.locked'
+};
+
+export const lockFlagOptions: CommonType.Option<Api.SystemManage.EnabledFlag, App.I18n.I18nKey>[] = [
+  { value: 0, label: lockFlagRecord[0] },
+  { value: 1, label: lockFlagRecord[1] }
+];
 
 export const menuTypeRecord: Record<Api.SystemManage.MenuType, App.I18n.I18nKey> = {
   0: 'page.manage.menu.type.directory',

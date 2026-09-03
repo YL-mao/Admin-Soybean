@@ -242,18 +242,30 @@ public class UserService {
     /** 管理端解锁：清 is_lock、清单机失败计数，并踢掉该用户全部登录会话。 */
     @Transactional
     public void unlockUser(String userId) {
-        User oldUser = userMapper.selectById(userId);
+        updateUserLock(new UserDto.UpdateLock(userId, 0));
+    }
+
+    /** 管理端改锁定状态：解锁走清失败计数；锁定/解锁后都踢会话。 */
+    @Transactional
+    public void updateUserLock(UserDto.UpdateLock updateLock) {
+        User oldUser = userMapper.selectById(updateLock.userId());
         if (oldUser == null) {
             throw new BusinessException("用户不存在");
         }
-        oldUser.setIsLock(0);
+        if (updateLock.isLock() != null && updateLock.isLock() == 1
+                && StrUtil.equals(updateLock.userId(), SaTokenUtil.getUserId())) {
+            throw new BusinessException("不能锁定当前登录用户");
+        }
+        oldUser.setIsLock(updateLock.isLock());
         int rows = userMapper.updateById(oldUser);
         if (rows <= 0) {
-            throw new BusinessException("解锁用户失败");
+            throw new BusinessException(updateLock.isLock() != null && updateLock.isLock() == 1 ? "锁定用户失败" : "解锁用户失败");
         }
-        loginFailService.clearAccountFail(oldUser.getUserAccount());
-        // 解锁后强制重新登录，避免旧会话继续有效。
-        StpUtil.logout(userId);
+        if (updateLock.isLock() != null && updateLock.isLock() == 0) {
+            loginFailService.clearAccountFail(oldUser.getUserAccount());
+        }
+        // 锁定或解锁后强制重新登录，避免旧会话继续有效。
+        StpUtil.logout(updateLock.userId());
     }
 
     /** 用户列表在线开关仅用于会话治理：在线时确认后按用户 ID 踢全部会话。 */
