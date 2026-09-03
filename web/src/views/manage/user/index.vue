@@ -4,12 +4,14 @@ import { NButton, NPopconfirm, NSwitch, NTag } from 'naive-ui';
 import { enabledFlagRecord, lockFlagRecord, userSexRecord } from '@/constants/business';
 import { fetchDeleteUser, fetchGetUserList, fetchUpdateUserEnabled, fetchUpdateUserLock } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
-import { backendPageTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
+import { useAuth } from '@/hooks/business/auth';
+import { backendPageTransform, emptyAuthListResponse, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import UserOperateDrawer from './modules/user-operate-drawer.vue';
 import UserSearch from './modules/user-search.vue';
 
 const appStore = useAppStore();
+const { hasAuth, guardAuth } = useAuth();
 
 const searchParams = ref<Api.SystemManage.UserSearchParams>({
   current: 1,
@@ -20,7 +22,10 @@ const searchParams = ref<Api.SystemManage.UserSearchParams>({
 });
 
 const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination } = useNaivePaginatedTable({
-  api: () => fetchGetUserList(searchParams.value),
+  api: () =>
+    hasAuth('system:user:select')
+      ? fetchGetUserList(searchParams.value)
+      : Promise.resolve(emptyAuthListResponse<Api.SystemManage.User>()),
   transform: response =>
     backendPageTransform(response, searchParams.value.current || 1, searchParams.value.size || 10),
   onPaginationParamsChange: params => {
@@ -98,7 +103,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       align: 'center',
       width: 100,
       render: row => (
-        // 开=正常、关=锁定，与「启用」同为正向开态，避免同排一紫一灰
+        // 开=正常、关=锁定；无权限仍展示，点击时拦截
         <NSwitch
           value={row.isLock !== 1}
           rubberBand={false}
@@ -136,19 +141,23 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       width: 130,
       render: row => (
         <div class="flex-center gap-8px">
-          <NButton type="primary" ghost size="small" onClick={() => edit(row.userId)}>
-            {$t('common.edit')}
-          </NButton>
-          <NPopconfirm onPositiveClick={() => handleDelete(row.userId)}>
-            {{
-              default: () => $t('common.confirmDelete'),
-              trigger: () => (
-                <NButton type="error" ghost size="small">
-                  {$t('common.delete')}
-                </NButton>
-              )
-            }}
-          </NPopconfirm>
+          {hasAuth('system:user:update') && (
+            <NButton type="primary" ghost size="small" onClick={() => edit(row.userId)}>
+              {$t('common.edit')}
+            </NButton>
+          )}
+          {hasAuth('system:user:delete') && (
+            <NPopconfirm onPositiveClick={() => handleDelete(row.userId)}>
+              {{
+                default: () => $t('common.confirmDelete'),
+                trigger: () => (
+                  <NButton type="error" ghost size="small">
+                    {$t('common.delete')}
+                  </NButton>
+                )
+              }}
+            </NPopconfirm>
+          )}
         </div>
       )
     }
@@ -180,6 +189,9 @@ async function handleDelete(userId: string) {
 
 /** 列表开关启停；无密码时后端会拒绝启用 */
 async function handleUpdateEnabled(row: Api.SystemManage.User, checked: boolean) {
+  if (!guardAuth('system:user:updateEnabled')) {
+    return;
+  }
   const isEnabled: Api.SystemManage.EnabledFlag = checked ? 1 : 0;
   const { error } = await fetchUpdateUserEnabled({ userId: row.userId, isEnabled });
   if (error) {
@@ -192,6 +204,9 @@ async function handleUpdateEnabled(row: Api.SystemManage.User, checked: boolean)
 
 /** 列表开关锁定：参数 locked=true 表示锁定 */
 async function handleUpdateLock(row: Api.SystemManage.User, locked: boolean) {
+  if (!guardAuth('system:user:unlock')) {
+    return;
+  }
   const isLock: Api.SystemManage.EnabledFlag = locked ? 1 : 0;
   const { error } = await fetchUpdateUserLock({ userId: row.userId, isLock });
   if (error) {
@@ -216,6 +231,8 @@ function edit(userId: string) {
           v-model:columns="columnChecks"
           :disabled-delete="checkedRowKeys.length === 0"
           :loading="loading"
+          :show-add="hasAuth('system:user:insert')"
+          :show-delete="hasAuth('system:user:delete')"
           @add="handleAdd"
           @delete="handleBatchDelete"
           @refresh="getData"
@@ -233,7 +250,15 @@ function edit(userId: string) {
         :row-key="row => row.userId"
         :pagination="mobilePagination"
         class="sm:h-full"
-      />
+      >
+        <template #empty>
+          <NEmpty
+            :description="
+              hasAuth('system:user:select') ? $t('common.noData') : $t('common.noPermission')
+            "
+          />
+        </template>
+      </NDataTable>
       <UserOperateDrawer
         v-model:visible="drawerVisible"
         :operate-type="operateType"

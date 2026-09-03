@@ -4,7 +4,8 @@ import { NButton, NPopconfirm, NSwitch } from 'naive-ui';
 import { enabledFlagRecord } from '@/constants/business';
 import { fetchDeletePost, fetchGetPostList, fetchUpdatePostEnabled } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
-import { backendPageTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
+import { useAuth } from '@/hooks/business/auth';
+import { backendPageTransform, emptyAuthListResponse, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import PostSearch from './modules/post-search.vue';
 import PostOperateDrawer from './modules/post-operate-drawer.vue';
@@ -12,6 +13,7 @@ import PostOperateDrawer from './modules/post-operate-drawer.vue';
 defineOptions({ name: 'OrgPost' });
 
 const appStore = useAppStore();
+const { hasAuth, guardAuth } = useAuth();
 
 const searchParams = ref<Api.SystemManage.PostSearchParams>({
   current: 1,
@@ -21,7 +23,10 @@ const searchParams = ref<Api.SystemManage.PostSearchParams>({
 });
 
 const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination } = useNaivePaginatedTable({
-  api: () => fetchGetPostList(searchParams.value),
+  api: () =>
+    hasAuth('system:post:select')
+      ? fetchGetPostList(searchParams.value)
+      : Promise.resolve(emptyAuthListResponse<Api.SystemManage.Post>()),
   transform: response =>
     backendPageTransform(response, searchParams.value.current || 1, searchParams.value.size || 10),
   onPaginationParamsChange: params => {
@@ -86,19 +91,23 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       width: 130,
       render: row => (
         <div class="flex-center gap-8px">
-          <NButton type="primary" ghost size="small" onClick={() => edit(row.postId)}>
-            {$t('common.edit')}
-          </NButton>
-          <NPopconfirm onPositiveClick={() => handleDelete(row.postId)}>
-            {{
-              default: () => $t('common.confirmDelete'),
-              trigger: () => (
-                <NButton type="error" ghost size="small">
-                  {$t('common.delete')}
-                </NButton>
-              )
-            }}
-          </NPopconfirm>
+          {hasAuth('system:post:update') && (
+            <NButton type="primary" ghost size="small" onClick={() => edit(row.postId)}>
+              {$t('common.edit')}
+            </NButton>
+          )}
+          {hasAuth('system:post:delete') && (
+            <NPopconfirm onPositiveClick={() => handleDelete(row.postId)}>
+              {{
+                default: () => $t('common.confirmDelete'),
+                trigger: () => (
+                  <NButton type="error" ghost size="small">
+                    {$t('common.delete')}
+                  </NButton>
+                )
+              }}
+            </NPopconfirm>
+          )}
         </div>
       )
     }
@@ -129,6 +138,9 @@ async function handleDelete(postId: string) {
 }
 
 async function handleUpdateEnabled(row: Api.SystemManage.Post, checked: boolean) {
+  if (!guardAuth('system:post:updateEnabled')) {
+    return;
+  }
   const isEnabled: Api.SystemManage.EnabledFlag = checked ? 1 : 0;
   const { error } = await fetchUpdatePostEnabled({ postId: row.postId, isEnabled });
   if (error) {
@@ -153,6 +165,8 @@ function edit(postId: string) {
           v-model:columns="columnChecks"
           :disabled-delete="checkedRowKeys.length === 0"
           :loading="loading"
+          :show-add="hasAuth('system:post:insert')"
+          :show-delete="hasAuth('system:post:delete')"
           @add="handleAdd"
           @delete="handleBatchDelete"
           @refresh="getData"
@@ -170,7 +184,15 @@ function edit(postId: string) {
         :row-key="row => row.postId"
         :pagination="mobilePagination"
         class="sm:h-full"
-      />
+      >
+        <template #empty>
+          <NEmpty
+            :description="
+              hasAuth('system:post:select') ? $t('common.noData') : $t('common.noPermission')
+            "
+          />
+        </template>
+      </NDataTable>
       <PostOperateDrawer
         v-model:visible="drawerVisible"
         :operate-type="operateType"

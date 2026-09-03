@@ -42,6 +42,10 @@ const expandedKeys = shallowRef<string[]>([]);
 const allExpandableKeys = shallowRef<string[]>([]);
 /** 全部节点 key，供全选 / 反选 */
 const allNodeKeys = shallowRef<string[]>([]);
+/** menuId -> parentId，确认时补祖先 */
+const parentMap = shallowRef<Map<string, string>>(new Map());
+/** menuId -> 子 menuId 列表，回显时过滤半选父节点 */
+const childrenMap = shallowRef<Map<string, string[]>>(new Map());
 
 /** 收集有子节点的 key，供全部展开 */
 function collectExpandableKeys(nodes: TreeOption[], keys: string[] = []) {
@@ -65,9 +69,48 @@ function collectAllKeys(nodes: TreeOption[], keys: string[] = []) {
   return keys;
 }
 
+function collectDescendants(menuId: string, result: string[] = []): string[] {
+  const children = childrenMap.value.get(menuId) || [];
+  children.forEach(childId => {
+    result.push(childId);
+    collectDescendants(childId, result);
+  });
+  return result;
+}
+
+/**
+ * cascade 回显：若某节点有未勾选子孙，不要把它放进 checked-keys，
+ * 否则会连带勾选全部子孙；交给树自己显示半选。
+ */
+function toCascadeSafeChecks(candidateIds: string[]): string[] {
+  const checked = new Set(candidateIds);
+  return candidateIds.filter(id => {
+    const descendants = collectDescendants(id);
+    if (!descendants.length) {
+      return true;
+    }
+    return descendants.every(childId => checked.has(childId));
+  });
+}
+
+/** 勾选结果补全祖先，避免半选目录丢失后子路由抬成顶级无 layout */
+function withAncestors(ids: string[]): string[] {
+  const result = new Set(ids);
+  ids.forEach(id => {
+    let parentId = parentMap.value.get(id);
+    while (parentId && parentId !== '0') {
+      result.add(parentId);
+      parentId = parentMap.value.get(parentId);
+    }
+  });
+  return [...result];
+}
+
 /** 平铺 MenuCheck 组树；优先用草稿勾选，否则用接口 checkArr */
 function buildAuthTree(list: Api.SystemManage.MenuCheck[], preferredChecks: string[] | null) {
   const map = new Map<string, TreeOption>();
+  const nextParentMap = new Map<string, string>();
+  const nextChildrenMap = new Map<string, string[]>();
   const checkedKeys: string[] = [];
 
   list.forEach(item => {
@@ -76,6 +119,7 @@ function buildAuthTree(list: Api.SystemManage.MenuCheck[], preferredChecks: stri
       label: item.menuName,
       children: []
     });
+    nextParentMap.set(item.menuId, item.parentId || '0');
     if (preferredChecks === null && item.checkArr === '1') {
       checkedKeys.push(item.menuId);
     }
@@ -92,11 +136,17 @@ function buildAuthTree(list: Api.SystemManage.MenuCheck[], preferredChecks: stri
     const parent = map.get(parentId)!;
     parent.children = parent.children || [];
     parent.children.push(node);
+    const siblings = nextChildrenMap.get(parentId) || [];
+    siblings.push(item.menuId);
+    nextChildrenMap.set(parentId, siblings);
   });
 
   pruneEmptyChildren(roots);
   tree.value = roots;
-  checks.value = preferredChecks !== null ? [...preferredChecks] : checkedKeys;
+  parentMap.value = nextParentMap;
+  childrenMap.value = nextChildrenMap;
+  const rawChecks = preferredChecks !== null ? [...preferredChecks] : checkedKeys;
+  checks.value = toCascadeSafeChecks(rawChecks);
   allExpandableKeys.value = collectExpandableKeys(roots);
   allNodeKeys.value = collectAllKeys(roots);
   // 打开时默认收起
@@ -138,6 +188,8 @@ async function loadTree() {
     expandedKeys.value = [];
     allExpandableKeys.value = [];
     allNodeKeys.value = [];
+    parentMap.value = new Map();
+    childrenMap.value = new Map();
     return;
   }
   const { error, data } = await fetchGetRoleMenuTree(props.roleId);
@@ -147,14 +199,16 @@ async function loadTree() {
     expandedKeys.value = [];
     allExpandableKeys.value = [];
     allNodeKeys.value = [];
+    parentMap.value = new Map();
+    childrenMap.value = new Map();
     return;
   }
   buildAuthTree(data, props.draftMenuIds ?? null);
 }
 
-/** 只回写父抽屉草稿，不调保存接口 */
+/** 只回写父抽屉草稿（含祖先），不调保存接口 */
 function handleConfirm() {
-  emit('confirm', [...checks.value]);
+  emit('confirm', withAncestors(checks.value));
   closeModal();
 }
 

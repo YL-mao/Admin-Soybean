@@ -11,6 +11,7 @@ import {
   fetchUpdateRole
 } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
+import { useAuth } from '@/hooks/business/auth';
 import { useAuthStore } from '@/store/modules/auth';
 import { useRouteStore } from '@/store/modules/route';
 import { $t } from '@/locales';
@@ -41,6 +42,7 @@ const visible = defineModel<boolean>('visible', {
 
 const authStore = useAuthStore();
 const routeStore = useRouteStore();
+const { hasAuth } = useAuth();
 const { formRef, validate, restoreValidation } = useNaiveForm();
 const { defaultRequiredRule } = useFormRules();
 const { bool: menuAuthVisible, setTrue: openMenuAuthModal } = useBoolean();
@@ -199,7 +201,7 @@ watch(visible, () => {
           </NRadioGroup>
         </NFormItem>
       </NForm>
-      <NSpace v-if="isEdit">
+      <NSpace v-if="isEdit && hasAuth('system:role:auth')">
         <NButton @click="openMenuAuthModal">{{ $t('page.manage.role.menuAuth') }}</NButton>
         <MenuAuthModal
           v-model:visible="menuAuthVisible"

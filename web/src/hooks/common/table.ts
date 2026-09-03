@@ -282,6 +282,26 @@ export function backendPageTransform<ApiData>(
   };
 }
 
+/** 无列表查询权限时不打接口，返回空成功态，前端空状态展示「无权限」 */
+export function emptyAuthListResponse<ApiData = unknown>() {
+  return {
+    data: [] as ApiData[],
+    error: null,
+    response: {
+      data: {
+        code: Number(import.meta.env.VITE_SERVICE_SUCCESS_CODE) || 200,
+        msg: 'ok',
+        data: [] as ApiData[],
+        count: 0
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as never
+    }
+  } as unknown as FlatResponseData<App.Service.Response<ApiData[]>, ApiData[]>;
+}
+
 function getColumnChecks<Column extends NaiveUI.TableColumn<any>>(
   cols: Column[],
   getColumnVisible?: (column: Column) => boolean

@@ -101,8 +101,8 @@ public class MenuService {
         int rows = 0;
         // 清空授权时 menuIds 为空，删除关联后即可视为保存成功。
         if (!StrUtil.isBlank(menuIds)) {
-            // 角色菜单关系有唯一键，保存前保序去重，避免重复勾选导致唯一键异常。
-            Set<String> menuIdSet = new LinkedHashSet<>(StrUtil.splitTrim(menuIds, ','));
+            // cascade 半选父节点不会出现在 checked-keys，保存前按 menu_path 补全祖先，避免子菜单丢目录壳。
+            Set<String> menuIdSet = expandMenuIdsWithAncestors(new LinkedHashSet<>(StrUtil.splitTrim(menuIds, ',')));
             int validMenuCount = 0;
 
             for (String menuId : menuIdSet) {
@@ -121,6 +121,26 @@ public class MenuService {
         }
         // 授权保存后让在线用户下次鉴权重新加载权限码。
         clearPermCacheByRole(roleId);
+    }
+
+    /** 根据已选菜单的 menu_path 补全祖先目录/菜单 ID。 */
+    private Set<String> expandMenuIdsWithAncestors(Set<String> menuIds) {
+        if (menuIds.isEmpty()) {
+            return menuIds;
+        }
+        Set<String> result = new LinkedHashSet<>(menuIds);
+        List<Menu> menus = menuMapper.selectByIds(menuIds);
+        for (Menu menu : menus) {
+            if (menu == null || StrUtil.isBlank(menu.getMenuPath())) {
+                continue;
+            }
+            for (String pathId : StrUtil.splitTrim(menu.getMenuPath(), ',')) {
+                if (StrUtil.isNotBlank(pathId) && !"0".equals(pathId)) {
+                    result.add(pathId);
+                }
+            }
+        }
+        return result;
     }
 
     /** 角色授权变更后，清理持有该角色用户的权限码缓存。 */

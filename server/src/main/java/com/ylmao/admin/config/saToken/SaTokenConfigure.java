@@ -131,8 +131,11 @@ public class SaTokenConfigure implements WebMvcConfigurer {
         if (e instanceof NotLoginException) {
             return R.fail(401, SaAuthMessages.NOT_LOGIN);
         }
-        if (e instanceof NotPermissionException || e instanceof NotRoleException || e instanceof NotSafeException) {
-            return R.fail(403, e.getMessage());
+        if (e instanceof NotSafeException) {
+            return R.fail(403, SaAuthMessages.NEED_SAFE);
+        }
+        if (e instanceof NotPermissionException || e instanceof NotRoleException) {
+            return R.fail(403, SaAuthMessages.NO_PERMISSION);
         }
         return R.fail(e.getMessage());
     }

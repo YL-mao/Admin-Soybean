@@ -6,7 +6,8 @@ import { useBoolean } from '@sa/hooks';
 import { enabledFlagRecord } from '@/constants/business';
 import { fetchDeleteDept, fetchGetDeptList, fetchUpdateDeptEnabled } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
-import { useNaiveTable, useTableOperate } from '@/hooks/common/table';
+import { useAuth } from '@/hooks/business/auth';
+import { emptyAuthListResponse, useNaiveTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import DeptOperateDrawer, { type DeptOperateType } from './modules/dept-operate-drawer.vue';
 import DeptSearch from './modules/dept-search.vue';
@@ -15,6 +16,7 @@ import { buildDeptTree } from './modules/shared';
 defineOptions({ name: 'OrgDept' });
 
 const appStore = useAppStore();
+const { hasAuth, guardAuth } = useAuth();
 const { bool: visible, setTrue: openDrawer } = useBoolean();
 
 const searchParams = ref<Api.SystemManage.DeptSearchParams>({
@@ -23,7 +25,10 @@ const searchParams = ref<Api.SystemManage.DeptSearchParams>({
 });
 
 const { columns, columnChecks, data, loading, getData } = useNaiveTable({
-  api: () => fetchGetDeptList(searchParams.value),
+  api: () =>
+    hasAuth('system:dept:select')
+      ? fetchGetDeptList(searchParams.value)
+      : Promise.resolve(emptyAuthListResponse<Api.SystemManage.Dept>()),
   transform: response => {
     if (response.error || !response.data) {
       return [];
@@ -87,22 +92,28 @@ const { columns, columnChecks, data, loading, getData } = useNaiveTable({
       width: 230,
       render: row => (
         <div class="flex-center justify-end gap-8px">
-          <NButton type="primary" ghost size="small" onClick={() => handleAddChild(row)}>
-            {$t('page.autobox.dept.addChildDept')}
-          </NButton>
-          <NButton type="primary" ghost size="small" onClick={() => handleEdit(row)}>
-            {$t('common.edit')}
-          </NButton>
-          <NPopconfirm onPositiveClick={() => handleDelete(row.deptId)}>
-            {{
-              default: () => $t('common.confirmDelete'),
-              trigger: () => (
-                <NButton type="error" ghost size="small">
-                  {$t('common.delete')}
-                </NButton>
-              )
-            }}
-          </NPopconfirm>
+          {hasAuth('system:dept:insert') && (
+            <NButton type="primary" ghost size="small" onClick={() => handleAddChild(row)}>
+              {$t('page.autobox.dept.addChildDept')}
+            </NButton>
+          )}
+          {hasAuth('system:dept:update') && (
+            <NButton type="primary" ghost size="small" onClick={() => handleEdit(row)}>
+              {$t('common.edit')}
+            </NButton>
+          )}
+          {hasAuth('system:dept:delete') && (
+            <NPopconfirm onPositiveClick={() => handleDelete(row.deptId)}>
+              {{
+                default: () => $t('common.confirmDelete'),
+                trigger: () => (
+                  <NButton type="error" ghost size="small">
+                    {$t('common.delete')}
+                  </NButton>
+                )
+              }}
+            </NPopconfirm>
+          )}
         </div>
       )
     }
@@ -145,6 +156,9 @@ async function handleDelete(deptId: string) {
 }
 
 async function handleUpdateEnabled(row: Api.SystemManage.Dept, checked: boolean) {
+  if (!guardAuth('system:dept:updateEnabled')) {
+    return;
+  }
   const isEnabled: Api.SystemManage.EnabledFlag = checked ? 1 : 0;
   const { error } = await fetchUpdateDeptEnabled({ deptId: row.deptId, isEnabled });
   if (error) {
@@ -169,6 +183,8 @@ function handleSearch() {
           v-model:columns="columnChecks"
           :disabled-delete="checkedRowKeys.length === 0"
           :loading="loading"
+          :show-add="hasAuth('system:dept:insert')"
+          :show-delete="hasAuth('system:dept:delete')"
           @add="handleAdd"
           @delete="handleBatchDelete"
           @refresh="getData"
@@ -186,7 +202,15 @@ function handleSearch() {
         :loading="loading"
         :row-key="row => row.deptId"
         class="sm:h-full"
-      />
+      >
+        <template #empty>
+          <NEmpty
+            :description="
+              hasAuth('system:dept:select') ? $t('common.noData') : $t('common.noPermission')
+            "
+          />
+        </template>
+      </NDataTable>
       <DeptOperateDrawer
         v-model:visible="visible"
         :operate-type="operateType"

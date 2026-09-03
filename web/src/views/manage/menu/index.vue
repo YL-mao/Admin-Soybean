@@ -6,20 +6,25 @@ import { useBoolean } from '@sa/hooks';
 import { enabledFlagRecord, menuTypeRecord } from '@/constants/business';
 import { fetchDeleteMenu, fetchGetMenuList, fetchUpdateMenuEnabled } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
-import { useNaiveTable, useTableOperate } from '@/hooks/common/table';
+import { useAuth } from '@/hooks/business/auth';
+import { emptyAuthListResponse, useNaiveTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 import MenuOperateModal, { type OperateType } from './modules/menu-operate-modal.vue';
 import { buildMenuTree, collectMenuIconifyIcons } from './modules/shared';
 
 const appStore = useAppStore();
+const { hasAuth, guardAuth } = useAuth();
 
 const { bool: visible, setTrue: openModal } = useBoolean();
 
 const wrapperRef = ref<HTMLElement | null>(null);
 
 const { columns, columnChecks, data, loading, getData } = useNaiveTable({
-  api: () => fetchGetMenuList(),
+  api: () =>
+    hasAuth('system:menu:select')
+      ? fetchGetMenuList()
+      : Promise.resolve(emptyAuthListResponse<Api.SystemManage.Menu>()),
   // 后端返回平铺列表，前端按 parentId 组树
   transform: response => {
     if (response.error || !response.data) {
@@ -136,24 +141,28 @@ const { columns, columnChecks, data, loading, getData } = useNaiveTable({
       width: 230,
       render: row => (
         <div class="flex-center justify-end gap-8px">
-          {row.menuType !== 2 && (
+          {row.menuType !== 2 && hasAuth('system:menu:insert') && (
             <NButton type="primary" ghost size="small" onClick={() => handleAddChildMenu(row)}>
               {$t('page.manage.menu.addChildMenu')}
             </NButton>
           )}
-          <NButton type="primary" ghost size="small" onClick={() => handleEdit(row)}>
-            {$t('common.edit')}
-          </NButton>
-          <NPopconfirm onPositiveClick={() => handleDelete(row.menuId)}>
-            {{
-              default: () => $t('common.confirmDelete'),
-              trigger: () => (
-                <NButton type="error" ghost size="small">
-                  {$t('common.delete')}
-                </NButton>
-              )
-            }}
-          </NPopconfirm>
+          {hasAuth('system:menu:update') && (
+            <NButton type="primary" ghost size="small" onClick={() => handleEdit(row)}>
+              {$t('common.edit')}
+            </NButton>
+          )}
+          {hasAuth('system:menu:delete') && (
+            <NPopconfirm onPositiveClick={() => handleDelete(row.menuId)}>
+              {{
+                default: () => $t('common.confirmDelete'),
+                trigger: () => (
+                  <NButton type="error" ghost size="small">
+                    {$t('common.delete')}
+                  </NButton>
+                )
+              }}
+            </NPopconfirm>
+          )}
         </div>
       )
     }
@@ -184,6 +193,9 @@ async function handleDelete(menuId: string) {
 
 /** 列表开关直接启停，走 /menu/updateEnabled */
 async function handleUpdateEnabled(row: Api.SystemManage.Menu, checked: boolean) {
+  if (!guardAuth('system:menu:updateEnabled')) {
+    return;
+  }
   const isEnabled: Api.SystemManage.EnabledFlag = checked ? 1 : 0;
   const { error } = await fetchUpdateMenuEnabled({ menuId: row.menuId, isEnabled });
   if (error) {
@@ -222,6 +234,8 @@ const usedIconifyIcons = computed(() => collectMenuIconifyIcons(data.value));
           v-model:columns="columnChecks"
           :disabled-delete="checkedRowKeys.length === 0"
           :loading="loading"
+          :show-add="hasAuth('system:menu:insert')"
+          :show-delete="hasAuth('system:menu:delete')"
           @add="handleAdd"
           @delete="handleBatchDelete"
           @refresh="getData"
@@ -239,7 +253,15 @@ const usedIconifyIcons = computed(() => collectMenuIconifyIcons(data.value));
         :loading="loading"
         :row-key="row => row.menuId"
         class="sm:h-full"
-      />
+      >
+        <template #empty>
+          <NEmpty
+            :description="
+              hasAuth('system:menu:select') ? $t('common.noData') : $t('common.noPermission')
+            "
+          />
+        </template>
+      </NDataTable>
       <MenuOperateModal
         v-model:visible="visible"
         :operate-type="operateType"

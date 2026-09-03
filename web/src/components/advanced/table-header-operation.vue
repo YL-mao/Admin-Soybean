@@ -9,9 +9,16 @@ interface Props {
   itemAlign?: NaiveUI.Align;
   disabledDelete?: boolean;
   loading?: boolean;
+  /** 是否显示新增；默认 true，由页面按按钮权限控制 */
+  showAdd?: boolean;
+  /** 是否显示批量删除；默认 true */
+  showDelete?: boolean;
 }
 
-defineProps<Props>();
+withDefaults(defineProps<Props>(), {
+  showAdd: true,
+  showDelete: true
+});
 
 interface Emits {
   (e: 'add'): void;
@@ -42,13 +49,13 @@ function refresh() {
   <NSpace :align="itemAlign" wrap justify="end" class="lt-sm:w-200px">
     <slot name="prefix"></slot>
     <slot name="default">
-      <NButton size="small" ghost type="primary" @click="add">
+      <NButton v-if="showAdd" size="small" ghost type="primary" @click="add">
         <template #icon>
           <icon-ic-round-plus class="text-icon" />
         </template>
         {{ $t('common.add') }}
       </NButton>
-      <NPopconfirm @positive-click="batchDelete">
+      <NPopconfirm v-if="showDelete" @positive-click="batchDelete">
         <template #trigger>
           <NButton size="small" ghost type="error" :disabled="disabledDelete">
             <template #icon>

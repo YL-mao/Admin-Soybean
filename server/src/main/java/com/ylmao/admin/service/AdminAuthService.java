@@ -68,7 +68,7 @@ public class AdminAuthService {
     /** 按角色从 sys_menu 组 Soybean 动态路由树。 */
     public AdminAuthVo.UserRouteResult buildUserRoutes() {
         List<String> roleIds = currentRoleIds();
-        List<Menu> menus = loadMenusByRoleIds(roleIds);
+        List<Menu> menus = ensureAncestorMenus(loadMenusByRoleIds(roleIds));
         List<AdminAuthVo.RouteItem> routes = buildRouteTree(menus);
         return new AdminAuthVo.UserRouteResult(routes, resolveHome(routes));
     }
@@ -109,6 +109,40 @@ public class AdminAuthService {
             return List.of();
         }
         return menuMapper.selectMenusByRoleIds(roleIds);
+    }
+
+    /**
+     * 补全缺失的祖先目录/菜单。cascade 半选导致库中可能只有子节点时，
+     * 否则子路由会抬成顶级且缺少 layout.base，侧栏乱、点进去变单页。
+     */
+    private List<Menu> ensureAncestorMenus(List<Menu> menus) {
+        if (CollectionUtils.isEmpty(menus)) {
+            return List.of();
+        }
+        Map<String, Menu> byId = new LinkedHashMap<>();
+        for (Menu menu : menus) {
+            byId.put(menu.getMenuId(), menu);
+        }
+        Set<String> missingIds = new LinkedHashSet<>();
+        for (Menu menu : menus) {
+            if (StrUtil.isBlank(menu.getMenuPath())) {
+                continue;
+            }
+            for (String pathId : StrUtil.splitTrim(menu.getMenuPath(), ',')) {
+                if (StrUtil.isNotBlank(pathId) && !"0".equals(pathId) && !byId.containsKey(pathId)) {
+                    missingIds.add(pathId);
+                }
+            }
+        }
+        if (missingIds.isEmpty()) {
+            return new ArrayList<>(byId.values());
+        }
+        for (Menu parent : menuMapper.selectByIds(missingIds)) {
+            if (parent != null) {
+                byId.putIfAbsent(parent.getMenuId(), parent);
+            }
+        }
+        return new ArrayList<>(byId.values());
     }
 
     private List<String> loadRoleCodes(List<String> roleIds) {

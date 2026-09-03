@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/store/modules/auth';
+import { $t } from '@/locales';
 
 export function useAuth() {
   const authStore = useAuthStore();
@@ -15,7 +16,17 @@ export function useAuth() {
     return codes.some(code => authStore.userInfo.buttons.includes(code));
   }
 
+  /** 有权限返回 true；无权限提示并返回 false（用于可展示但需拦截的开关等） */
+  function guardAuth(codes: string | string[]) {
+    if (hasAuth(codes)) {
+      return true;
+    }
+    window.$message?.warning($t('common.noPermission'));
+    return false;
+  }
+
   return {
-    hasAuth
+    hasAuth,
+    guardAuth
   };
 }

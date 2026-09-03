@@ -4,12 +4,14 @@ import { NButton, NPopconfirm, NSwitch } from 'naive-ui';
 import { enabledFlagRecord } from '@/constants/business';
 import { fetchDeleteRole, fetchGetRoleList, fetchUpdateRoleEnabled } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
-import { backendPageTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
+import { useAuth } from '@/hooks/business/auth';
+import { backendPageTransform, emptyAuthListResponse, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import RoleOperateDrawer from './modules/role-operate-drawer.vue';
 import RoleSearch from './modules/role-search.vue';
 
 const appStore = useAppStore();
+const { hasAuth, guardAuth } = useAuth();
 
 const searchParams = ref<Api.SystemManage.RoleSearchParams>({
   current: 1,
@@ -18,7 +20,10 @@ const searchParams = ref<Api.SystemManage.RoleSearchParams>({
 });
 
 const { columns, columnChecks, data, loading, getData, getDataByPage, mobilePagination } = useNaivePaginatedTable({
-  api: () => fetchGetRoleList(searchParams.value),
+  api: () =>
+    hasAuth('system:role:select')
+      ? fetchGetRoleList(searchParams.value)
+      : Promise.resolve(emptyAuthListResponse<Api.SystemManage.Role>()),
   transform: response =>
     backendPageTransform(response, searchParams.value.current || 1, searchParams.value.size || 10),
   onPaginationParamsChange: params => {
@@ -81,19 +86,23 @@ const { columns, columnChecks, data, loading, getData, getDataByPage, mobilePagi
       width: 130,
       render: row => (
         <div class="flex-center gap-8px">
-          <NButton type="primary" ghost size="small" onClick={() => edit(row.roleId)}>
-            {$t('common.edit')}
-          </NButton>
-          <NPopconfirm onPositiveClick={() => handleDelete(row.roleId)}>
-            {{
-              default: () => $t('common.confirmDelete'),
-              trigger: () => (
-                <NButton type="error" ghost size="small">
-                  {$t('common.delete')}
-                </NButton>
-              )
-            }}
-          </NPopconfirm>
+          {hasAuth('system:role:update') && (
+            <NButton type="primary" ghost size="small" onClick={() => edit(row.roleId)}>
+              {$t('common.edit')}
+            </NButton>
+          )}
+          {hasAuth('system:role:delete') && (
+            <NPopconfirm onPositiveClick={() => handleDelete(row.roleId)}>
+              {{
+                default: () => $t('common.confirmDelete'),
+                trigger: () => (
+                  <NButton type="error" ghost size="small">
+                    {$t('common.delete')}
+                  </NButton>
+                )
+              }}
+            </NPopconfirm>
+          )}
         </div>
       )
     }
@@ -125,6 +134,9 @@ async function handleDelete(roleId: string) {
 
 /** 列表开关直接启停 */
 async function handleUpdateEnabled(row: Api.SystemManage.Role, checked: boolean) {
+  if (!guardAuth('system:role:updateEnabled')) {
+    return;
+  }
   const isEnabled: Api.SystemManage.EnabledFlag = checked ? 1 : 0;
   const { error } = await fetchUpdateRoleEnabled({ roleId: row.roleId, isEnabled });
   if (error) {
@@ -149,6 +161,8 @@ function edit(roleId: string) {
           v-model:columns="columnChecks"
           :disabled-delete="checkedRowKeys.length === 0"
           :loading="loading"
+          :show-add="hasAuth('system:role:insert')"
+          :show-delete="hasAuth('system:role:delete')"
           @add="handleAdd"
           @delete="handleBatchDelete"
           @refresh="getData"
@@ -166,7 +180,15 @@ function edit(roleId: string) {
         :row-key="row => row.roleId"
         :pagination="mobilePagination"
         class="sm:h-full"
-      />
+      >
+        <template #empty>
+          <NEmpty
+            :description="
+              hasAuth('system:role:select') ? $t('common.noData') : $t('common.noPermission')
+            "
+          />
+        </template>
+      </NDataTable>
       <RoleOperateDrawer
         v-model:visible="drawerVisible"
         :operate-type="operateType"
