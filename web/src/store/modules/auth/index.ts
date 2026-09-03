@@ -2,7 +2,7 @@ import { computed, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { defineStore } from 'pinia';
 import { useLoading } from '@sa/hooks';
-import { fetchLogin, fetchLogout } from '@/service/api';
+import { fetchGetUserInfo, fetchLogin, fetchLogout } from '@/service/api';
 import { useRouterPush } from '@/hooks/common/router';
 import { localStg } from '@/utils/storage';
 import { SetupStoreId } from '@/enum';
@@ -114,7 +114,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     });
 
     if (!error && loginToken) {
-      const pass = loginByToken(loginToken);
+      const pass = await loginByToken(loginToken);
 
       if (pass) {
         const isClear = checkTabClear();
@@ -139,50 +139,73 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     return false;
   }
 
-  /** 落地 token / 用户信息到本地与 store（严格 Header 模式，不依赖 Cookie 恢复） */
-  function loginByToken(loginToken: Api.Auth.LoginToken) {
+  /** 落地 token 后拉 getUserInfo（roles/buttons），严格 Header 模式 */
+  async function loginByToken(loginToken: Api.Auth.LoginToken) {
     if (!loginToken?.token) {
       return false;
     }
 
     localStg.set('token', loginToken.token);
-    localStg.set('userInfo', {
-      userId: loginToken.userId,
-      userName: loginToken.userName,
-      roles: loginToken.roles,
-      buttons: []
-    });
-
-    Object.assign(userInfo, {
-      userId: loginToken.userId,
-      userName: loginToken.userName,
-      roles: loginToken.roles,
-      buttons: []
-    });
     token.value = loginToken.token;
+
+    const pass = await getUserInfo();
+    if (!pass) {
+      clearAuthStorage();
+      token.value = '';
+      return false;
+    }
 
     return true;
   }
 
-  /** 刷新恢复：仅从本地缓存还原（无 getSession） */
-  async function initUserInfo() {
-    const maybeToken = getToken();
-    const cached = localStg.get('userInfo');
-
-    if (maybeToken && cached?.userId) {
-      token.value = maybeToken;
-      Object.assign(userInfo, {
-        userId: cached.userId,
-        userName: cached.userName,
-        roles: cached.roles || [],
-        buttons: cached.buttons || []
-      });
-      return true;
+  /** 从后端刷新用户信息并写入本地缓存 */
+  async function getUserInfo() {
+    const { data: info, error } = await fetchGetUserInfo();
+    if (error || !info) {
+      return false;
     }
 
-    clearAuthStorage();
-    token.value = '';
-    return false;
+    Object.assign(userInfo, {
+      userId: info.userId,
+      userName: info.userName,
+      roles: info.roles || [],
+      buttons: info.buttons || []
+    });
+    localStg.set('userInfo', {
+      userId: userInfo.userId,
+      userName: userInfo.userName,
+      roles: userInfo.roles,
+      buttons: userInfo.buttons
+    });
+    return true;
+  }
+
+  /** 对外：角色授权变更后刷新 roles/buttons */
+  async function refreshUserInfo() {
+    if (!getToken()) {
+      return false;
+    }
+    return getUserInfo();
+  }
+
+  /** 刷新恢复：有 token 则打 getUserInfo 校验会话并刷新角色/按钮 */
+  async function initUserInfo() {
+    const maybeToken = getToken();
+
+    if (!maybeToken) {
+      clearAuthStorage();
+      token.value = '';
+      return false;
+    }
+
+    token.value = maybeToken;
+    const pass = await getUserInfo();
+    if (!pass) {
+      clearAuthStorage();
+      token.value = '';
+      return false;
+    }
+    return true;
   }
 
   return {
@@ -193,6 +216,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     loginLoading,
     resetStore,
     login,
-    initUserInfo
+    initUserInfo,
+    refreshUserInfo
   };
 });

@@ -18,7 +18,7 @@ declare namespace StorageType {
     mixSiderFixed: CommonType.YesOrNo;
     /** The refresh token */
     refreshToken: string;
-    /** 登录成功写入的最小用户信息（暂代 getUserInfo） */
+    /** getUserInfo 写入的用户信息（roles/buttons） */
     userInfo: Api.Auth.UserInfo;
     /** The theme color */
     themeColor: string;

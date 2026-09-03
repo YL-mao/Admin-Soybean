@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 import { useBoolean } from '@sa/hooks';
 import type { CustomRoute, ElegantConstRoute, LastLevelRouteKey, RouteKey, RouteMap } from '@elegant-router/types';
 import { router } from '@/router';
-import { fetchGetConstantRoutes, fetchGetUserRoutes, fetchIsRouteExist } from '@/service/api';
+import { fetchGetUserRoutes, fetchIsRouteExist } from '@/service/api';
 import { SetupStoreId } from '@/enum';
 import { createStaticRoutes, getAuthVueRoutes } from '@/router/routes';
 import { ROOT_ROUTE } from '@/router/routes/builtin';
@@ -149,24 +149,12 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     removeRouteFns.length = 0;
   }
 
-  /** init constant route */
+  /** init constant route（登录页/404 等固定前端生成，不走后端） */
   async function initConstantRoute() {
     if (isInitConstantRoute.value) return;
 
     const staticRoute = createStaticRoutes();
-
-    if (authRouteMode.value === 'static') {
-      addConstantRoutes(staticRoute.constantRoutes);
-    } else {
-      const { data, error } = await fetchGetConstantRoutes();
-
-      if (!error) {
-        addConstantRoutes(data);
-      } else {
-        // if fetch constant routes failed, use static constant routes
-        addConstantRoutes(staticRoute.constantRoutes);
-      }
-    }
+    addConstantRoutes(staticRoute.constantRoutes);
 
     handleConstantAndAuthRoutes();
 
@@ -189,6 +177,15 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     }
 
     tabStore.initHomeTab();
+  }
+
+  /**
+   * 重新拉取权限路由（角色菜单变更后热更新侧栏；static 模式无菜单过滤，仅 dynamic 生效）
+   */
+  async function reloadAuthRoute() {
+    setIsInitAuthRoute(false);
+    authRoutes.value = [];
+    await initAuthRoute();
   }
 
   /** Init static auth route */
@@ -341,6 +338,7 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     initAuthRoute,
     isInitAuthRoute,
     setIsInitAuthRoute,
+    reloadAuthRoute,
     getIsAuthRouteExist,
     getSelectedMenuKeyPath,
     onRouteSwitchWhenLoggedIn,

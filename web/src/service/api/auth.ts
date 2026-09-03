@@ -22,3 +22,11 @@ export function fetchLogout() {
     method: 'post'
   });
 }
+
+/** 当前用户信息：角色码 + 按钮权限码 */
+export function fetchGetUserInfo() {
+  return request<Api.Auth.UserInfo>({
+    url: '/api/admin/auth/getUserInfo',
+    method: 'get'
+  });
+}

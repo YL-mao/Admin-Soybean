@@ -339,6 +339,8 @@ const local: App.I18n.Schema = {
         buttonAuth: 'Button Auth',
         expandAll: 'Expand All',
         collapseAll: 'Collapse All',
+        checkAll: 'Check All',
+        invertAll: 'Invert Selection',
         form: {
           roleName: 'Please enter role name',
           roleCode: 'Please enter role code',

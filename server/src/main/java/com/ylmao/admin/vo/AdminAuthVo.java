@@ -1,19 +1,49 @@
 package com.ylmao.admin.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.List;
+import java.util.Map;
 
 /** Soybean 管理端认证接口出参。 */
 public class AdminAuthVo {
 
     /**
-     * 登录成功：token + 最小用户信息，供静态路由跳转；
-     * buttons / getUserInfo 后续对接 sys_menu 再补。
+     * 登录成功：token + 最小用户信息，便于立刻跳转；
+     * 完整 roles/buttons 仍以 getUserInfo 为准。
      */
     public record LoginResult(
             String token,
             String userId,
             String userName,
             List<String> roles
+    ) {
+    }
+
+    /** 当前登录用户：角色码 + 按钮权限码（sys_menu.menu_type=2）。 */
+    public record UserInfoResult(
+            String userId,
+            String userName,
+            List<String> roles,
+            List<String> buttons
+    ) {
+    }
+
+    /** 动态路由：对齐 Soybean ElegantConstRoute 树 + 首页 route name。 */
+    public record UserRouteResult(
+            List<RouteItem> routes,
+            String home
+    ) {
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record RouteItem(
+            String id,
+            String name,
+            String path,
+            String component,
+            Map<String, Object> meta,
+            List<RouteItem> children
     ) {
     }
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, shallowRef, watch } from 'vue';
 import type { TreeOption } from 'naive-ui';
-import { fetchGetRoleMenuTree, fetchSaveRoleMenu } from '@/service/api';
+import { fetchGetRoleMenuTree } from '@/service/api';
 import { $t } from '@/locales';
 
 defineOptions({
@@ -11,9 +11,19 @@ defineOptions({
 interface Props {
   /** 角色 ID */
   roleId: string;
+  /** 父抽屉暂存勾选；null 表示用接口回显 */
+  draftMenuIds?: string[] | null;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  draftMenuIds: null
+});
+
+interface Emits {
+  (e: 'confirm', menuIds: string[]): void;
+}
+
+const emit = defineEmits<Emits>();
 
 const visible = defineModel<boolean>('visible', {
   default: false
@@ -30,6 +40,8 @@ const checks = shallowRef<string[]>([]);
 /** 默认收起；由「全部展开 / 全部收起」控制 */
 const expandedKeys = shallowRef<string[]>([]);
 const allExpandableKeys = shallowRef<string[]>([]);
+/** 全部节点 key，供全选 / 反选 */
+const allNodeKeys = shallowRef<string[]>([]);
 
 /** 收集有子节点的 key，供全部展开 */
 function collectExpandableKeys(nodes: TreeOption[], keys: string[] = []) {
@@ -42,8 +54,19 @@ function collectExpandableKeys(nodes: TreeOption[], keys: string[] = []) {
   return keys;
 }
 
-/** 平铺 MenuCheck 组树，并收集已勾选 menuId */
-function buildAuthTree(list: Api.SystemManage.MenuCheck[]) {
+/** 收集树全部节点 key */
+function collectAllKeys(nodes: TreeOption[], keys: string[] = []) {
+  nodes.forEach(node => {
+    keys.push(String(node.key));
+    if (node.children?.length) {
+      collectAllKeys(node.children, keys);
+    }
+  });
+  return keys;
+}
+
+/** 平铺 MenuCheck 组树；优先用草稿勾选，否则用接口 checkArr */
+function buildAuthTree(list: Api.SystemManage.MenuCheck[], preferredChecks: string[] | null) {
   const map = new Map<string, TreeOption>();
   const checkedKeys: string[] = [];
 
@@ -53,7 +76,7 @@ function buildAuthTree(list: Api.SystemManage.MenuCheck[]) {
       label: item.menuName,
       children: []
     });
-    if (item.checkArr === '1') {
+    if (preferredChecks === null && item.checkArr === '1') {
       checkedKeys.push(item.menuId);
     }
   });
@@ -73,8 +96,9 @@ function buildAuthTree(list: Api.SystemManage.MenuCheck[]) {
 
   pruneEmptyChildren(roots);
   tree.value = roots;
-  checks.value = checkedKeys;
+  checks.value = preferredChecks !== null ? [...preferredChecks] : checkedKeys;
   allExpandableKeys.value = collectExpandableKeys(roots);
+  allNodeKeys.value = collectAllKeys(roots);
   // 打开时默认收起
   expandedKeys.value = [];
 }
@@ -97,12 +121,23 @@ function collapseAll() {
   expandedKeys.value = [];
 }
 
+function checkAll() {
+  checks.value = [...allNodeKeys.value];
+}
+
+/** 已勾选与未勾选互换 */
+function invertAll() {
+  const selected = new Set(checks.value);
+  checks.value = allNodeKeys.value.filter(key => !selected.has(key));
+}
+
 async function loadTree() {
   if (!props.roleId) {
     tree.value = [];
     checks.value = [];
     expandedKeys.value = [];
     allExpandableKeys.value = [];
+    allNodeKeys.value = [];
     return;
   }
   const { error, data } = await fetchGetRoleMenuTree(props.roleId);
@@ -111,20 +146,15 @@ async function loadTree() {
     checks.value = [];
     expandedKeys.value = [];
     allExpandableKeys.value = [];
+    allNodeKeys.value = [];
     return;
   }
-  buildAuthTree(data);
+  buildAuthTree(data, props.draftMenuIds ?? null);
 }
 
-async function handleSubmit() {
-  if (!props.roleId) return;
-  const { error } = await fetchSaveRoleMenu({
-    roleId: props.roleId,
-    menuIds: checks.value.join(',')
-  });
-  if (error) return;
-
-  window.$message?.success?.($t('common.modifySuccess'));
+/** 只回写父抽屉草稿，不调保存接口 */
+function handleConfirm() {
+  emit('confirm', [...checks.value]);
   closeModal();
 }
 
@@ -140,6 +170,8 @@ watch(visible, val => {
     <NSpace class="pb-12px" :size="8">
       <NButton size="small" @click="expandAll">{{ $t('page.manage.role.expandAll') }}</NButton>
       <NButton size="small" @click="collapseAll">{{ $t('page.manage.role.collapseAll') }}</NButton>
+      <NButton size="small" @click="checkAll">{{ $t('page.manage.role.checkAll') }}</NButton>
+      <NButton size="small" @click="invertAll">{{ $t('page.manage.role.invertAll') }}</NButton>
     </NSpace>
     <NTree
       v-model:checked-keys="checks"
@@ -159,7 +191,7 @@ watch(visible, val => {
         <NButton size="small" class="mt-16px" @click="closeModal">
           {{ $t('common.cancel') }}
         </NButton>
-        <NButton type="primary" size="small" class="mt-16px" @click="handleSubmit">
+        <NButton type="primary" size="small" class="mt-16px" @click="handleConfirm">
           {{ $t('common.confirm') }}
         </NButton>
       </NSpace>

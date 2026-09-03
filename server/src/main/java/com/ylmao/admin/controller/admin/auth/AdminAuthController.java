@@ -12,9 +12,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -49,5 +51,23 @@ public class AdminAuthController {
             // 已失效 / 冻结：前端清本地即可
         }
         return R.ok();
+    }
+
+    /** 薄版用户信息：角色码 + 按钮权限码（来自 sys_menu）。 */
+    @GetMapping("/getUserInfo")
+    public R<AdminAuthVo.UserInfoResult> adminAuthGetUserInfo() {
+        return R.ok(adminAuthService.buildUserInfo());
+    }
+
+    /** 动态路由树：按当前用户角色过滤 sys_menu（目录/菜单）。 */
+    @GetMapping("/getUserRoutes")
+    public R<AdminAuthVo.UserRouteResult> adminAuthGetUserRoutes() {
+        return R.ok(adminAuthService.buildUserRoutes());
+    }
+
+    /** 动态模式下探测路由是否存在于当前授权菜单。 */
+    @GetMapping("/isRouteExist")
+    public R<Boolean> adminAuthIsRouteExist(@RequestParam String routeName) {
+        return R.ok(adminAuthService.isRouteExist(routeName));
     }
 }

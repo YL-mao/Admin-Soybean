@@ -271,6 +271,8 @@ const local: App.I18n.Schema = {
         buttonAuth: '按钮权限',
         expandAll: '全部展开',
         collapseAll: '全部收起',
+        checkAll: '全部选中',
+        invertAll: '全部反选',
         form: {
           roleName: '请输入角色名称',
           roleCode: '请输入角色编码',

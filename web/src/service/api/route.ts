@@ -1,13 +1,11 @@
 import { request } from '../request';
 
-/** get constant routes */
-export function fetchGetConstantRoutes() {
-  return request<Api.Route.MenuRoute[]>({ url: '/route/getConstantRoutes' });
-}
-
-/** get user routes */
+/** get user routes（动态侧栏，来自 sys_menu） */
 export function fetchGetUserRoutes() {
-  return request<Api.Route.UserRoute>({ url: '/route/getUserRoutes' });
+  return request<Api.Route.UserRoute>({
+    url: '/api/admin/auth/getUserRoutes',
+    method: 'get'
+  });
 }
 
 /**
@@ -16,5 +14,9 @@ export function fetchGetUserRoutes() {
  * @param routeName route name
  */
 export function fetchIsRouteExist(routeName: string) {
-  return request<boolean>({ url: '/route/isRouteExist', params: { routeName } });
+  return request<boolean>({
+    url: '/api/admin/auth/isRouteExist',
+    method: 'get',
+    params: { routeName }
+  });
 }
