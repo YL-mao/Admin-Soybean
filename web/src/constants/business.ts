@@ -7,6 +7,18 @@ export const enableStatusRecord: Record<Api.Common.EnableStatus, App.I18n.I18nKe
 
 export const enableStatusOptions = transformRecordToOption(enableStatusRecord);
 
+/** 库字段 is_enabled：1 启用 0 停用 */
+export const enabledFlagRecord: Record<Api.SystemManage.EnabledFlag, App.I18n.I18nKey> = {
+  1: 'page.manage.common.status.enable',
+  0: 'page.manage.common.status.disable'
+};
+
+// 数值枚举不用 Object.entries，避免 key 被转成字符串
+export const enabledFlagOptions: CommonType.Option<Api.SystemManage.EnabledFlag, App.I18n.I18nKey>[] = [
+  { value: 1, label: enabledFlagRecord[1] },
+  { value: 0, label: enabledFlagRecord[0] }
+];
+
 export const userGenderRecord: Record<Api.SystemManage.UserGender, App.I18n.I18nKey> = {
   '1': 'page.manage.user.gender.male',
   '2': 'page.manage.user.gender.female'
@@ -15,15 +27,23 @@ export const userGenderRecord: Record<Api.SystemManage.UserGender, App.I18n.I18n
 export const userGenderOptions = transformRecordToOption(userGenderRecord);
 
 export const menuTypeRecord: Record<Api.SystemManage.MenuType, App.I18n.I18nKey> = {
-  '1': 'page.manage.menu.type.directory',
-  '2': 'page.manage.menu.type.menu'
+  0: 'page.manage.menu.type.directory',
+  1: 'page.manage.menu.type.menu',
+  2: 'page.manage.menu.type.button'
 };
 
-export const menuTypeOptions = transformRecordToOption(menuTypeRecord);
+export const menuTypeOptions: CommonType.Option<Api.SystemManage.MenuType, App.I18n.I18nKey>[] = [
+  { value: 0, label: menuTypeRecord[0] },
+  { value: 1, label: menuTypeRecord[1] },
+  { value: 2, label: menuTypeRecord[2] }
+];
 
 export const menuIconTypeRecord: Record<Api.SystemManage.IconType, App.I18n.I18nKey> = {
-  '1': 'page.manage.menu.iconType.iconify',
-  '2': 'page.manage.menu.iconType.local'
+  1: 'page.manage.menu.iconType.iconify',
+  2: 'page.manage.menu.iconType.local'
 };
 
-export const menuIconTypeOptions = transformRecordToOption(menuIconTypeRecord);
+export const menuIconTypeOptions: CommonType.Option<Api.SystemManage.IconType, App.I18n.I18nKey>[] = [
+  { value: 1, label: menuIconTypeRecord[1] },
+  { value: 2, label: menuIconTypeRecord[2] }
+];

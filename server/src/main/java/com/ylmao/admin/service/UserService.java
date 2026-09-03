@@ -41,7 +41,7 @@ public class UserService {
     private final DeptMapper deptMapper;
     private final RoleMapper roleMapper;
     private final PostMapper postMapper;
-    private final PermMapper permMapper;
+    private final MenuMapper menuMapper;
     private final DictRuntimeService dictRuntimeService;
     private final PasswordService passwordService;
     private final PasswordPolicyService passwordPolicyService;
@@ -367,12 +367,12 @@ public class UserService {
         }
         List<UserVo.UserPermDetailVo.PermItem> perms = new ArrayList<>();
         if (!CollectionUtils.isEmpty(roleIds)) {
-            List<Perm> permList = permMapper.selectPermsByRoleIds(roleIds);
-            for (Perm perm : permList) {
+            List<Menu> menuList = menuMapper.selectMenusByRoleIds(roleIds);
+            for (Menu menu : menuList) {
                 perms.add(new UserVo.UserPermDetailVo.PermItem(
-                        perm.getPermId(),
-                        perm.getParentId(),
-                        perm.getPermName()
+                        menu.getMenuId(),
+                        menu.getParentId(),
+                        menu.getMenuName()
                 ));
             }
         }

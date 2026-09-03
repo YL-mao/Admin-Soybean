@@ -4,8 +4,8 @@ import cn.hutool.core.util.StrUtil;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpInterface;
 import cn.dev33.satoken.stp.StpUtil;
-import com.ylmao.admin.entity.Perm;
-import com.ylmao.admin.mapper.PermMapper;
+import com.ylmao.admin.entity.Menu;
+import com.ylmao.admin.mapper.MenuMapper;
 import com.ylmao.admin.mapper.RoleMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,7 @@ public class StpInterfaceImpl implements StpInterface {
     public static final String PERM_LIST = "Perm_List";
 
     private final RoleMapper roleMapper;
-    private final PermMapper permMapper;
+    private final MenuMapper menuMapper;
 
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
@@ -45,14 +45,14 @@ public class StpInterfaceImpl implements StpInterface {
 
     /** 从合并查询结果提取去重后的 perm_code，目录节点空串不入库到鉴权列表。 */
     private List<String> loadPermCodes(List<String> roleIds) {
-        List<Perm> perms = permMapper.selectPermsByRoleIds(roleIds);
-        if (CollectionUtils.isEmpty(perms)) {
+        List<Menu> menus = menuMapper.selectMenusByRoleIds(roleIds);
+        if (CollectionUtils.isEmpty(menus)) {
             return List.of();
         }
         Set<String> permCodes = new LinkedHashSet<>();
-        for (Perm perm : perms) {
-            if (StrUtil.isNotBlank(perm.getPermCode())) {
-                permCodes.add(perm.getPermCode());
+        for (Menu menu : menus) {
+            if (StrUtil.isNotBlank(menu.getPermCode())) {
+                permCodes.add(menu.getPermCode());
             }
         }
         return new ArrayList<>(permCodes);

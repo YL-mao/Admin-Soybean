@@ -14,14 +14,14 @@ import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
-@TableName("sys_perm_role")
+@TableName("sys_menu_role")
 @EqualsAndHashCode(callSuper = false)
-public class PermRole {
+public class MenuRole {
 
     @TableId(type = IdType.ASSIGN_ID)
-    private String permRoleId;
+    private String menuRoleId;
     private String roleId;
-    private String permId;
+    private String menuId;
 
     /** 审计字段由 MyBatis-Plus 自动填充创建人。 */
     @TableField(fill = FieldFill.INSERT)

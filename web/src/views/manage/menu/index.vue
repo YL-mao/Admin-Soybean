@@ -1,16 +1,16 @@
 <script setup lang="tsx">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { Ref } from 'vue';
-import { NButton, NPopconfirm, NTag } from 'naive-ui';
+import { NButton, NPopconfirm, NSwitch, NTag } from 'naive-ui';
 import { useBoolean } from '@sa/hooks';
-import { yesOrNoRecord } from '@/constants/common';
-import { enableStatusRecord, menuTypeRecord } from '@/constants/business';
-import { fetchGetAllPages, fetchGetMenuList } from '@/service/api';
+import { enabledFlagRecord, menuTypeRecord } from '@/constants/business';
+import { fetchDeleteMenu, fetchGetMenuList, fetchUpdateMenuEnabled } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
-import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
+import { useNaiveTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 import MenuOperateModal, { type OperateType } from './modules/menu-operate-modal.vue';
+import { buildMenuTree, collectMenuIconifyIcons } from './modules/shared';
 
 const appStore = useAppStore();
 
@@ -18,9 +18,15 @@ const { bool: visible, setTrue: openModal } = useBoolean();
 
 const wrapperRef = ref<HTMLElement | null>(null);
 
-const { columns, columnChecks, data, loading, getData, getDataByPage } = useNaivePaginatedTable({
+const { columns, columnChecks, data, loading, getData } = useNaiveTable({
   api: () => fetchGetMenuList(),
-  transform: response => defaultTransform(response),
+  // 后端返回平铺列表，前端按 parentId 组树
+  transform: response => {
+    if (response.error || !response.data) {
+      return [];
+    }
+    return buildMenuTree(response.data);
+  },
   columns: () => [
     {
       type: 'selection',
@@ -34,17 +40,9 @@ const { columns, columnChecks, data, loading, getData, getDataByPage } = useNaiv
       minWidth: 160,
       render: row => {
         const { i18nKey, menuName } = row;
-
-        const label = i18nKey ? $t(i18nKey) : menuName;
-
+        const label = i18nKey ? $t(i18nKey as App.I18n.I18nKey) : menuName;
         return <span>{label}</span>;
       }
-    },
-    {
-      key: 'id',
-      title: $t('page.manage.menu.id'),
-      align: 'center',
-      width: 80
     },
     {
       key: 'menuType',
@@ -53,25 +51,24 @@ const { columns, columnChecks, data, loading, getData, getDataByPage } = useNaiv
       width: 80,
       render: row => {
         const tagMap: Record<Api.SystemManage.MenuType, NaiveUI.ThemeColor> = {
-          1: 'default',
-          2: 'primary'
+          0: 'default',
+          1: 'primary',
+          2: 'info'
         };
-
-        const label = $t(menuTypeRecord[row.menuType]);
-
-        return <NTag type={tagMap[row.menuType]}>{label}</NTag>;
+        return <NTag type={tagMap[row.menuType]}>{$t(menuTypeRecord[row.menuType])}</NTag>;
       }
     },
     {
-      key: 'icon',
+      key: 'menuIcon',
       title: $t('page.manage.menu.icon'),
       align: 'center',
       width: 60,
       render: row => {
-        const icon = row.iconType === '1' ? row.icon : undefined;
-
-        const localIcon = row.iconType === '2' ? row.icon : undefined;
-
+        if (!row.menuIcon) {
+          return null;
+        }
+        const icon = row.iconType === 1 ? row.menuIcon : undefined;
+        const localIcon = row.iconType === 2 ? row.menuIcon : undefined;
         return (
           <div class="flex-center">
             <SvgIcon icon={icon} localIcon={localIcon} class="text-icon" />
@@ -92,51 +89,42 @@ const { columns, columnChecks, data, loading, getData, getDataByPage } = useNaiv
       minWidth: 120
     },
     {
-      key: 'status',
+      key: 'permCode',
+      title: $t('page.manage.menu.permCode'),
+      align: 'center',
+      minWidth: 140
+    },
+    {
+      key: 'isEnabled',
       title: $t('page.manage.menu.menuStatus'),
       align: 'center',
-      width: 80,
-      render: row => {
-        if (row.status === null) {
-          return null;
-        }
-
-        const tagMap: Record<Api.Common.EnableStatus, NaiveUI.ThemeColor> = {
-          1: 'success',
-          2: 'warning'
-        };
-
-        const label = $t(enableStatusRecord[row.status]);
-
-        return <NTag type={tagMap[row.status]}>{label}</NTag>;
-      }
+      width: 100,
+      render: row => (
+        <NSwitch
+          value={row.isEnabled === 1}
+          rubberBand={false}
+          onUpdateValue={value => handleUpdateEnabled(row, value)}
+        >
+          {{
+            checked: () => $t(enabledFlagRecord[1]),
+            unchecked: () => $t(enabledFlagRecord[0])
+          }}
+        </NSwitch>
+      )
     },
     {
-      key: 'hideInMenu',
+      key: 'isShow',
       title: $t('page.manage.menu.hideInMenu'),
       align: 'center',
-      width: 80,
+      width: 90,
       render: row => {
-        const hide: CommonType.YesOrNo = row.hideInMenu ? 'Y' : 'N';
-
-        const tagMap: Record<CommonType.YesOrNo, NaiveUI.ThemeColor> = {
-          Y: 'error',
-          N: 'default'
-        };
-
-        const label = $t(yesOrNoRecord[hide]);
-
-        return <NTag type={tagMap[hide]}>{label}</NTag>;
+        // isShow=1 显示侧栏；0 相当于隐藏菜单
+        const hide = row.isShow === 0;
+        return <NTag type={hide ? 'error' : 'default'}>{hide ? $t('common.yesOrNo.yes') : $t('common.yesOrNo.no')}</NTag>;
       }
     },
     {
-      key: 'parentId',
-      title: $t('page.manage.menu.parentId'),
-      width: 90,
-      align: 'center'
-    },
-    {
-      key: 'order',
+      key: 'orderNum',
       title: $t('page.manage.menu.order'),
       align: 'center',
       width: 60
@@ -148,7 +136,7 @@ const { columns, columnChecks, data, loading, getData, getDataByPage } = useNaiv
       width: 230,
       render: row => (
         <div class="flex-center justify-end gap-8px">
-          {row.menuType === '1' && (
+          {row.menuType !== 2 && (
             <NButton type="primary" ghost size="small" onClick={() => handleAddChildMenu(row)}>
               {$t('page.manage.menu.addChildMenu')}
             </NButton>
@@ -156,7 +144,7 @@ const { columns, columnChecks, data, loading, getData, getDataByPage } = useNaiv
           <NButton type="primary" ghost size="small" onClick={() => handleEdit(row)}>
             {$t('common.edit')}
           </NButton>
-          <NPopconfirm onPositiveClick={() => handleDelete(row.id)}>
+          <NPopconfirm onPositiveClick={() => handleDelete(row.menuId)}>
             {{
               default: () => $t('common.confirmDelete'),
               trigger: () => (
@@ -172,27 +160,39 @@ const { columns, columnChecks, data, loading, getData, getDataByPage } = useNaiv
   ]
 });
 
-const { checkedRowKeys, onBatchDeleted, onDeleted } = useTableOperate(data, 'id', getData);
+const { checkedRowKeys, onBatchDeleted, onDeleted } = useTableOperate(data, 'menuId', getData);
 
 const operateType = ref<OperateType>('add');
 
 function handleAdd() {
   operateType.value = 'add';
+  editingData.value = null;
   openModal();
 }
 
 async function handleBatchDelete() {
-  // request
-  console.log(checkedRowKeys.value);
-
+  const { error } = await fetchDeleteMenu(checkedRowKeys.value.join(','));
+  if (error) return;
   onBatchDeleted();
 }
 
-function handleDelete(id: number) {
-  // request
-  console.log(id);
-
+async function handleDelete(menuId: string) {
+  const { error } = await fetchDeleteMenu(menuId);
+  if (error) return;
   onDeleted();
+}
+
+/** 列表开关直接启停，走 /menu/updateEnabled */
+async function handleUpdateEnabled(row: Api.SystemManage.Menu, checked: boolean) {
+  const isEnabled: Api.SystemManage.EnabledFlag = checked ? 1 : 0;
+  const { error } = await fetchUpdateMenuEnabled({ menuId: row.menuId, isEnabled });
+  if (error) {
+    // 失败时拉回真实状态，避免开关停在错误位置
+    await getData();
+    return;
+  }
+  row.isEnabled = isEnabled;
+  window.$message?.success($t('common.updateSuccess'));
 }
 
 /** the edit menu data or the parent menu data when adding a child menu */
@@ -201,31 +201,17 @@ const editingData: Ref<Api.SystemManage.Menu | null> = ref(null);
 function handleEdit(item: Api.SystemManage.Menu) {
   operateType.value = 'edit';
   editingData.value = { ...item };
-
   openModal();
 }
 
 function handleAddChildMenu(item: Api.SystemManage.Menu) {
   operateType.value = 'addChild';
-
   editingData.value = { ...item };
-
   openModal();
 }
 
-const allPages = ref<string[]>([]);
-
-async function getAllPages() {
-  const { data: pages } = await fetchGetAllPages();
-  allPages.value = pages || [];
-}
-
-function init() {
-  getAllPages();
-}
-
-// init
-init();
+/** 下拉候选：当前菜单树已用过的 Iconify */
+const usedIconifyIcons = computed(() => collectMenuIconifyIcons(data.value));
 </script>
 
 <template>
@@ -249,17 +235,17 @@ init();
         children-key="children"
         default-expand-all
         :flex-height="!appStore.isMobile"
-        :scroll-x="1088"
+        :scroll-x="1200"
         :loading="loading"
-        :row-key="row => row.id"
+        :row-key="row => row.menuId"
         class="sm:h-full"
       />
       <MenuOperateModal
         v-model:visible="visible"
         :operate-type="operateType"
         :row-data="editingData"
-        :all-pages="allPages"
-        @submitted="getDataByPage"
+        :iconify-icons="usedIconifyIcons"
+        @submitted="getData"
       />
     </NCard>
   </div>

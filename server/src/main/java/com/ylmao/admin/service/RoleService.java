@@ -7,10 +7,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ylmao.admin.config.exception.BusinessException;
 import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.dto.RoleDto;
-import com.ylmao.admin.entity.PermRole;
+import com.ylmao.admin.entity.MenuRole;
 import com.ylmao.admin.entity.Role;
 import com.ylmao.admin.entity.RoleUser;
-import com.ylmao.admin.mapper.PermRoleMapper;
+import com.ylmao.admin.mapper.MenuRoleMapper;
 import com.ylmao.admin.mapper.RoleMapper;
 import com.ylmao.admin.mapper.RoleUserMapper;
 import com.ylmao.admin.vo.RoleVo;
@@ -29,7 +29,7 @@ public class RoleService {
 
     private final RoleMapper roleMapper;
     private final RoleUserMapper roleUserMapper;
-    private final PermRoleMapper permRoleMapper;
+    private final MenuRoleMapper menuRoleMapper;
 
     public List<RoleVo.RoleOptionVo> listOptions() {
         LambdaQueryWrapper<Role> roleQueryWrapper = new LambdaQueryWrapper<>();
@@ -123,8 +123,8 @@ public class RoleService {
         if (userCount != null && userCount > 0) {
             throw new BusinessException("角色已分配给用户，不能删除");
         }
-        // 角色权限属于角色自身配置，删除角色时同步清理授权关系。
-        permRoleMapper.delete(new LambdaQueryWrapper<PermRole>().in(PermRole::getRoleId, idList));
+        // 角色菜单属于角色自身配置，删除角色时同步清理授权关系。
+        menuRoleMapper.delete(new LambdaQueryWrapper<MenuRole>().in(MenuRole::getRoleId, idList));
         LambdaQueryWrapper<Role> roleQueryWrapper = new LambdaQueryWrapper<>();
         roleQueryWrapper.in(Role::getRoleId,idList);
         int rows = roleMapper.delete(roleQueryWrapper);

@@ -21,7 +21,7 @@
 
 ## Overview
 
-**YLmao-Admin-Layui** ships common admin features—login, RBAC, org (dept/post), dict, notices, operation logs, scheduled jobs, file upload, code generation (ZIP), and springdoc API docs in dev—so you can extend it as a **CMS or business admin** baseline.
+**YLmao-Admin-Layui** ships common admin features—login, RBAC, org (dept/post), dict, notices, operation logs, scheduled jobs, file upload, and springdoc API docs in dev—so you can extend it as a **CMS or business admin** baseline.
 
 - Default package: `com.ylmao.admin`, entry class `AdminApp`
 - Pages & static assets: `src/main/resources/templates`, `static`
@@ -61,7 +61,6 @@ Backend scaffold is original; brand assets live in `doc/ylmao/`.
 - Operation logs, online users, access control (allow/deny lists)
 - Grouped system config, local upload & preview
 - Built-in job scheduler & job logs
-- Codegen: table → backend + pages + permission SQL
 - Swagger UI in dev (disabled in prod by default)
 
 ## Stack
@@ -71,7 +70,6 @@ Backend scaffold is original; brand assets live in `doc/ylmao/`.
 | Backend | Spring Boot **4.1.0**, Java **25** |
 | Auth | Sa-Token **1.45.0** + Redis sessions |
 | ORM | MyBatis-Plus **3.5.16**, MySQL 8 |
-| Templates | Thymeleaf (UI), Freemarker (codegen) |
 | API docs | springdoc-openapi **3.1.0** (dev on / prod off) |
 | Frontend | **Layui 2.13.9**, **Pear Admin** (same-origin static) |
 | Other | Hutool, captcha-core, EasyExcel, HikariCP |

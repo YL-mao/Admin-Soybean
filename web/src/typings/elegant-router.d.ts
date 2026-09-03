@@ -25,7 +25,6 @@ declare module "@elegant-router/types" {
     "account_notice": "/account/notice";
     "dev": "/dev";
     "dev_apidoc": "/dev/apidoc";
-    "dev_gen": "/dev/gen";
     "home": "/home";
     "iframe-page": "/iframe-page/:url";
     "login": "/login/:module(pwd-login)?";
@@ -115,7 +114,6 @@ declare module "@elegant-router/types" {
     | "account_info"
     | "account_notice"
     | "dev_apidoc"
-    | "dev_gen"
     | "home"
     | "manage_menu"
     | "manage_role"

@@ -19,7 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Soybean 管理端认证辅助：仅组装登录态最小用户信息，不碰 sys_perm。 */
+/** Soybean 管理端认证辅助：仅组装登录态最小用户信息，不碰 sys_menu。 */
 @Service
 @RequiredArgsConstructor
 public class AdminAuthService {

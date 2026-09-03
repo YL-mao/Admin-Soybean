@@ -6,7 +6,7 @@ import com.ylmao.admin.config.base.BaseController;
 import com.ylmao.admin.config.log.Log;
 import com.ylmao.admin.config.saToken.SaTokenUtil;
 import com.ylmao.admin.model.Menu;
-import com.ylmao.admin.service.PermService;
+import com.ylmao.admin.service.MenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,11 +20,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminController extends BaseController {
 
-    private final PermService permService;
+    private final MenuService menuService;
 
     @GetMapping("/permMenu")
     public R<List<Menu>> getUserPermMenu() {
-        return okData(permService.getUserPermMenu(SaTokenUtil.getUserId()));
+        return okData(menuService.getUserMenuTree(SaTokenUtil.getUserId()));
     }
 
     @Log(title = "用户注销", loggingType = "LOGIN", businessType = "LOGOUT")

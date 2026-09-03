@@ -62,72 +62,103 @@ declare namespace Api {
     type UserList = Common.PaginatingQueryRecord<User>;
 
     /**
-     * menu type
+     * menu type（对齐 sys_menu.menu_type）
      *
-     * - "1": directory
-     * - "2": menu
+     * - 0: 目录
+     * - 1: 菜单
+     * - 2: 按钮
      */
-    type MenuType = '1' | '2';
-
-    type MenuButton = {
-      /**
-       * button code
-       *
-       * it can be used to control the button permission
-       */
-      code: string;
-      /** button description */
-      desc: string;
-    };
+    type MenuType = 0 | 1 | 2;
 
     /**
-     * icon type
+     * icon type（对齐 sys_menu.icon_type）
      *
-     * - "1": iconify icon
-     * - "2": local icon
+     * - 1: iconify
+     * - 2: 本地 SVG
      */
-    type IconType = '1' | '2';
+    type IconType = 1 | 2;
 
-    type MenuPropsOfRoute = Pick<
-      import('vue-router').RouteMeta,
-      | 'i18nKey'
-      | 'keepAlive'
-      | 'constant'
-      | 'order'
-      | 'href'
-      | 'hideInMenu'
-      | 'activeMenu'
-      | 'multiTab'
-      | 'fixedIndexInTab'
-      | 'query'
-    >;
+    /** 启停（对齐库 0/1） */
+    type EnabledFlag = 0 | 1;
 
-    type Menu = Common.CommonRecord<{
-      /** parent menu id */
-      parentId: number;
-      /** menu type */
-      menuType: MenuType;
-      /** menu name */
+    /** 菜单列表/树节点（字段对齐 MenuListVo） */
+    type Menu = {
+      menuId: string;
+      parentId: string;
+      menuPath: string | null;
       menuName: string;
-      /** route name */
-      routeName: string;
-      /** route path */
-      routePath: string;
-      /** component */
-      component?: string;
-      /** iconify icon name or local icon name */
-      icon: string;
-      /** icon type */
-      iconType: IconType;
-      /** buttons */
-      buttons?: MenuButton[] | null;
-      /** children menu */
+      menuDesc: string | null;
+      menuType: MenuType;
+      routeName: string | null;
+      routePath: string | null;
+      routeComp: string | null;
+      routeQuery: string | null;
+      menuHref: string | null;
+      isBlank: EnabledFlag;
+      permCode: string | null;
+      menuIcon: string | null;
+      iconType: IconType | null;
+      i18nKey: string | null;
+      keepAlive: EnabledFlag;
+      isShow: EnabledFlag;
+      activeMenu: string | null;
+      orderNum: number;
+      isEnabled: EnabledFlag;
+      createTime: string | null;
       children?: Menu[] | null;
-    }> &
-      MenuPropsOfRoute;
+    };
 
-    /** menu list */
-    type MenuList = Common.PaginatingQueryRecord<Menu>;
+    /** 菜单列表查询参数 */
+    type MenuSearchParams = CommonType.RecordNullable<{
+      menuName: string;
+      permCode: string;
+      routePath: string;
+    }>;
+
+    /** 新增菜单 */
+    type MenuInsert = {
+      parentId: string;
+      menuName: string;
+      menuDesc?: string | null;
+      menuType: MenuType;
+      routeName?: string | null;
+      routePath?: string | null;
+      routeComp?: string | null;
+      routeQuery?: string | null;
+      menuHref?: string | null;
+      isBlank?: EnabledFlag | null;
+      permCode?: string | null;
+      menuIcon?: string | null;
+      iconType?: IconType | null;
+      i18nKey?: string | null;
+      keepAlive?: EnabledFlag | null;
+      isShow?: EnabledFlag | null;
+      activeMenu?: string | null;
+      orderNum: number;
+      isEnabled: EnabledFlag;
+    };
+
+    /** 修改菜单 */
+    type MenuUpdate = MenuInsert & {
+      menuId: string;
+    };
+
+    /** 上级菜单下拉节点 */
+    type MenuParent = {
+      menuId: string;
+      parentId: string;
+      menuName: string;
+      menuPath: string | null;
+      children?: MenuParent[];
+    };
+
+    /** 角色授权树节点（含勾选） */
+    type MenuCheck = {
+      menuId: string;
+      parentId: string;
+      menuName: string;
+      checkArr: string;
+    };
 
     type MenuTree = {
       id: number;

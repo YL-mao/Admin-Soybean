@@ -91,16 +91,6 @@ export const generatedRoutes: GeneratedRoute[] = [
           i18nKey: 'route.dev_apidoc',
           icon: 'mdi:api'
         }
-      },
-      {
-        name: 'dev_gen',
-        path: '/dev/gen',
-        component: 'view.dev_gen',
-        meta: {
-          title: 'dev_gen',
-          i18nKey: 'route.dev_gen',
-          icon: 'mdi:code-tags'
-        }
       }
     ]
   },

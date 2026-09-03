@@ -3,8 +3,8 @@ package com.ylmao.admin.config.perm;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.ylmao.admin.entity.Perm;
-import com.ylmao.admin.mapper.PermMapper;
+import com.ylmao.admin.entity.Menu;
+import com.ylmao.admin.mapper.MenuMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 启动时权限与路由质量检查：只打 WARN，不拦截启动。
+ * 启动时菜单权限与路由质量检查：只打 WARN，不拦截启动。
  * 可通过 app.perm.quality-check=false 关闭。
  */
 @Component
@@ -47,54 +47,54 @@ public class PermRouteQualityChecker implements ApplicationListener<ApplicationR
     );
 
     private final RequestMappingHandlerMapping requestMappingHandlerMapping;
-    private final PermMapper permMapper;
+    private final MenuMapper menuMapper;
 
     public PermRouteQualityChecker(
             @Qualifier("requestMappingHandlerMapping") RequestMappingHandlerMapping requestMappingHandlerMapping,
-            PermMapper permMapper) {
+            MenuMapper menuMapper) {
         this.requestMappingHandlerMapping = requestMappingHandlerMapping;
-        this.permMapper = permMapper;
+        this.menuMapper = menuMapper;
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         try {
             Set<String> routePaths = collectRoutePaths();
-            List<Perm> perms = permMapper.selectList(new LambdaQueryWrapper<>());
-            checkPermUrls(perms, routePaths);
-            checkAnnotationPermCodes(perms);
-            checkDuplicatePermCodes(perms);
-            checkBlankPermCodes(perms);
+            List<Menu> menus = menuMapper.selectList(new LambdaQueryWrapper<>());
+            checkMenuHrefs(menus, routePaths);
+            checkAnnotationPermCodes(menus);
+            checkDuplicatePermCodes(menus);
+            checkBlankPermCodes(menus);
         } catch (Exception e) {
             // 质检失败本身不阻断启动，只记录原因。
             log.warn("[权限路由质检] 执行异常: {}", e.getMessage(), e);
         }
     }
 
-    /** 权限表非空 perm_url 对照已注册路由；is_blank=1 跳过。 */
-    private void checkPermUrls(List<Perm> perms, Set<String> routePaths) {
-        for (Perm perm : perms) {
-            if (perm.getIsBlank() != null && perm.getIsBlank() == 1) {
+    /** 菜单表非空 menu_href 对照已注册路由；is_blank=1 跳过。 */
+    private void checkMenuHrefs(List<Menu> menus, Set<String> routePaths) {
+        for (Menu menu : menus) {
+            if (menu.getIsBlank() != null && menu.getIsBlank() == 1) {
                 continue;
             }
-            String url = StrUtil.trim(perm.getPermUrl());
+            String url = StrUtil.trim(menu.getMenuHref());
             if (StrUtil.isBlank(url)) {
                 continue;
             }
             String normalized = normalizePath(url);
             if (!routePaths.contains(normalized)) {
-                log.warn("[权限路由质检] perm_url 无对应路由: permId={}, permName={}, permUrl={}",
-                        perm.getPermId(), perm.getPermName(), url);
+                log.warn("[权限路由质检] menu_href 无对应路由: menuId={}, menuName={}, menuHref={}",
+                        menu.getMenuId(), menu.getMenuName(), url);
             }
         }
     }
 
     /** 仅报警：注解有权限码，库中无对应非空 perm_code。 */
-    private void checkAnnotationPermCodes(List<Perm> perms) {
+    private void checkAnnotationPermCodes(List<Menu> menus) {
         Set<String> dbCodes = new HashSet<>();
-        for (Perm perm : perms) {
-            if (StrUtil.isNotBlank(perm.getPermCode())) {
-                dbCodes.add(perm.getPermCode().trim());
+        for (Menu menu : menus) {
+            if (StrUtil.isNotBlank(menu.getPermCode())) {
+                dbCodes.add(menu.getPermCode().trim());
             }
         }
         Set<String> annotationCodes = new LinkedHashSet<>();
@@ -118,33 +118,33 @@ public class PermRouteQualityChecker implements ApplicationListener<ApplicationR
         }
     }
 
-    private void checkDuplicatePermCodes(List<Perm> perms) {
+    private void checkDuplicatePermCodes(List<Menu> menus) {
         Map<String, List<String>> codeToIds = new HashMap<>();
-        for (Perm perm : perms) {
-            if (StrUtil.isBlank(perm.getPermCode())) {
+        for (Menu menu : menus) {
+            if (StrUtil.isBlank(menu.getPermCode())) {
                 continue;
             }
-            String code = perm.getPermCode().trim();
-            codeToIds.computeIfAbsent(code, key -> new ArrayList<>()).add(perm.getPermId());
+            String code = menu.getPermCode().trim();
+            codeToIds.computeIfAbsent(code, key -> new ArrayList<>()).add(menu.getMenuId());
         }
         for (Map.Entry<String, List<String>> entry : codeToIds.entrySet()) {
             if (entry.getValue().size() > 1) {
-                log.warn("[权限路由质检] 权限码重复: permCode={}, permIds={}",
+                log.warn("[权限路由质检] 权限码重复: permCode={}, menuIds={}",
                         entry.getKey(), entry.getValue());
             }
         }
     }
 
     /** 菜单/按钮不可空码；目录可空。 */
-    private void checkBlankPermCodes(List<Perm> perms) {
-        for (Perm perm : perms) {
-            Integer type = perm.getPermType();
+    private void checkBlankPermCodes(List<Menu> menus) {
+        for (Menu menu : menus) {
+            Integer type = menu.getMenuType();
             if (type == null || type == 0) {
                 continue;
             }
-            if (StrUtil.isBlank(perm.getPermCode())) {
-                log.warn("[权限路由质检] 菜单/按钮权限码为空: permId={}, permName={}, permType={}",
-                        perm.getPermId(), perm.getPermName(), type);
+            if (StrUtil.isBlank(menu.getPermCode())) {
+                log.warn("[权限路由质检] 菜单/按钮权限码为空: menuId={}, menuName={}, menuType={}",
+                        menu.getMenuId(), menu.getMenuName(), type);
             }
         }
     }

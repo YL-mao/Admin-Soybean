@@ -21,7 +21,7 @@
 
 ## 简介
 
-**YLmao-Admin-Layui** 提供登录鉴权、菜单权限、用户/角色/部门/岗位、字典、通知公告、操作日志、定时任务、文件管理、代码生成（ZIP）、开发环境接口文档（springdoc）等常见后台能力，适合作为 **CMS / 业务系统管理端** 的基础仓库继续扩展。
+**YLmao-Admin-Layui** 提供登录鉴权、菜单权限、用户/角色/部门/岗位、字典、通知公告、操作日志、定时任务、文件管理、开发环境接口文档（springdoc）等常见后台能力，适合作为 **CMS / 业务系统管理端** 的基础仓库继续扩展。
 
 - 后端默认包名：`com.ylmao.admin`，启动类 `AdminApp`
 - 页面与静态资源：`src/main/resources/templates`、`static`
@@ -63,7 +63,6 @@
 - 操作日志、在线用户、访问控制（黑白名单）
 - 系统配置分组、本地上传与预览
 - 内置定时任务扫描与执行日志
-- 代码生成（表 → 后端 + 页面 + 权限 SQL）
 - 开发环境 Swagger UI（生产默认关闭）
 
 ## 技术栈
@@ -73,7 +72,6 @@
 | 后端 | Spring Boot **4.1.0**、Java **25** |
 | 权限 | Sa-Token **1.45.0** + Redis 会话 |
 | ORM | MyBatis-Plus **3.5.16**、MySQL 8 |
-| 模板 | Thymeleaf（页面）、Freemarker（代码生成模板） |
 | 接口文档 | springdoc-openapi **3.1.0**（dev 开 / prod 关） |
 | 前端 | **Layui 2.13.9**、**Pear Admin**（同域静态资源） |
 | 其它 | Hutool、captcha-core、EasyExcel、HikariCP |

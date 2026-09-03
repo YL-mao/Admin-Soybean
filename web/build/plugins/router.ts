@@ -25,7 +25,6 @@ const ROUTE_MENU_ICONS: Partial<Record<RouteKey, string>> = {
   ops_online: 'mdi:account-check-outline',
   'ops_operate-log': 'mdi:history',
   dev: 'mdi:tools',
-  dev_gen: 'mdi:code-tags',
   dev_apidoc: 'mdi:api',
   account_info: 'ic:round-person',
   account_notice: 'mdi:bell-outline'

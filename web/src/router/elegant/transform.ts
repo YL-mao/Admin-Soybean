@@ -171,7 +171,6 @@ const routeMap: RouteMap = {
   "account_notice": "/account/notice",
   "dev": "/dev",
   "dev_apidoc": "/dev/apidoc",
-  "dev_gen": "/dev/gen",
   "home": "/home",
   "iframe-page": "/iframe-page/:url",
   "login": "/login/:module(pwd-login)?",
