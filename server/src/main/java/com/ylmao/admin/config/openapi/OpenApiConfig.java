@@ -29,8 +29,8 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Admin 管理后台 API")
                         .description("""
-                                同域 Thymeleaf 后台默认走 Cookie（名称 saToken）；脚本/跨域可用同名请求头。
-                                文档仅展示带 @ResponseBody / @RestController 的 JSON 接口；页面跳转不收录。
+                                前后端分离：鉴权走请求头 saToken（名称与 Cookie 时代一致）。
+                                文档展示 @RestController JSON 接口。
                                 书面约定见 doc/接口文档与开发说明.md。
                                 """)
                         .version("0.0.1"))

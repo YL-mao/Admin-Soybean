@@ -12,37 +12,26 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-@Controller
+@RestController
 @RequestMapping("/gen")
 @RequiredArgsConstructor
 public class GenController extends BaseController {
 
-    private static final String GEN_VIEW = "system/gen";
-
     private final GenMetaService genMetaService;
     private final GenCodeService genCodeService;
-
-    @Log(title = "代码生成页面", businessType = "QUERY")
-    @SaCheckPermission("system:gen:view")
-    @GetMapping("/listView")
-    public String genListView() {
-        return GEN_VIEW;
-    }
 
     @Log(title = "代码生成表清单", businessType = "QUERY")
     @SaCheckPermission("system:gen:view")
     @GetMapping("/tables")
-    @ResponseBody
     public R<?> genTables() {
         return R.ok(genMetaService.listTables());
     }
@@ -50,7 +39,6 @@ public class GenController extends BaseController {
     @Log(title = "代码生成字段预览", businessType = "QUERY")
     @SaCheckPermission("system:gen:view")
     @GetMapping("/columns")
-    @ResponseBody
     public R<?> genColumns(String tableName) {
         return R.ok(genMetaService.loadColumnPreview(tableName));
     }
@@ -58,7 +46,6 @@ public class GenController extends BaseController {
     @Log(title = "代码生成上级菜单", businessType = "QUERY")
     @SaCheckPermission("system:gen:view")
     @GetMapping("/parentMenus")
-    @ResponseBody
     public R<?> genParentMenus() {
         return R.ok(genMetaService.listParentMenuOptions());
     }

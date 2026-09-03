@@ -12,14 +12,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,7 +62,6 @@ public class PermRouteQualityChecker implements ApplicationListener<ApplicationR
             Set<String> routePaths = collectRoutePaths();
             List<Perm> perms = permMapper.selectList(new LambdaQueryWrapper<>());
             checkPermUrls(perms, routePaths);
-            checkViewTemplates();
             checkAnnotationPermCodes(perms);
             checkDuplicatePermCodes(perms);
             checkBlankPermCodes(perms);
@@ -89,43 +85,6 @@ public class PermRouteQualityChecker implements ApplicationListener<ApplicationR
             if (!routePaths.contains(normalized)) {
                 log.warn("[权限路由质检] perm_url 无对应路由: permId={}, permName={}, permUrl={}",
                         perm.getPermId(), perm.getPermName(), url);
-            }
-        }
-    }
-
-    /** 业务 Controller 的 *VIEW 常量及登录/框架页模板是否存在。 */
-    private void checkViewTemplates() {
-        Set<Class<?>> controllers = new HashSet<>();
-        for (HandlerMethod handlerMethod : requestMappingHandlerMapping.getHandlerMethods().values()) {
-            controllers.add(handlerMethod.getBeanType());
-        }
-        Set<String> views = new LinkedHashSet<>();
-        for (Class<?> controller : controllers) {
-            for (Field field : controller.getDeclaredFields()) {
-                if (!isStaticFinalString(field) || !field.getName().endsWith("VIEW")) {
-                    continue;
-                }
-                try {
-                    if (!field.trySetAccessible()) {
-                        continue;
-                    }
-                    Object value = field.get(null);
-                    if (value instanceof String view && StrUtil.isNotBlank(view)
-                            && !view.startsWith("redirect:")) {
-                        views.add(view);
-                    }
-                } catch (IllegalAccessException ignored) {
-                    // 反射失败时跳过该常量。
-                }
-            }
-        }
-        // 无 VIEW 常量的页面入口。
-        views.add("login");
-        views.add("index");
-        for (String view : views) {
-            String location = "templates/" + view + ".html";
-            if (!new ClassPathResource(location).exists()) {
-                log.warn("[权限路由质检] 视图模板不存在: view={}, resource={}", view, location);
             }
         }
     }
@@ -224,12 +183,5 @@ public class PermRouteQualityChecker implements ApplicationListener<ApplicationR
             normalized = normalized.substring(0, normalized.length() - 1);
         }
         return normalized;
-    }
-
-    private static boolean isStaticFinalString(Field field) {
-        int modifiers = field.getModifiers();
-        return Modifier.isStatic(modifiers)
-                && Modifier.isFinal(modifiers)
-                && String.class.equals(field.getType());
     }
 }

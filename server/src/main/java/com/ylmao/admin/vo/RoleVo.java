@@ -20,7 +20,7 @@ public class RoleVo {
         }
     }
 
-    /** 角色下拉选项，供用户/公告 listView 使用。 */
+    /** 角色下拉选项，供用户/公告等接口使用。 */
     public record RoleOptionVo(String roleId, String roleName) {
 
         public static RoleOptionVo from(Role role) {

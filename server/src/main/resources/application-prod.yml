@@ -45,8 +45,6 @@ spring:
   devtools:
     restart:
       enabled: false
-  thymeleaf:
-    cache: true
 
 mybatis-plus:
   configuration:

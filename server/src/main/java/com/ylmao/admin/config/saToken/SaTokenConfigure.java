@@ -8,11 +8,8 @@ import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.router.SaHttpMethod;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.thymeleaf.dialect.SaTokenDialect;
 import cn.hutool.core.util.StrUtil;
 import com.ylmao.admin.common.R;
-import com.ylmao.admin.utils.ServletUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +29,6 @@ public class SaTokenConfigure implements WebMvcConfigurer {
     private static final Logger log = LoggerFactory.getLogger(SaTokenConfigure.class);
 
     private static final List<String> corsOriginsDev = List.of(
-            "http://localhost:8080",
             "http://localhost:9527");
     /** 生产部署前改为真实域名（含 https://，无路径） */
     private static final List<String> corsOriginsProd = List.of(
@@ -69,17 +65,11 @@ public class SaTokenConfigure implements WebMvcConfigurer {
         };
     }
 
-    //开放权限的url
+    // 开放权限的 url（Layui 入口已删除，仅保留管理端认证与上传白名单）
     private final String[] excludePaths = {
             "/favicon.ico", "/ico/favicon.ico", "/static/**",
-            // 错误页
-            "/error/**",
-            // 对所有用户认证
-            "/login",
             "/api/admin/auth/login",
             "/api/admin/auth/captchaImage",
-            // 放验证码
-            "/captcha/**",
             // 文件预览：匿名/登录校验在控制器内按 need_login 判断
             "/upload/**"};
 
@@ -98,23 +88,11 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                 // 认证函数: 每次请求执行
                 .setAuth(obj -> {
                     log.debug("Sa-Token global auth check");
-
-                    // 登录认证 -- 拦截所有路由
+                    // 登录认证 -- 拦截所有非白名单路由（业务 JSON API）
                     SaRouter.match("/**", StpUtil::checkLogin);
-
-                    // 更多拦截处理方式，请参考“路由拦截式鉴权”章节 */
                 })
-                // 异常处理函数：每次认证函数发生异常时执行此函数
+                // 异常处理函数：统一 JSON（已无 Layui 页面转发）
                 .setError(e -> {
-                    if (!ServletUtils.isAjaxRequest((HttpServletRequest) SaHolder.getRequest().getSource())) {
-                        if (e instanceof NotLoginException) {
-                            return SaHolder.getRequest().forward("/login");
-                        }
-                        if (e instanceof NotPermissionException || e instanceof NotRoleException || e instanceof NotSafeException) {
-                            return SaHolder.getRequest().forward("/error/403");
-                        }
-                        return SaHolder.getRequest().forward("/error/500");
-                    }
                     try {
                         R<Void> result = toAuthErrorR(e);
                         SaHolder.getResponse()
@@ -136,12 +114,6 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                             // 禁用浏览器内容嗅探
                             .setHeader("X-Content-Type-Options", "nosniff");
                 });
-    }
-
-    // Sa-Token 标签方言 (Thymeleaf版)
-    @Bean
-    public SaTokenDialect getSaTokenDialect() {
-        return new SaTokenDialect();
     }
 
     private R<Void> toAuthErrorR(Throwable e) {

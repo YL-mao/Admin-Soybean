@@ -19,7 +19,7 @@ public class PostVo {
         }
     }
 
-    /** 岗位下拉选项，供用户 listView 使用。 */
+    /** 岗位下拉选项，供用户等接口使用。 */
     public record PostOptionVo(String postId, String postName) {
 
         public static PostOptionVo from(Post post) {
