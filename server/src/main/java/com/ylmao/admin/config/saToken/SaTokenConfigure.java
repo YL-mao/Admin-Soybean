@@ -9,7 +9,10 @@ import cn.dev33.satoken.router.SaHttpMethod;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
+import com.ylmao.admin.common.FingerprintKeys;
 import com.ylmao.admin.common.R;
+import com.ylmao.admin.service.FingerprintService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -37,10 +40,12 @@ public class SaTokenConfigure implements WebMvcConfigurer {
 
     private final JsonMapper jsonMapper;
     private final List<String> corsOrigins;
+    private final FingerprintService fingerprintService;
 
-    public SaTokenConfigure(JsonMapper jsonMapper, Environment env) {
+    public SaTokenConfigure(JsonMapper jsonMapper, Environment env, FingerprintService fingerprintService) {
         this.jsonMapper = jsonMapper;
         this.corsOrigins = env.acceptsProfiles(Profiles.of("prod")) ? corsOriginsProd : corsOriginsDev;
+        this.fingerprintService = fingerprintService;
     }
 
     /**
@@ -53,13 +58,13 @@ public class SaTokenConfigure implements WebMvcConfigurer {
             if (StrUtil.isNotBlank(origin) && corsOrigins.contains(origin)) {
                 res.setHeader("Access-Control-Allow-Origin", origin)
                         .setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
-                        .setHeader("Access-Control-Allow-Headers", "x-requested-with,content-type,saToken")
+                        .setHeader("Access-Control-Allow-Headers",
+                                "x-requested-with,content-type,saToken," + FingerprintKeys.Admin.DEVICE_ID_HEADER)
                         .setHeader("Access-Control-Max-Age", String.valueOf(3600))
                         .setHeader("Vary", "Origin");
             }
             // 预检请求直接返回，不进入鉴权
             if (SaHttpMethod.OPTIONS.name().equalsIgnoreCase(req.getMethod())) {
-                log.debug("OPTIONS preflight request");
                 SaRouter.back();
             }
         };
@@ -70,6 +75,8 @@ public class SaTokenConfigure implements WebMvcConfigurer {
             "/favicon.ico", "/ico/favicon.ico", "/static/**",
             "/api/admin/auth/login",
             "/api/admin/auth/captchaImage",
+            // 注销幂等：无会话 / 已失效 / 已冻结也放行，避免再抛 token 文案
+            "/api/admin/auth/logout",
             // 文件预览：匿名/登录校验在控制器内按 need_login 判断
             "/upload/**"};
 
@@ -87,9 +94,13 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                 .addExclude(excludePaths)
                 // 认证函数: 每次请求执行
                 .setAuth(obj -> {
-                    log.debug("Sa-Token global auth check");
-                    // 登录认证 -- 拦截所有非白名单路由（业务 JSON API）
+                    // 白名单外全部要登录
                     SaRouter.match("/**", StpUtil::checkLogin);
+                    // 仅管理端 API 做指纹比对（其它端自行决定是否调用）
+                    SaRouter.match("/api/admin/**", () -> {
+                        HttpServletRequest request = (HttpServletRequest) SaHolder.getRequest().getSource();
+                        fingerprintService.checkOrKickAsNotLogin(request);
+                    });
                 })
                 // 异常处理函数：统一 JSON（已无 Layui 页面转发）
                 .setError(e -> {
@@ -118,7 +129,7 @@ public class SaTokenConfigure implements WebMvcConfigurer {
 
     private R<Void> toAuthErrorR(Throwable e) {
         if (e instanceof NotLoginException) {
-            return R.fail(401, e.getMessage());
+            return R.fail(401, SaAuthMessages.NOT_LOGIN);
         }
         if (e instanceof NotPermissionException || e instanceof NotRoleException || e instanceof NotSafeException) {
             return R.fail(403, e.getMessage());

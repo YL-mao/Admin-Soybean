@@ -1,5 +1,6 @@
 package com.ylmao.admin.controller.admin.auth;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpUtil;
 import com.ylmao.admin.common.R;
 import com.ylmao.admin.config.log.Log;
@@ -40,8 +41,12 @@ public class AdminAuthController {
 
     @PostMapping("/logout")
     public R<Void> adminAuthLogout() {
-        if (StpUtil.isLogin()) {
-            StpUtil.logout();
+        try {
+            if (StpUtil.isLogin()) {
+                StpUtil.logout();
+            }
+        } catch (NotLoginException ignored) {
+            // 已失效 / 冻结：前端清本地即可
         }
         return R.ok();
     }

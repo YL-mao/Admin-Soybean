@@ -37,8 +37,6 @@ public class DictRuntimeService {
     };
     private static final TypeReference<List<String>> STRING_LIST_TYPE = new TypeReference<>() {
     };
-    /** 旧版 set 索引，启动刷新时删除。 */
-    private static final String LEGACY_DICT_INDEX = "md:dict:index";
 
     private final DictDataMapper dictDataMapper;
     private final DictTypeMapper dictTypeMapper;
@@ -147,16 +145,7 @@ public class DictRuntimeService {
 
     private void clearAllDictCache() {
         Set<String> keysToDelete = new HashSet<>();
-        keysToDelete.add(LEGACY_DICT_INDEX);
         keysToDelete.add(RedisKeys.DICT_INDEX);
-        Set<String> legacyCodes = stringRedisTemplate.opsForSet().members(LEGACY_DICT_INDEX);
-        if (legacyCodes != null) {
-            for (String code : legacyCodes) {
-                if (StrUtil.isNotBlank(code)) {
-                    keysToDelete.add(RedisKeys.dictOptions(code));
-                }
-            }
-        }
         for (String code : readCodeIndex()) {
             keysToDelete.add(RedisKeys.dictOptions(code));
         }

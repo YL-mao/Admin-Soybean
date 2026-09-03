@@ -41,6 +41,8 @@ declare namespace StorageType {
     };
     /** The last login user id */
     lastLoginUserId: string;
+    /** 浏览器实例设备标识，随请求头 X-Device-Id 上报，用于会话指纹 */
+    deviceId: string;
     /** 登录页「记住我」：仅本地账号，不存密码 */
     loginRemember: {
       userAccount: string;

@@ -53,8 +53,8 @@ sa-token:
   is-write-header: false
   # 注销范围；TOKEN 表示只注销当前 token，ACCOUNT 表示注销账号全部会话。
   logout-range: TOKEN
-  # token 冻结后是否仍允许注销、踢人等操作；默认关闭。
-  is-logout-keep-freeze-ops: false
+  # token 冻结后仍允许注销，避免退出登录再报「token 冻结」
+  is-logout-keep-freeze-ops: true
   # 注销 token 后是否保留对应 Token-Session；默认不保留。
   is-logout-keep-token-session: false
   # 登录时是否立即创建 Token-Session；false 表示首次使用时再创建。

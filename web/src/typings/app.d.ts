@@ -342,6 +342,7 @@ declare namespace App {
         keywordSearch: string;
         logout: string;
         logoutConfirm: string;
+        logoutSuccess: string;
         lookForward: string;
         modify: string;
         modifySuccess: string;

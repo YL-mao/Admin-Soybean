@@ -2,6 +2,7 @@ package com.ylmao.admin.config.exception;
 
 import cn.dev33.satoken.exception.*;
 import com.ylmao.admin.common.R;
+import com.ylmao.admin.config.saToken.SaAuthMessages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +31,9 @@ public class GlobalExceptionResolver {
     /** Sa-Token 鉴权异常：未登录 401，无权限 403，其它框架内部异常 500。 */
     @ExceptionHandler(SaTokenException.class)
     public ResponseEntity<R<Void>> handleAuthorizationException(HttpServletRequest request, SaTokenException e) {
-        if (e instanceof NotLoginException) {
-            logger.warn("登录校验异常: {}", e.getMessage());
-            return ajaxError(401, e.getMessage());
+        if (e instanceof NotLoginException nle) {
+            logger.warn("登录校验异常 type={} msg={}", nle.getType(), e.getMessage());
+            return ajaxError(401, SaAuthMessages.NOT_LOGIN);
         }
         if (e instanceof NotPermissionException || e instanceof NotRoleException || e instanceof NotSafeException) {
             logger.warn("权限校验异常: {}", e.getMessage());

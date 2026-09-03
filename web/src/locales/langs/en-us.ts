@@ -30,6 +30,7 @@ const local: App.I18n.Schema = {
     keywordSearch: 'Please enter keyword',
     logout: 'Logout',
     logoutConfirm: 'Are you sure you want to log out?',
+    logoutSuccess: 'Logged out successfully',
     lookForward: 'Coming soon',
     modify: 'Modify',
     modifySuccess: 'Modify Success',
@@ -52,9 +53,9 @@ const local: App.I18n.Schema = {
   },
   request: {
     logout: 'Logout user after request failed',
-    logoutMsg: 'User status is invalid, please log in again',
+    logoutMsg: 'Login has expired, please sign in again',
     logoutWithModal: 'Pop up modal after request failed and then log out user',
-    logoutWithModalMsg: 'User status is invalid, please log in again',
+    logoutWithModalMsg: 'Login has expired, please sign in again',
     refreshToken: 'The requested token has expired, refresh the token',
     tokenExpired: 'The requested token has expired'
   },

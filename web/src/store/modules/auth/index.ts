@@ -38,24 +38,35 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   /** Is login */
   const isLogin = computed(() => Boolean(token.value));
 
+  /** 防止并发 401 重复 reset / 重复打注销 */
+  let resetting = false;
+
   /** Reset auth store */
   async function resetStore() {
-    recordUserId();
-
-    if (getToken()) {
-      await fetchLogout().catch(() => undefined);
+    if (resetting) {
+      return;
     }
+    resetting = true;
+    try {
+      recordUserId();
 
-    clearAuthStorage();
+      if (getToken()) {
+        await fetchLogout().catch(() => undefined);
+      }
 
-    authStore.$reset();
+      clearAuthStorage();
 
-    if (!route.meta.constant) {
-      await toLogin();
+      authStore.$reset();
+
+      if (!route.meta.constant) {
+        await toLogin();
+      }
+
+      tabStore.cacheTabs();
+      routeStore.resetStore();
+    } finally {
+      resetting = false;
     }
-
-    tabStore.cacheTabs();
-    routeStore.resetStore();
   }
 
   function recordUserId() {

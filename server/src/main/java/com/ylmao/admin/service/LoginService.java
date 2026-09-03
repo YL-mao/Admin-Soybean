@@ -34,6 +34,7 @@ public class LoginService {
     private final LoginRateLimitService loginRateLimitService;
     private final CaptchaService captchaService;
     private final FilterService filterService;
+    private final FingerprintService fingerprintService;
     private final UserMapper userMapper;
 
     public void login(LoginDto.LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
@@ -125,11 +126,9 @@ public class LoginService {
         tokenSession.set(OnlineSessionKeys.LOGIN_TIME, LocalDateTime.now().format(LOGIN_TIME_FMT));
         tokenSession.set(OnlineSessionKeys.BROWSER, UserAgentUtils.parseBrowser(userAgent));
         tokenSession.set(OnlineSessionKeys.OS, UserAgentUtils.parseSystemOs(userAgent));
+        // 管理端指纹：IP / UA / X-Device-Id 写入同一 Token-Session。
+        fingerprintService.bindOnLogin(request);
         logger.info("用户[{}]登录成功", loginRequest.userAccount());
-        // Sa-Token 登录流程未必会创建 Servlet Session；只有在已有 session 的情况下才能轮换 sessionId。
-        if (request.getSession(false) != null) {
-            request.changeSessionId();
-        }
         try {
             int cleaned = filterService.cleanExpiredForLogin(clientIp, dbUser.getUserId());
             if (cleaned > 0) {

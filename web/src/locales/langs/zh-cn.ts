@@ -30,6 +30,7 @@ const local: App.I18n.Schema = {
     keywordSearch: '请输入关键词搜索',
     logout: '退出登录',
     logoutConfirm: '确认退出登录吗？',
+    logoutSuccess: '已退出登录',
     lookForward: '敬请期待',
     modify: '修改',
     modifySuccess: '修改成功',
@@ -52,9 +53,9 @@ const local: App.I18n.Schema = {
   },
   request: {
     logout: '请求失败后登出用户',
-    logoutMsg: '用户状态失效，请重新登录',
+    logoutMsg: '登录已失效，请重新登录',
     logoutWithModal: '请求失败后弹出模态框再登出用户',
-    logoutWithModalMsg: '用户状态失效，请重新登录',
+    logoutWithModalMsg: '登录已失效，请重新登录',
     refreshToken: '请求的token已过期，刷新token',
     tokenExpired: 'token已过期'
   },

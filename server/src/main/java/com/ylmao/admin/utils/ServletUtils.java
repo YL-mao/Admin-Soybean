@@ -11,7 +11,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 /**
@@ -69,14 +68,6 @@ public class ServletUtils
     public static HttpServletResponse getResponse()
     {
         return getRequestAttributes().getResponse();
-    }
-
-    /**
-     * 获取session
-     */
-    public static HttpSession getSession()
-    {
-        return getRequest().getSession();
     }
 
     public static ServletRequestAttributes getRequestAttributes()

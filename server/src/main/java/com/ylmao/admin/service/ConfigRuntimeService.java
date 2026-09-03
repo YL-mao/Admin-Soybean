@@ -9,8 +9,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.core.Cursor;
-import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import tools.jackson.core.type.TypeReference;
@@ -26,7 +24,7 @@ import java.util.Set;
 
 /**
  * 配置运行时读取：启用配置写入 Redis，读取时直读 Redis（方案 A）。
- * 索引与缓存值均为 string，避免客户端对 md* 统一 GET 时 WRONGTYPE。
+ * 索引与缓存值均为 string，避免客户端对索引 key 误 GET 时 WRONGTYPE。
  */
 @Service
 @RequiredArgsConstructor
@@ -35,8 +33,6 @@ public class ConfigRuntimeService {
     private static final Logger log = LoggerFactory.getLogger(ConfigRuntimeService.class);
     private static final TypeReference<List<String>> STRING_LIST_TYPE = new TypeReference<>() {
     };
-    /** 旧版 set 索引，启动刷新时删除。 */
-    private static final String LEGACY_CONFIG_INDEX = "md:config:index";
 
     private final ConfigMapper configMapper;
     private final JsonMapper jsonMapper;
@@ -49,7 +45,7 @@ public class ConfigRuntimeService {
 
     /** 全量重建 Redis 配置缓存；配置增删改、启停后调用。 */
     public void refreshCache() {
-        clearLegacyAndCurrentConfigCache();
+        clearConfigCache();
         List<Config> enabledList = configMapper.selectList(new LambdaQueryWrapper<Config>()
                 .eq(Config::getIsEnabled, 1));
         List<String> codes = new ArrayList<>();
@@ -166,33 +162,12 @@ public class ConfigRuntimeService {
         }
     }
 
-    /** 删除旧 set 索引、旧前缀数据，以及当前 string 索引对应的 data key。 */
-    private void clearLegacyAndCurrentConfigCache() {
+    /** 删除当前索引及其对应的 data key，再全量重建。 */
+    private void clearConfigCache() {
         Set<String> keysToDelete = new HashSet<>();
-        keysToDelete.add(LEGACY_CONFIG_INDEX);
         keysToDelete.add(RedisKeys.CONFIG_INDEX);
-
-        Set<String> legacyCodes = stringRedisTemplate.opsForSet().members(LEGACY_CONFIG_INDEX);
-        if (legacyCodes != null) {
-            for (String code : legacyCodes) {
-                if (StrUtil.isNotBlank(code)) {
-                    keysToDelete.add("md:config:" + code);
-                    keysToDelete.add(RedisKeys.config(code));
-                }
-            }
-        }
         for (String code : readCodeIndex(RedisKeys.CONFIG_INDEX)) {
             keysToDelete.add(RedisKeys.config(code));
-        }
-        // 扫残留旧前缀 md:config:*（非 data:），避免 GUI/业务读到脏数据。
-        ScanOptions scanOptions = ScanOptions.scanOptions().match("md:config:*").count(200).build();
-        try (Cursor<String> cursor = stringRedisTemplate.scan(scanOptions)) {
-            while (cursor.hasNext()) {
-                String key = cursor.next();
-                if (key != null && !key.startsWith("md:config:data:") && !RedisKeys.CONFIG_INDEX.equals(key)) {
-                    keysToDelete.add(key);
-                }
-            }
         }
         if (!keysToDelete.isEmpty()) {
             stringRedisTemplate.delete(keysToDelete);

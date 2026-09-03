@@ -6,6 +6,7 @@ import { getServiceBaseURL } from '@/utils/service';
 import { $t } from '@/locales';
 import { getAuthorization, handleExpiredRequest, showErrorMsg } from './shared';
 import type { RequestInstanceState } from './type';
+import { getDeviceId, DEVICE_ID_HEADER } from '@/utils/device-id';
 
 const isHttpProxy = import.meta.env.DEV && import.meta.env.VITE_HTTP_PROXY === 'Y';
 const { baseURL, otherBaseURL } = getServiceBaseURL(import.meta.env, isHttpProxy);
@@ -28,6 +29,8 @@ export const request = createFlatRequest(
       if (token) {
         Object.assign(config.headers, { saToken: token });
       }
+      // 管理端指纹：deviceId 只走 Header，不进登录 body
+      Object.assign(config.headers, { [DEVICE_ID_HEADER]: getDeviceId() });
 
       return config;
     },
@@ -115,6 +118,15 @@ export const request = createFlatRequest(
       } else if (responseData?.msg) {
         message = responseData.msg;
         backendErrorCode = String(responseData?.code || '');
+      }
+
+      // HTTP 401 等：提示登录失效并清会话跳转（Sa 过滤器直接回 HTTP 状态，不走 onBackendFail）
+      const logoutCodes = import.meta.env.VITE_SERVICE_LOGOUT_CODES?.split(',') || [];
+      if (logoutCodes.includes(backendErrorCode)) {
+        // 优先用后端统一文案；无 msg 时回退 i18n
+        showErrorMsg(request.state, message || $t('request.logoutMsg'));
+        useAuthStore().resetStore();
+        return;
       }
 
       // the error message is displayed in the modal
