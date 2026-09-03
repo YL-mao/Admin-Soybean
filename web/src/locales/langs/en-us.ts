@@ -327,6 +327,50 @@ const local: App.I18n.Schema = {
           iconify: 'Iconify',
           local: 'Local'
         }
+      },
+      role: {
+        title: 'Role List',
+        roleName: 'Role Name',
+        roleCode: 'Role Code',
+        roleStatus: 'Role Status',
+        roleDesc: 'Role Description',
+        orderNum: 'Order',
+        menuAuth: 'Menu Auth',
+        buttonAuth: 'Button Auth',
+        form: {
+          roleName: 'Please enter role name',
+          roleCode: 'Please enter role code',
+          roleStatus: 'Please select role status',
+          roleDesc: 'Please enter role description',
+          orderNum: 'Please enter order'
+        },
+        addRole: 'Add Role',
+        editRole: 'Edit Role'
+      },
+      user: {
+        title: 'User List',
+        userName: 'User Name',
+        userGender: 'Gender',
+        nickName: 'Nick Name',
+        userPhone: 'Phone',
+        userEmail: 'Email',
+        userStatus: 'User Status',
+        userRole: 'User Role',
+        form: {
+          userName: 'Please enter user name',
+          userGender: 'Please select gender',
+          nickName: 'Please enter nick name',
+          userPhone: 'Please enter phone',
+          userEmail: 'Please enter email',
+          userStatus: 'Please select user status',
+          userRole: 'Please select user role'
+        },
+        addUser: 'Add User',
+        editUser: 'Edit User',
+        gender: {
+          male: 'Male',
+          female: 'Female'
+        }
       }
     },
     autobox: {

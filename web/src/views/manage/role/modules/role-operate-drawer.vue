@@ -2,11 +2,16 @@
 import { computed, ref, watch } from 'vue';
 import { jsonClone } from '@sa/utils';
 import { useBoolean } from '@sa/hooks';
-import { enableStatusOptions } from '@/constants/business';
+import { enabledFlagOptions } from '@/constants/business';
+import {
+  fetchCheckRoleCodeUnique,
+  fetchCheckRoleNameUnique,
+  fetchCreateRole,
+  fetchUpdateRole
+} from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
 import MenuAuthModal from './menu-auth-modal.vue';
-import ButtonAuthModal from './button-auth-modal.vue';
 
 defineOptions({
   name: 'RoleOperateDrawer'
@@ -34,7 +39,6 @@ const visible = defineModel<boolean>('visible', {
 const { formRef, validate, restoreValidation } = useNaiveForm();
 const { defaultRequiredRule } = useFormRules();
 const { bool: menuAuthVisible, setTrue: openMenuAuthModal } = useBoolean();
-const { bool: buttonAuthVisible, setTrue: openButtonAuthModal } = useBoolean();
 
 const title = computed(() => {
   const titles: Record<NaiveUI.TableOperateType, string> = {
@@ -44,7 +48,12 @@ const title = computed(() => {
   return titles[props.operateType];
 });
 
-type Model = Pick<Api.SystemManage.Role, 'roleName' | 'roleCode' | 'roleDesc' | 'status'>;
+type Model = {
+  roleName: string;
+  roleCode: string;
+  orderNum: number;
+  isEnabled: Api.SystemManage.EnabledFlag;
+};
 
 const model = ref(createDefaultModel());
 
@@ -52,20 +61,28 @@ function createDefaultModel(): Model {
   return {
     roleName: '',
     roleCode: '',
-    roleDesc: '',
-    status: null
+    orderNum: 0,
+    // 表单默认禁用，仍允许手动改启用
+    isEnabled: 0
   };
 }
 
-type RuleKey = Exclude<keyof Model, 'roleDesc'>;
-
-const rules: Record<RuleKey, App.Global.FormRule> = {
+const rules: Record<keyof Model, App.Global.FormRule | App.Global.FormRule[]> = {
   roleName: defaultRequiredRule,
-  roleCode: defaultRequiredRule,
-  status: defaultRequiredRule
+  roleCode: [
+    defaultRequiredRule,
+    {
+      // 字母数字下划线连字符
+      pattern: /^[a-zA-Z0-9_-]+$/,
+      message: $t('page.manage.role.form.roleCode'),
+      trigger: 'blur'
+    }
+  ],
+  orderNum: defaultRequiredRule,
+  isEnabled: defaultRequiredRule
 };
 
-const roleId = computed(() => props.rowData?.id || -1);
+const roleId = computed(() => props.rowData?.roleId || '');
 
 const isEdit = computed(() => props.operateType === 'edit');
 
@@ -73,7 +90,13 @@ function handleInitModel() {
   model.value = createDefaultModel();
 
   if (props.operateType === 'edit' && props.rowData) {
-    Object.assign(model.value, jsonClone(props.rowData));
+    const row = jsonClone(props.rowData);
+    model.value = {
+      roleName: row.roleName,
+      roleCode: row.roleCode,
+      orderNum: row.orderNum ?? 0,
+      isEnabled: row.isEnabled ?? 0
+    };
   }
 }
 
@@ -83,8 +106,38 @@ function closeDrawer() {
 
 async function handleSubmit() {
   await validate();
-  // request
-  window.$message?.success($t('common.updateSuccess'));
+
+  const { data: nameOk, error: nameErr } = await fetchCheckRoleNameUnique({ roleName: model.value.roleName });
+  if (nameErr) return;
+  if (nameOk === false && !(props.operateType === 'edit' && props.rowData?.roleName === model.value.roleName)) {
+    window.$message?.error($t('page.manage.role.form.roleName'));
+    return;
+  }
+
+  const { data: codeOk, error: codeErr } = await fetchCheckRoleCodeUnique({ roleCode: model.value.roleCode });
+  if (codeErr) return;
+  if (codeOk === false && !(props.operateType === 'edit' && props.rowData?.roleCode === model.value.roleCode)) {
+    window.$message?.error($t('page.manage.role.form.roleCode'));
+    return;
+  }
+
+  const body: Api.SystemManage.RoleInsert = {
+    roleName: model.value.roleName,
+    roleCode: model.value.roleCode,
+    orderNum: model.value.orderNum,
+    isEnabled: model.value.isEnabled
+  };
+
+  if (props.operateType === 'edit' && props.rowData) {
+    const { error } = await fetchUpdateRole({ ...body, roleId: props.rowData.roleId });
+    if (error) return;
+    window.$message?.success($t('common.updateSuccess'));
+  } else {
+    const { error } = await fetchCreateRole(body);
+    if (error) return;
+    window.$message?.success($t('common.addSuccess'));
+  }
+
   closeDrawer();
   emit('submitted');
 }
@@ -107,20 +160,23 @@ watch(visible, () => {
         <NFormItem :label="$t('page.manage.role.roleCode')" path="roleCode">
           <NInput v-model:value="model.roleCode" :placeholder="$t('page.manage.role.form.roleCode')" />
         </NFormItem>
-        <NFormItem :label="$t('page.manage.role.roleStatus')" path="status">
-          <NRadioGroup v-model:value="model.status">
-            <NRadio v-for="item in enableStatusOptions" :key="item.value" :value="item.value" :label="$t(item.label)" />
-          </NRadioGroup>
+        <NFormItem :label="$t('page.manage.role.orderNum')" path="orderNum">
+          <NInputNumber v-model:value="model.orderNum" class="w-full" :placeholder="$t('page.manage.role.form.orderNum')" />
         </NFormItem>
-        <NFormItem :label="$t('page.manage.role.roleDesc')" path="roleDesc">
-          <NInput v-model:value="model.roleDesc" :placeholder="$t('page.manage.role.form.roleDesc')" />
+        <NFormItem :label="$t('page.manage.role.roleStatus')" path="isEnabled">
+          <NRadioGroup v-model:value="model.isEnabled">
+            <NRadio
+              v-for="item in enabledFlagOptions"
+              :key="item.value"
+              :value="item.value"
+              :label="$t(item.label)"
+            />
+          </NRadioGroup>
         </NFormItem>
       </NForm>
       <NSpace v-if="isEdit">
         <NButton @click="openMenuAuthModal">{{ $t('page.manage.role.menuAuth') }}</NButton>
         <MenuAuthModal v-model:visible="menuAuthVisible" :role-id="roleId" />
-        <NButton @click="openButtonAuthModal">{{ $t('page.manage.role.buttonAuth') }}</NButton>
-        <ButtonAuthModal v-model:visible="buttonAuthVisible" :role-id="roleId" />
       </NSpace>
       <template #footer>
         <NSpace :size="16">

@@ -254,6 +254,34 @@ export function defaultTransform<ApiData>(
   };
 }
 
+/**
+ * 适配本仓库后端分页：R.data 为列表数组，总数在 R.count。
+ * request.transform 只抽出 data，故 count 从 axios 原始 body 取。
+ */
+export function backendPageTransform<ApiData>(
+  response: FlatResponseData<App.Service.Response<ApiData[]>, ApiData[]>,
+  pageNum: number,
+  pageSize: number
+): PaginationData<ApiData> {
+  const { data, error, response: raw } = response;
+
+  if (!error) {
+    return {
+      data: data ?? [],
+      pageNum,
+      pageSize,
+      total: Number(raw?.data?.count ?? 0)
+    };
+  }
+
+  return {
+    data: [],
+    pageNum: 1,
+    pageSize: 10,
+    total: 0
+  };
+}
+
 function getColumnChecks<Column extends NaiveUI.TableColumn<any>>(
   cols: Column[],
   getColumnVisible?: (column: Column) => boolean

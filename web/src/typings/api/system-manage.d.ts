@@ -7,26 +7,40 @@ declare namespace Api {
   namespace SystemManage {
     type CommonSearchParams = Pick<Common.PaginatingCommonParams, 'current' | 'size'>;
 
-    /** role */
-    type Role = Common.CommonRecord<{
-      /** role name */
+    /** 角色（对齐 RoleListVo / sys_role） */
+    type Role = {
+      roleId: string;
       roleName: string;
-      /** role code */
       roleCode: string;
-      /** role description */
-      roleDesc: string;
-    }>;
+      orderNum: number;
+      isEnabled: EnabledFlag;
+    };
 
-    /** role search params */
-    type RoleSearchParams = CommonType.RecordNullable<
-      Pick<Api.SystemManage.Role, 'roleName' | 'roleCode' | 'status'> & CommonSearchParams
-    >;
+    /** 角色搜索（后端目前按 roleName 模糊；页码在请求里映射为 page/limit） */
+    type RoleSearchParams = CommonType.RecordNullable<Pick<Role, 'roleName'> & CommonSearchParams>;
 
-    /** role list */
+    /** 角色分页列表（前端表格用；实际接口 data 为数组 + 顶层 count） */
     type RoleList = Common.PaginatingQueryRecord<Role>;
 
-    /** all role */
-    type AllRole = Pick<Role, 'id' | 'roleName' | 'roleCode'>;
+    /** 新增角色 */
+    type RoleInsert = {
+      roleName: string;
+      roleCode: string;
+      orderNum: number;
+      isEnabled: EnabledFlag;
+    };
+
+    /** 修改角色 */
+    type RoleUpdate = RoleInsert & {
+      roleId: string;
+    };
+
+    /** 下拉用角色（用户分配等；暂可仍走 mock） */
+    type AllRole = {
+      roleId: string;
+      roleName: string;
+      roleCode: string;
+    };
 
     /**
      * user gender
@@ -158,13 +172,6 @@ declare namespace Api {
       parentId: string;
       menuName: string;
       checkArr: string;
-    };
-
-    type MenuTree = {
-      id: number;
-      label: string;
-      pId: number;
-      children?: MenuTree[];
     };
   }
 }

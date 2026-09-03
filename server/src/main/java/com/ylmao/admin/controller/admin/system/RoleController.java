@@ -1,14 +1,14 @@
-package com.ylmao.admin.controller.system;
+package com.ylmao.admin.controller.admin.system;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.ylmao.admin.common.R;
 import com.ylmao.admin.config.base.BaseController;
 import com.ylmao.admin.config.log.Log;
 import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.dto.RoleDto;
 import com.ylmao.admin.service.RoleService;
-import com.ylmao.admin.common.R;
 import com.ylmao.admin.vo.RoleVo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -648,6 +648,8 @@ declare namespace App {
       msg: string;
       /** The backend service response data */
       data: T;
+      /** 分页总数（后端 R.count，与 data 列表并列） */
+      count?: number | null;
     };
 
     /** The demo backend service response data */

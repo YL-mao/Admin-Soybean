@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, shallowRef, watch } from 'vue';
-import { fetchGetAllPages, fetchGetMenuTree } from '@/service/api';
+import type { TreeOption } from 'naive-ui';
+import { fetchGetRoleMenuTree, fetchSaveRoleMenu } from '@/service/api';
 import { $t } from '@/locales';
 
 defineOptions({
@@ -8,8 +9,8 @@ defineOptions({
 });
 
 interface Props {
-  /** the roleId */
-  roleId: number;
+  /** 角色 ID */
+  roleId: string;
 }
 
 const props = defineProps<Props>();
@@ -24,92 +25,98 @@ function closeModal() {
 
 const title = computed(() => $t('common.edit') + $t('page.manage.role.menuAuth'));
 
-const home = shallowRef('');
+const tree = shallowRef<TreeOption[]>([]);
+const checks = shallowRef<string[]>([]);
 
-async function getHome() {
-  console.log(props.roleId);
+/** 平铺 MenuCheck 组树，并收集已勾选 menuId */
+function buildAuthTree(list: Api.SystemManage.MenuCheck[]) {
+  const map = new Map<string, TreeOption>();
+  const checkedKeys: string[] = [];
 
-  home.value = 'home';
+  list.forEach(item => {
+    map.set(item.menuId, {
+      key: item.menuId,
+      label: item.menuName,
+      children: []
+    });
+    if (item.checkArr === '1') {
+      checkedKeys.push(item.menuId);
+    }
+  });
+
+  const roots: TreeOption[] = [];
+  list.forEach(item => {
+    const node = map.get(item.menuId)!;
+    const parentId = item.parentId || '0';
+    if (parentId === '0' || !map.has(parentId)) {
+      roots.push(node);
+      return;
+    }
+    const parent = map.get(parentId)!;
+    parent.children = parent.children || [];
+    parent.children.push(node);
+  });
+
+  pruneEmptyChildren(roots);
+  tree.value = roots;
+  checks.value = checkedKeys;
 }
 
-async function updateHome(val: string) {
-  // request
-
-  home.value = val;
+function pruneEmptyChildren(nodes: TreeOption[]) {
+  nodes.forEach(node => {
+    if (node.children?.length) {
+      pruneEmptyChildren(node.children);
+    } else {
+      delete node.children;
+    }
+  });
 }
 
-const pages = shallowRef<string[]>([]);
-
-async function getPages() {
-  const { error, data } = await fetchGetAllPages();
-
-  if (!error) {
-    pages.value = data;
+async function loadTree() {
+  if (!props.roleId) {
+    tree.value = [];
+    checks.value = [];
+    return;
   }
-}
-
-const pageSelectOptions = computed(() => {
-  const opts: CommonType.Option[] = pages.value.map(page => ({
-    label: page,
-    value: page
-  }));
-
-  return opts;
-});
-
-const tree = shallowRef<Api.SystemManage.MenuTree[]>([]);
-
-async function getTree() {
-  const { error, data } = await fetchGetMenuTree();
-
-  if (!error) {
-    tree.value = data;
+  const { error, data } = await fetchGetRoleMenuTree(props.roleId);
+  if (error || !data) {
+    tree.value = [];
+    checks.value = [];
+    return;
   }
+  buildAuthTree(data);
 }
 
-const checks = shallowRef<number[]>([]);
-
-async function getChecks() {
-  console.log(props.roleId);
-  // request
-  checks.value = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
-}
-
-function handleSubmit() {
-  console.log(checks.value, props.roleId);
-  // request
+async function handleSubmit() {
+  if (!props.roleId) return;
+  const { error } = await fetchSaveRoleMenu({
+    roleId: props.roleId,
+    menuIds: checks.value.join(',')
+  });
+  if (error) return;
 
   window.$message?.success?.($t('common.modifySuccess'));
-
   closeModal();
-}
-
-function init() {
-  getHome();
-  getPages();
-  getTree();
-  getChecks();
 }
 
 watch(visible, val => {
   if (val) {
-    init();
+    void loadTree();
   }
 });
 </script>
 
 <template>
   <NModal v-model:show="visible" :title="title" preset="card" class="w-480px">
-    <div class="flex-y-center gap-16px pb-12px">
-      <div>{{ $t('page.manage.menu.home') }}</div>
-      <NSelect :value="home" :options="pageSelectOptions" size="small" class="w-160px" @update:value="updateHome" />
-    </div>
     <NTree
       v-model:checked-keys="checks"
       :data="tree"
-      key-field="id"
+      key-field="key"
+      label-field="label"
       checkable
+      cascade
       expand-on-click
+      default-expand-all
       virtual-scroll
       block-line
       class="h-280px"

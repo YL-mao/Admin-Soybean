@@ -1,11 +1,16 @@
 import { request } from '../request';
 
-/** get role list */
+/** 角色分页列表（query：page/limit + roleName） */
 export function fetchGetRoleList(params?: Api.SystemManage.RoleSearchParams) {
-  return request<Api.SystemManage.RoleList>({
-    url: '/systemManage/getRoleList',
+  const { current, size, ...rest } = params || {};
+  return request<Api.SystemManage.Role[]>({
+    url: '/role/list',
     method: 'get',
-    params
+    params: {
+      ...rest,
+      page: current,
+      limit: size
+    }
   });
 }
 
@@ -13,11 +18,84 @@ export function fetchGetRoleList(params?: Api.SystemManage.RoleSearchParams) {
  * get all roles
  *
  * these roles are all enabled
+ * （用户页仍用 mock；角色模块不依赖）
  */
 export function fetchGetAllRoles() {
   return request<Api.SystemManage.AllRole[]>({
     url: '/systemManage/getAllRoles',
     method: 'get'
+  });
+}
+
+/** 新增角色 */
+export function fetchCreateRole(data: Api.SystemManage.RoleInsert) {
+  return request<null>({
+    url: '/role/add',
+    method: 'post',
+    data
+  });
+}
+
+/** 修改角色 */
+export function fetchUpdateRole(data: Api.SystemManage.RoleUpdate) {
+  return request<null>({
+    url: '/role/update',
+    method: 'put',
+    data
+  });
+}
+
+/** 删除角色（逗号分隔 id） */
+export function fetchDeleteRole(ids: string) {
+  return request<null>({
+    url: '/role/delete',
+    method: 'delete',
+    params: { ids }
+  });
+}
+
+/** 启停角色 */
+export function fetchUpdateRoleEnabled(data: { roleId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
+  return request<null>({
+    url: '/role/updateEnabled',
+    method: 'patch',
+    data
+  });
+}
+
+/** 角色名称是否可用 */
+export function fetchCheckRoleNameUnique(params: { roleName: string }) {
+  return request<boolean>({
+    url: '/role/checkName',
+    method: 'get',
+    params
+  });
+}
+
+/** 角色编码是否可用 */
+export function fetchCheckRoleCodeUnique(params: { roleCode: string }) {
+  return request<boolean>({
+    url: '/role/checkCode',
+    method: 'get',
+    params
+  });
+}
+
+/** 角色菜单授权树（平铺，含 checkArr） */
+export function fetchGetRoleMenuTree(roleId: string) {
+  return request<Api.SystemManage.MenuCheck[]>({
+    url: '/menu/roleTree',
+    method: 'get',
+    params: { roleId }
+  });
+}
+
+/** 保存角色菜单授权（menuIds 逗号分隔，空串清空） */
+export function fetchSaveRoleMenu(data: { roleId: string; menuIds: string }) {
+  return request<null>({
+    url: '/menu/roleMenu',
+    method: 'put',
+    data
   });
 }
 
@@ -98,21 +176,5 @@ export function fetchCheckMenuCodeUnique(params: { permCode: string }) {
     url: '/menu/checkCode',
     method: 'get',
     params
-  });
-}
-
-/** get all pages（角色授权样板仍用；菜单页不再依赖） */
-export function fetchGetAllPages() {
-  return request<string[]>({
-    url: '/systemManage/getAllPages',
-    method: 'get'
-  });
-}
-
-/** get menu tree（角色授权样板仍用） */
-export function fetchGetMenuTree() {
-  return request<Api.SystemManage.MenuTree[]>({
-    url: '/systemManage/getMenuTree',
-    method: 'get'
   });
 }

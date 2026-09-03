@@ -1,10 +1,10 @@
 <script setup lang="tsx">
 import { ref } from 'vue';
-import { NButton, NPopconfirm, NTag } from 'naive-ui';
-import { enableStatusRecord } from '@/constants/business';
-import { fetchGetRoleList } from '@/service/api';
+import { NButton, NPopconfirm, NSwitch } from 'naive-ui';
+import { enabledFlagRecord } from '@/constants/business';
+import { fetchDeleteRole, fetchGetRoleList, fetchUpdateRoleEnabled } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
-import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
+import { backendPageTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import RoleOperateDrawer from './modules/role-operate-drawer.vue';
 import RoleSearch from './modules/role-search.vue';
@@ -14,14 +14,13 @@ const appStore = useAppStore();
 const searchParams = ref<Api.SystemManage.RoleSearchParams>({
   current: 1,
   size: 10,
-  roleName: null,
-  roleCode: null,
-  status: null
+  roleName: null
 });
 
 const { columns, columnChecks, data, loading, getData, getDataByPage, mobilePagination } = useNaivePaginatedTable({
   api: () => fetchGetRoleList(searchParams.value),
-  transform: response => defaultTransform(response),
+  transform: response =>
+    backendPageTransform(response, searchParams.value.current || 1, searchParams.value.size || 10),
   onPaginationParamsChange: params => {
     searchParams.value.current = params.page;
     searchParams.value.size = params.pageSize;
@@ -52,29 +51,28 @@ const { columns, columnChecks, data, loading, getData, getDataByPage, mobilePagi
       minWidth: 120
     },
     {
-      key: 'roleDesc',
-      title: $t('page.manage.role.roleDesc'),
-      minWidth: 120
+      key: 'orderNum',
+      title: $t('page.manage.role.orderNum'),
+      align: 'center',
+      width: 80
     },
     {
-      key: 'status',
+      key: 'isEnabled',
       title: $t('page.manage.role.roleStatus'),
       align: 'center',
       width: 100,
-      render: row => {
-        if (row.status === null) {
-          return null;
-        }
-
-        const tagMap: Record<Api.Common.EnableStatus, NaiveUI.ThemeColor> = {
-          1: 'success',
-          2: 'warning'
-        };
-
-        const label = $t(enableStatusRecord[row.status]);
-
-        return <NTag type={tagMap[row.status]}>{label}</NTag>;
-      }
+      render: row => (
+        <NSwitch
+          value={row.isEnabled === 1}
+          rubberBand={false}
+          onUpdateValue={value => handleUpdateEnabled(row, value)}
+        >
+          {{
+            checked: () => $t(enabledFlagRecord[1]),
+            unchecked: () => $t(enabledFlagRecord[0])
+          }}
+        </NSwitch>
+      )
     },
     {
       key: 'operate',
@@ -83,10 +81,10 @@ const { columns, columnChecks, data, loading, getData, getDataByPage, mobilePagi
       width: 130,
       render: row => (
         <div class="flex-center gap-8px">
-          <NButton type="primary" ghost size="small" onClick={() => edit(row.id)}>
+          <NButton type="primary" ghost size="small" onClick={() => edit(row.roleId)}>
             {$t('common.edit')}
           </NButton>
-          <NPopconfirm onPositiveClick={() => handleDelete(row.id)}>
+          <NPopconfirm onPositiveClick={() => handleDelete(row.roleId)}>
             {{
               default: () => $t('common.confirmDelete'),
               trigger: () => (
@@ -111,25 +109,34 @@ const {
   checkedRowKeys,
   onBatchDeleted,
   onDeleted
-  // closeDrawer
-} = useTableOperate(data, 'id', getData);
+} = useTableOperate(data, 'roleId', getData);
 
 async function handleBatchDelete() {
-  // request
-  console.log(checkedRowKeys.value);
-
+  const { error } = await fetchDeleteRole(checkedRowKeys.value.join(','));
+  if (error) return;
   onBatchDeleted();
 }
 
-function handleDelete(id: number) {
-  // request
-  console.log(id);
-
+async function handleDelete(roleId: string) {
+  const { error } = await fetchDeleteRole(roleId);
+  if (error) return;
   onDeleted();
 }
 
-function edit(id: number) {
-  handleEdit(id);
+/** 列表开关直接启停 */
+async function handleUpdateEnabled(row: Api.SystemManage.Role, checked: boolean) {
+  const isEnabled: Api.SystemManage.EnabledFlag = checked ? 1 : 0;
+  const { error } = await fetchUpdateRoleEnabled({ roleId: row.roleId, isEnabled });
+  if (error) {
+    await getData();
+    return;
+  }
+  row.isEnabled = isEnabled;
+  window.$message?.success($t('common.updateSuccess'));
+}
+
+function edit(roleId: string) {
+  handleEdit(roleId);
 }
 </script>
 
@@ -156,7 +163,7 @@ function edit(id: number) {
         :scroll-x="702"
         :loading="loading"
         remote
-        :row-key="row => row.id"
+        :row-key="row => row.roleId"
         :pagination="mobilePagination"
         class="sm:h-full"
       />
