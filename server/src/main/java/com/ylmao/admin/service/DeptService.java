@@ -28,6 +28,14 @@ public class DeptService {
         return deptMapper.selectList(wrapper).stream().map(DeptVo.DeptOptionVo::from).toList();
     }
 
+    /** 仅启用部门，供用户分配下拉。 */
+    public List<DeptVo.DeptOptionVo> listEnabledOptions() {
+        LambdaQueryWrapper<Dept> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Dept::getIsEnabled, 1);
+        wrapper.orderByAsc(Dept::getOrderNum);
+        return deptMapper.selectList(wrapper).stream().map(DeptVo.DeptOptionVo::from).toList();
+    }
+
     public List<DeptVo.DeptListVo> selectList(DeptDto.DeptList deptList) {
         LambdaQueryWrapper<Dept> wrapper = new LambdaQueryWrapper<>();
         if (deptList != null) {

@@ -373,7 +373,9 @@ const local: App.I18n.Schema = {
           userEmail: 'Please enter email',
           userStatus: 'Please select user status',
           userLock: 'Please select lock status',
-          userRole: 'Please select user role'
+          userRole: 'Please select user role',
+          deptId: 'Please select department',
+          postId: 'Please select post'
         },
         addUser: 'Add User',
         editUser: 'Edit User',

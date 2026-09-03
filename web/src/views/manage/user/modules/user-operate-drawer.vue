@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import type { TreeSelectOption } from 'naive-ui';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { userSexOptions } from '@/constants/business';
 import {
   fetchCheckUserAccountUnique,
   fetchCreateUser,
+  fetchGetDeptOptions,
+  fetchGetPostOptions,
   fetchGetRoleOptions,
   fetchUpdateUser
 } from '@/service/api';
 import { $t } from '@/locales';
+import { buildDeptOptionTree } from '@/views/org/dept/modules/shared';
 
 defineOptions({
   name: 'UserOperateDrawer'
@@ -50,6 +54,8 @@ type Model = {
   userSex: Api.SystemManage.UserSex | null;
   userPhone: string;
   userEmail: string;
+  deptId: string | null;
+  postId: string | null;
   roleIdList: string[];
 };
 
@@ -62,6 +68,8 @@ function createDefaultModel(): Model {
     userSex: null,
     userPhone: '',
     userEmail: '',
+    deptId: null,
+    postId: null,
     roleIdList: []
   };
 }
@@ -72,6 +80,8 @@ const rules: Record<'userAccount' | 'userName', App.Global.FormRule> = {
 };
 
 const roleOptions = ref<CommonType.Option<string>[]>([]);
+const postOptions = ref<CommonType.Option<string>[]>([]);
+const deptOptions = ref<TreeSelectOption[]>([]);
 
 async function getRoleOptions() {
   const { error, data } = await fetchGetRoleOptions();
@@ -83,6 +93,35 @@ async function getRoleOptions() {
     label: item.roleName,
     value: item.roleId
   }));
+}
+
+async function getPostOptions() {
+  const { error, data } = await fetchGetPostOptions();
+  if (error || !data) {
+    postOptions.value = [];
+    return;
+  }
+  postOptions.value = data.map(item => ({
+    label: item.postName,
+    value: item.postId
+  }));
+}
+
+function mapDeptTreeOptions(nodes: Api.SystemManage.DeptOption[]): TreeSelectOption[] {
+  return nodes.map(node => ({
+    key: node.deptId,
+    label: node.deptName,
+    children: node.children?.length ? mapDeptTreeOptions(node.children) : undefined
+  }));
+}
+
+async function getDeptOptions() {
+  const { error, data } = await fetchGetDeptOptions();
+  if (error || !data) {
+    deptOptions.value = [];
+    return;
+  }
+  deptOptions.value = mapDeptTreeOptions(buildDeptOptionTree(data));
 }
 
 function parseRoleIds(roleIds?: string | null) {
@@ -104,6 +143,8 @@ function handleInitModel() {
       userSex: row.userSex,
       userPhone: row.userPhone || '',
       userEmail: row.userEmail || '',
+      deptId: row.deptId || null,
+      postId: row.postId || null,
       roleIdList: parseRoleIds(row.roleIds)
     };
   }
@@ -120,8 +161,8 @@ function buildBody(): Api.SystemManage.UserInsert {
     userSex: model.value.userSex,
     userEmail: model.value.userEmail || null,
     userPhone: model.value.userPhone || null,
-    deptId: props.operateType === 'edit' ? props.rowData?.deptId || null : null,
-    postId: props.operateType === 'edit' ? props.rowData?.postId || null : null,
+    deptId: model.value.deptId || null,
+    postId: model.value.postId || null,
     roleIds: model.value.roleIdList.join(',')
   };
 }
@@ -160,7 +201,7 @@ watch(visible, () => {
   if (visible.value) {
     handleInitModel();
     restoreValidation();
-    void getRoleOptions();
+    void Promise.all([getRoleOptions(), getDeptOptions(), getPostOptions()]);
   }
 });
 </script>
@@ -185,6 +226,27 @@ watch(visible, () => {
         </NFormItem>
         <NFormItem :label="$t('page.manage.user.userEmail')" path="userEmail">
           <NInput v-model:value="model.userEmail" :placeholder="$t('page.manage.user.form.userEmail')" />
+        </NFormItem>
+        <NFormItem :label="$t('page.manage.user.deptName')" path="deptId">
+          <NTreeSelect
+            v-model:value="model.deptId"
+            clearable
+            filterable
+            :options="deptOptions"
+            key-field="key"
+            label-field="label"
+            default-expand-all
+            :placeholder="$t('page.manage.user.form.deptId')"
+          />
+        </NFormItem>
+        <NFormItem :label="$t('page.manage.user.postName')" path="postId">
+          <NSelect
+            v-model:value="model.postId"
+            clearable
+            filterable
+            :options="postOptions"
+            :placeholder="$t('page.manage.user.form.postId')"
+          />
         </NFormItem>
         <NFormItem :label="$t('page.manage.user.userRole')" path="roleIdList">
           <NSelect

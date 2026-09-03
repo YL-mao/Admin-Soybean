@@ -234,5 +234,48 @@ declare namespace Api {
       postId: string;
       postName: string;
     };
+
+    /** 部门（对齐 DeptListVo / sys_dept） */
+    type Dept = {
+      deptId: string;
+      parentId: string;
+      deptPath: string | null;
+      deptName: string;
+      orderNum: number;
+      deptLeader: string | null;
+      leaderPhone: string | null;
+      leaderEmail: string | null;
+      isEnabled: EnabledFlag;
+      createTime: string | null;
+      children?: Dept[] | null;
+    };
+
+    /** 部门列表查询（平铺，前端组树） */
+    type DeptSearchParams = CommonType.RecordNullable<{
+      deptName: string;
+      parentId: string;
+    }>;
+
+    type DeptInsert = {
+      parentId?: string | null;
+      deptName: string;
+      orderNum: number;
+      deptLeader?: string | null;
+      leaderPhone?: string | null;
+      leaderEmail?: string | null;
+      isEnabled: EnabledFlag;
+    };
+
+    type DeptUpdate = DeptInsert & {
+      deptId: string;
+    };
+
+    /** 部门下拉/上级树节点 */
+    type DeptOption = {
+      deptId: string;
+      parentId: string;
+      deptName: string;
+      children?: DeptOption[];
+    };
   }
 }

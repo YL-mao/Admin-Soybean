@@ -1,4 +1,4 @@
-package com.ylmao.admin.controller.system;
+package com.ylmao.admin.controller.admin.system;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaMode;
@@ -80,5 +80,12 @@ public class DeptController extends BaseController {
     @GetMapping("/selectParent")
     public R<?> selectDeptParent() {
         return okData(deptService.listOptions());
+    }
+
+    /** 用户分配等下拉：仅启用部门 */
+    @SaCheckPermission(value = {"system:user:insert", "system:user:update"}, mode = SaMode.OR)
+    @GetMapping("/options")
+    public R<?> deptOptions() {
+        return okData(deptService.listEnabledOptions());
     }
 }

@@ -305,7 +305,9 @@ const local: App.I18n.Schema = {
           userEmail: '请输入邮箱',
           userStatus: '请选择用户状态',
           userLock: '请选择锁定状态',
-          userRole: '请选择用户角色'
+          userRole: '请选择用户角色',
+          deptId: '请选择部门',
+          postId: '请选择岗位'
         },
         addUser: '新增用户',
         editUser: '编辑用户',
