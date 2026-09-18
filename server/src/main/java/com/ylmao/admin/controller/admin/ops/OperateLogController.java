@@ -1,4 +1,4 @@
-package com.ylmao.admin.controller.admin;
+package com.ylmao.admin.controller.admin.ops;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.metadata.IPage;

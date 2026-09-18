@@ -1,4 +1,4 @@
-package com.ylmao.admin.controller.admin.system;
+package com.ylmao.admin.controller.admin.manage;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaMode;

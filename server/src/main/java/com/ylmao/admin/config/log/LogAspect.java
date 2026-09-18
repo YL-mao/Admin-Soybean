@@ -64,7 +64,7 @@ public class LogAspect {
     public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
         Log controllerLog = getAnnotationLog(joinPoint);
-        // 业务方法内可能注销会话（如 loginOut），需在 proceed 前快照操作人。
+        // 业务方法内可能注销会话，需在 proceed 前快照操作人。
         User logUser = snapshotLogUser();
         Object result = null;
         Throwable throwable = null;

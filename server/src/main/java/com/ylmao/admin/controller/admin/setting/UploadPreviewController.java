@@ -1,4 +1,4 @@
-package com.ylmao.admin.controller;
+package com.ylmao.admin.controller.admin.setting;
 
 import com.ylmao.admin.service.FileResourceService;
 import lombok.RequiredArgsConstructor;
