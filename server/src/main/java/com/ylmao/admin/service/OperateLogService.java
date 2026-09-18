@@ -3,6 +3,7 @@ import cn.hutool.core.util.StrUtil;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.ylmao.admin.common.ConfigAuditCodes;
 import com.ylmao.admin.common.LogConfigCodes;
 import com.ylmao.admin.config.exception.BusinessException;
 import com.ylmao.admin.dto.OperateLogDto;
@@ -54,6 +55,11 @@ public class OperateLogService {
             }
         }
         operateLogQueryWrapper.eq(StrUtil.isNotBlank(operateLogList.loggingType()), OperateLog::getLoggingType, operateLogList.loggingType());
+        // 行为日志页签与配置审计分开展示：OPERATE 列表默认排除「系统配置变更」。
+        if ("OPERATE".equalsIgnoreCase(StrUtil.blankToDefault(operateLogList.loggingType(), ""))
+                && !Boolean.TRUE.equals(operateLogList.operateTitleExact())) {
+            operateLogQueryWrapper.ne(OperateLog::getOperateTitle, ConfigAuditCodes.OPERATE_TITLE);
+        }
         operateLogQueryWrapper.eq(operateLogList.isSuccess() != null, OperateLog::getIsSuccess, operateLogList.isSuccess());
         operateLogQueryWrapper.ge(StrUtil.isNotBlank(operateLogList.startTime()), OperateLog::getOperateTime, operateLogList.startTime());
         operateLogQueryWrapper.le(StrUtil.isNotBlank(operateLogList.endTime()), OperateLog::getOperateTime, operateLogList.endTime());

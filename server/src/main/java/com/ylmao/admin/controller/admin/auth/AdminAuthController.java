@@ -41,6 +41,7 @@ public class AdminAuthController {
         return R.ok(adminAuthService.buildLoginResult(StpUtil.getTokenValue()));
     }
 
+    @Log(title = "管理端注销", loggingType = "LOGIN", businessType = "LOGOUT")
     @PostMapping("/logout")
     public R<Void> adminAuthLogout() {
         try {

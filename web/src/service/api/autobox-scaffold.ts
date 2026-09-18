@@ -9,11 +9,11 @@ import {
   mockJobs,
   mockNotices,
   mockOnlineUsers,
-  mockOperateLogs,
   mockPosts
 } from '@/mock/autobox/data';
 import { createStaticListApi, matchLike } from '@/mock/autobox/list-api';
 import { enabledToStatus, mapDeptTree, mapPost, stableId } from '@/mock/autobox/mappers';
+import { request } from '../request';
 
 type PaginatingRecord<T> = Api.Common.PaginatingQueryRecord<T>;
 
@@ -136,31 +136,45 @@ export function fetchNoticeList(params?: Api.AutoboxScaffold.NoticeSearchParams)
 }
 
 export function fetchOperateLogList(params?: Api.AutoboxScaffold.OperateLogSearchParams) {
-  const api = createStaticListApi<Api.AutoboxScaffold.OperateLog & Record<string, unknown>>(
-    () =>
-      mockOperateLogs.map(l => ({
-        id: stableId(l.logId),
-        logId: l.logId,
-        operateTitle: l.operateTitle,
-        businessType: l.businessType,
-        requestMethod: l.requestMethod,
-        requestUri: l.requestUri,
-        browser: l.browser,
-        systemOs: l.systemOs,
-        operateIp: l.operateIp,
-        operateName: l.operateName,
-        costTime: l.costTime,
-        isSuccess: l.isSuccess,
-        operateTime: l.operateTime,
-        status: l.isSuccess === 1 ? '1' : '2'
-      })) as (Api.AutoboxScaffold.OperateLog & Record<string, unknown>)[],
-    (row, q) =>
-      matchLike(row.operateTitle, q.operateTitle) &&
-      matchLike(row.businessType, q.businessType) &&
-      matchLike(row.operateName, q.operateName) &&
-      matchLike(row.operateIp, q.operateIp)
-  );
-  return api(params ?? {});
+  const { current, size, ...rest } = params || {};
+  return request<Api.AutoboxScaffold.OperateLog[]>({
+    url: '/operateLog/list',
+    method: 'get',
+    params: {
+      ...rest,
+      page: current,
+      limit: size
+    }
+  });
+}
+
+/** 日志配置分组（log.loginEn / log.operEn / log.retainDays） */
+export function fetchLogConfigGroup() {
+  return request<Api.AutoboxScaffold.LogConfigItem[]>({
+    url: '/config/group',
+    method: 'get',
+    params: { configGroup: 'log' }
+  });
+}
+
+/** 保存日志配置分组 */
+export function fetchUpdateLogConfigGroup(data: {
+  configGroup: string;
+  configs: Array<{ configId: string; configCode?: string; configValue?: string | null; isEnabled?: number }>;
+}) {
+  return request<null>({
+    url: '/config/updateGroup',
+    method: 'put',
+    data
+  });
+}
+
+/** 按保留天数清理过期日志 */
+export function fetchCleanOperateLogByRetention() {
+  return request<number>({
+    url: '/operateLog/cleanByRetention',
+    method: 'delete'
+  });
 }
 
 export function fetchJobList(params?: Api.AutoboxScaffold.JobSearchParams) {

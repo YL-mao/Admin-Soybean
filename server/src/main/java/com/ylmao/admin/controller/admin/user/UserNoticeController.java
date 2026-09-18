@@ -1,4 +1,4 @@
-package com.ylmao.admin.controller.user;
+package com.ylmao.admin.controller.admin.user;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.stp.StpUtil;

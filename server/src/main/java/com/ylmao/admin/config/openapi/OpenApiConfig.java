@@ -44,16 +44,6 @@ public class OpenApiConfig {
     }
 
     @Bean
-    public GroupedOpenApi systemApi() {
-        return GroupedOpenApi.builder()
-                .group("system")
-                .displayName("系统模块")
-                .packagesToScan("com.ylmao.admin.controller.system")
-                .addOpenApiMethodFilter(jsonApiOnly())
-                .build();
-    }
-
-    @Bean
     public GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
                 .group("admin")

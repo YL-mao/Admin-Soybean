@@ -1,4 +1,4 @@
-package com.ylmao.admin.controller.system;
+package com.ylmao.admin.controller.admin.system;
 import cn.hutool.core.util.StrUtil;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
