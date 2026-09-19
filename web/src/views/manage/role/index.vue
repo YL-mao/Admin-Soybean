@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/business/auth';
 import { backendPageTransform, emptyAuthListResponse, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import RoleOperateDrawer from './modules/role-operate-drawer.vue';
+import MenuAuthModal from './modules/menu-auth-modal.vue';
 import RoleSearch from './modules/role-search.vue';
 
 const appStore = useAppStore();
@@ -18,6 +19,10 @@ const searchParams = ref<Api.SystemManage.RoleSearchParams>({
   size: 10,
   roleName: null
 });
+
+const menuAuthVisible = ref(false);
+const menuAuthRoleId = ref('');
+const menuAuthRoleName = ref('');
 
 const { columns, columnChecks, data, loading, getData, getDataByPage, mobilePagination } = useNaivePaginatedTable({
   api: () =>
@@ -83,12 +88,17 @@ const { columns, columnChecks, data, loading, getData, getDataByPage, mobilePagi
       key: 'operate',
       title: $t('common.operate'),
       align: 'center',
-      width: 130,
+      width: 220,
       render: row => (
         <div class="flex-center gap-8px">
           {hasAuth('system:role:update') && (
             <NButton type="primary" ghost size="small" onClick={() => edit(row.roleId)}>
               {$t('common.edit')}
+            </NButton>
+          )}
+          {hasAuth('system:role:auth') && (
+            <NButton type="primary" ghost size="small" onClick={() => openMenuAuth(row)}>
+              {$t('page.manage.role.menuAuth')}
             </NButton>
           )}
           {hasAuth('system:role:delete') && (
@@ -150,6 +160,12 @@ async function handleUpdateEnabled(row: Api.SystemManage.Role, checked: boolean)
 function edit(roleId: string) {
   handleEdit(roleId);
 }
+
+function openMenuAuth(row: Api.SystemManage.Role) {
+  menuAuthRoleId.value = row.roleId;
+  menuAuthRoleName.value = row.roleName;
+  menuAuthVisible.value = true;
+}
 </script>
 
 <template>
@@ -174,7 +190,7 @@ function edit(roleId: string) {
         :data="data"
         size="small"
         :flex-height="!appStore.isMobile"
-        :scroll-x="702"
+        :scroll-x="802"
         :loading="loading"
         remote
         :row-key="row => row.roleId"
@@ -195,6 +211,7 @@ function edit(roleId: string) {
         :row-data="editingData"
         @submitted="getDataByPage"
       />
+      <MenuAuthModal v-model:visible="menuAuthVisible" :role-id="menuAuthRoleId" :role-name="menuAuthRoleName" />
     </NCard>
   </div>
 </template>

@@ -1,13 +1,23 @@
 <script setup lang="tsx">
 import { ref } from 'vue';
-import { NButton, NPopconfirm, NSwitch, NTag } from 'naive-ui';
+import type { DropdownOption } from 'naive-ui';
+import { NButton, NDropdown, NPopconfirm, NSwitch, NTag } from 'naive-ui';
 import { enabledFlagRecord, lockFlagRecord, userSexRecord } from '@/constants/business';
-import { fetchDeleteUser, fetchGetUserList, fetchUpdateUserEnabled, fetchUpdateUserLock } from '@/service/api';
+import {
+  fetchDeleteUser,
+  fetchExportUserList,
+  fetchGetUserList,
+  fetchKickUserSessions,
+  fetchUpdateUserEnabled,
+  fetchUpdateUserLock
+} from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
 import { useAuth } from '@/hooks/business/auth';
 import { backendPageTransform, emptyAuthListResponse, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import UserOperateDrawer from './modules/user-operate-drawer.vue';
+import UserPermDetailModal from './modules/user-perm-detail-modal.vue';
+import UserResetPwdModal from './modules/user-reset-pwd-modal.vue';
 import UserSearch from './modules/user-search.vue';
 
 const appStore = useAppStore();
@@ -20,6 +30,39 @@ const searchParams = ref<Api.SystemManage.UserSearchParams>({
   isEnabled: null,
   isLock: null
 });
+
+const exporting = ref(false);
+const resetPwdVisible = ref(false);
+const resetPwdRow = ref<Api.SystemManage.User | null>(null);
+const permDetailVisible = ref(false);
+const permDetailUserId = ref('');
+
+/** 从 Content-Disposition 解析导出文件名 */
+function parseExportFilename(header: string | undefined, fallback: string) {
+  if (!header) {
+    return fallback;
+  }
+  const utf8Match = /filename\*=UTF-8''([^;]+)/i.exec(header);
+  if (utf8Match?.[1]) {
+    try {
+      return decodeURIComponent(utf8Match[1]);
+    } catch {
+      return utf8Match[1];
+    }
+  }
+  const plainMatch = /filename="?([^";]+)"?/i.exec(header);
+  return plainMatch?.[1] || fallback;
+}
+
+/** 触发浏览器下载 Blob */
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination } = useNaivePaginatedTable({
   api: () =>
@@ -138,7 +181,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       key: 'operate',
       title: $t('common.operate'),
       align: 'center',
-      width: 130,
+      width: 200,
       render: row => (
         <div class="flex-center gap-8px">
           {hasAuth('system:user:update') && (
@@ -158,6 +201,13 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
               }}
             </NPopconfirm>
           )}
+          {hasRowMoreAuth() && (
+            <NDropdown trigger="click" options={buildRowMoreOptions(row)} onSelect={key => handleRowMore(String(key), row)}>
+              <NButton size="small" ghost>
+                {$t('page.manage.user.more')}
+              </NButton>
+            </NDropdown>
+          )}
         </div>
       )
     }
@@ -175,6 +225,69 @@ const {
   onDeleted
 } = useTableOperate(data, 'userId', getData);
 
+/** 行内「更多」是否有任一权限 */
+function hasRowMoreAuth() {
+  return (
+    hasAuth('system:user:updatePwd') ||
+    hasAuth('system:user:permDetail') ||
+    hasAuth('system:online:kick')
+  );
+}
+
+function buildRowMoreOptions(_row: Api.SystemManage.User): DropdownOption[] {
+  const options: DropdownOption[] = [];
+  if (hasAuth('system:user:updatePwd')) {
+    options.push({ label: $t('page.manage.user.resetPwd'), key: 'resetPwd' });
+  }
+  if (hasAuth('system:user:permDetail')) {
+    options.push({ label: $t('page.manage.user.permDetail'), key: 'permDetail' });
+  }
+  if (hasAuth('system:online:kick')) {
+    options.push({ label: $t('page.manage.user.kickSessions'), key: 'kickSessions' });
+  }
+  return options;
+}
+
+function handleRowMore(key: string, row: Api.SystemManage.User) {
+  if (key === 'resetPwd') {
+    openResetPwd(row);
+    return;
+  }
+  if (key === 'permDetail') {
+    openPermDetail(row);
+    return;
+  }
+  if (key === 'kickSessions') {
+    confirmKickSessions(row);
+  }
+}
+
+function openResetPwd(row: Api.SystemManage.User) {
+  resetPwdRow.value = row;
+  resetPwdVisible.value = true;
+}
+
+function openPermDetail(row: Api.SystemManage.User) {
+  permDetailUserId.value = row.userId;
+  permDetailVisible.value = true;
+}
+
+/** 强退该用户全部会话 */
+function confirmKickSessions(row: Api.SystemManage.User) {
+  window.$dialog?.warning({
+    title: $t('common.tip'),
+    content: $t('page.manage.user.confirmKickSessions', { account: row.userAccount }),
+    positiveText: $t('common.confirm'),
+    negativeText: $t('common.cancel'),
+    onPositiveClick: async () => {
+      const { error } = await fetchKickUserSessions({ userId: row.userId });
+      if (error) return;
+      window.$message?.success($t('common.updateSuccess'));
+      await getData();
+    }
+  });
+}
+
 async function handleBatchDelete() {
   const { error } = await fetchDeleteUser(checkedRowKeys.value.join(','));
   if (error) return;
@@ -185,6 +298,29 @@ async function handleDelete(userId: string) {
   const { error } = await fetchDeleteUser(userId);
   if (error) return;
   onDeleted();
+}
+
+/** 按当前筛选导出用户 Excel */
+async function handleExport() {
+  if (!guardAuth('system:user:export')) {
+    return;
+  }
+  exporting.value = true;
+  const { data: blob, error, response } = await fetchExportUserList({
+    userAccount: searchParams.value.userAccount,
+    isEnabled: searchParams.value.isEnabled,
+    isLock: searchParams.value.isLock
+  });
+  exporting.value = false;
+  if (error || !blob) {
+    return;
+  }
+  const filename = parseExportFilename(
+    response?.headers?.['content-disposition'] as string | undefined,
+    `用户列表_${Date.now()}.xlsx`
+  );
+  downloadBlob(blob, filename);
+  window.$message?.success($t('page.manage.user.exportSuccess'));
 }
 
 /** 列表开关启停；无密码时后端会拒绝启用 */
@@ -236,7 +372,20 @@ function edit(userId: string) {
           @add="handleAdd"
           @delete="handleBatchDelete"
           @refresh="getData"
-        />
+        >
+          <template #prefix>
+            <NButton
+              v-if="hasAuth('system:user:export')"
+              size="small"
+              ghost
+              type="primary"
+              :loading="exporting"
+              @click="handleExport"
+            >
+              {{ $t('page.manage.user.export') }}
+            </NButton>
+          </template>
+        </TableHeaderOperation>
       </template>
       <NDataTable
         v-model:checked-row-keys="checkedRowKeys"
@@ -265,6 +414,8 @@ function edit(userId: string) {
         :row-data="editingData"
         @submitted="getDataByPage"
       />
+      <UserResetPwdModal v-model:visible="resetPwdVisible" :row-data="resetPwdRow" />
+      <UserPermDetailModal v-model:visible="permDetailVisible" :user-id="permDetailUserId" />
     </NCard>
   </div>
 </template>

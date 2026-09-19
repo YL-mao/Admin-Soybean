@@ -378,10 +378,25 @@ const local: App.I18n.Schema = {
           userLock: 'Please select lock status',
           userRole: 'Please select user role',
           deptId: 'Please select department',
-          postId: 'Please select post'
+          postId: 'Please select post',
+          userPassword: 'Please enter new password',
+          confirmPassword: 'Please confirm new password'
         },
         addUser: 'Add User',
         editUser: 'Edit User',
+        more: 'More',
+        export: 'Export',
+        exportSuccess: 'Exported successfully',
+        resetPwd: 'Reset Password',
+        userPassword: 'New Password',
+        confirmPassword: 'Confirm Password',
+        passwordPolicy: 'Password must be 8-64 chars and include letters, digits and special characters',
+        permDetail: 'Permission Detail',
+        permTree: 'Permission Tree',
+        expandAll: 'Expand All',
+        collapseAll: 'Collapse All',
+        kickSessions: 'Force Logout',
+        confirmKickSessions: 'Force logout all sessions of account "{account}"?',
         gender: {
           male: 'Male',
           female: 'Female'

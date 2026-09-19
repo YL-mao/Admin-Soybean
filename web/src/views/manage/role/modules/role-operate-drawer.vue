@@ -1,21 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { jsonClone } from '@sa/utils';
-import { useBoolean } from '@sa/hooks';
 import { enabledFlagOptions } from '@/constants/business';
 import {
   fetchCheckRoleCodeUnique,
   fetchCheckRoleNameUnique,
   fetchCreateRole,
-  fetchSaveRoleMenu,
   fetchUpdateRole
 } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
-import { useAuth } from '@/hooks/business/auth';
-import { useAuthStore } from '@/store/modules/auth';
-import { useRouteStore } from '@/store/modules/route';
 import { $t } from '@/locales';
-import MenuAuthModal from './menu-auth-modal.vue';
 
 defineOptions({
   name: 'RoleOperateDrawer'
@@ -40,12 +34,8 @@ const visible = defineModel<boolean>('visible', {
   default: false
 });
 
-const authStore = useAuthStore();
-const routeStore = useRouteStore();
-const { hasAuth } = useAuth();
 const { formRef, validate, restoreValidation } = useNaiveForm();
 const { defaultRequiredRule } = useFormRules();
-const { bool: menuAuthVisible, setTrue: openMenuAuthModal } = useBoolean();
 
 const title = computed(() => {
   const titles: Record<NaiveUI.TableOperateType, string> = {
@@ -63,8 +53,6 @@ type Model = {
 };
 
 const model = ref(createDefaultModel());
-/** 菜单授权草稿；null 表示未改，提交时不写菜单 */
-const draftMenuIds = ref<string[] | null>(null);
 
 function createDefaultModel(): Model {
   return {
@@ -91,13 +79,8 @@ const rules: Record<keyof Model, App.Global.FormRule | App.Global.FormRule[]> = 
   isEnabled: defaultRequiredRule
 };
 
-const roleId = computed(() => props.rowData?.roleId || '');
-
-const isEdit = computed(() => props.operateType === 'edit');
-
 function handleInitModel() {
   model.value = createDefaultModel();
-  draftMenuIds.value = null;
 
   if (props.operateType === 'edit' && props.rowData) {
     const row = jsonClone(props.rowData);
@@ -112,10 +95,6 @@ function handleInitModel() {
 
 function closeDrawer() {
   visible.value = false;
-}
-
-function handleMenuAuthConfirm(menuIds: string[]) {
-  draftMenuIds.value = menuIds;
 }
 
 async function handleSubmit() {
@@ -145,18 +124,6 @@ async function handleSubmit() {
   if (props.operateType === 'edit' && props.rowData) {
     const { error } = await fetchUpdateRole({ ...body, roleId: props.rowData.roleId });
     if (error) return;
-
-    // 菜单授权随角色确认一并落库
-    if (draftMenuIds.value !== null) {
-      const { error: menuErr } = await fetchSaveRoleMenu({
-        roleId: props.rowData.roleId,
-        menuIds: draftMenuIds.value.join(',')
-      });
-      if (menuErr) return;
-
-      await authStore.refreshUserInfo();
-      await routeStore.reloadAuthRoute();
-    }
 
     window.$message?.success($t('common.updateSuccess'));
   } else {
@@ -201,15 +168,6 @@ watch(visible, () => {
           </NRadioGroup>
         </NFormItem>
       </NForm>
-      <NSpace v-if="isEdit && hasAuth('system:role:auth')">
-        <NButton @click="openMenuAuthModal">{{ $t('page.manage.role.menuAuth') }}</NButton>
-        <MenuAuthModal
-          v-model:visible="menuAuthVisible"
-          :role-id="roleId"
-          :draft-menu-ids="draftMenuIds"
-          @confirm="handleMenuAuthConfirm"
-        />
-      </NSpace>
       <template #footer>
         <NSpace :size="16">
           <NButton @click="closeDrawer">{{ $t('common.cancel') }}</NButton>

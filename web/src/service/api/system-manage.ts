@@ -317,6 +317,49 @@ export function fetchCheckUserAccountUnique(params: { userAccount: string }) {
   });
 }
 
+/** 导出用户列表（与列表相同筛选，不分页；返回 xlsx Blob） */
+export function fetchExportUserList(
+  params?: Pick<Api.SystemManage.UserSearchParams, 'userAccount' | 'isEnabled' | 'isLock'>
+) {
+  return request<Blob, 'blob'>({
+    url: '/user/export',
+    method: 'get',
+    params: {
+      userAccount: params?.userAccount,
+      isEnabled: params?.isEnabled,
+      isLock: params?.isLock
+    },
+    responseType: 'blob'
+  });
+}
+
+/** 管理员重置密码 */
+export function fetchUpdateUserPwd(data: Api.SystemManage.UserUpdatePwd) {
+  return request<null>({
+    url: '/user/updatePwd',
+    method: 'patch',
+    data
+  });
+}
+
+/** 按用户强退全部会话 */
+export function fetchKickUserSessions(data: { userId: string }) {
+  return request<null>({
+    url: '/user/kickSessions',
+    method: 'patch',
+    data
+  });
+}
+
+/** 用户最终权限详情（角色 + 并集权限平铺） */
+export function fetchGetUserPermDetail(userId: string) {
+  return request<Api.SystemManage.UserPermDetail>({
+    url: '/user/permDetail',
+    method: 'get',
+    params: { userId }
+  });
+}
+
 /** 菜单列表（平铺，前端组树） */
 export function fetchGetMenuList(params?: Api.SystemManage.MenuSearchParams) {
   return request<Api.SystemManage.Menu[]>({

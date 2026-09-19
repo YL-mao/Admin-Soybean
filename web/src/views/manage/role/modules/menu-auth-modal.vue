@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, shallowRef, watch } from 'vue';
+import { computed, ref, shallowRef, watch } from 'vue';
 import type { TreeOption } from 'naive-ui';
-import { fetchGetRoleMenuTree } from '@/service/api';
+import { fetchGetRoleMenuTree, fetchSaveRoleMenu } from '@/service/api';
+import { useAuthStore } from '@/store/modules/auth';
+import { useRouteStore } from '@/store/modules/route';
 import { $t } from '@/locales';
 
 defineOptions({
@@ -11,29 +13,29 @@ defineOptions({
 interface Props {
   /** 角色 ID */
   roleId: string;
-  /** 父抽屉暂存勾选；null 表示用接口回显 */
-  draftMenuIds?: string[] | null;
+  /** 角色名称，仅用于标题 */
+  roleName?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  draftMenuIds: null
+  roleName: ''
 });
-
-interface Emits {
-  (e: 'confirm', menuIds: string[]): void;
-}
-
-const emit = defineEmits<Emits>();
 
 const visible = defineModel<boolean>('visible', {
   default: false
 });
 
+const authStore = useAuthStore();
+const routeStore = useRouteStore();
+const saving = ref(false);
+
 function closeModal() {
   visible.value = false;
 }
 
-const title = computed(() => $t('common.edit') + $t('page.manage.role.menuAuth'));
+const title = computed(() =>
+  props.roleName ? `${props.roleName} - ${$t('page.manage.role.menuAuth')}` : $t('page.manage.role.menuAuth')
+);
 
 const tree = shallowRef<TreeOption[]>([]);
 const checks = shallowRef<string[]>([]);
@@ -106,8 +108,8 @@ function withAncestors(ids: string[]): string[] {
   return [...result];
 }
 
-/** 平铺 MenuCheck 组树；优先用草稿勾选，否则用接口 checkArr */
-function buildAuthTree(list: Api.SystemManage.MenuCheck[], preferredChecks: string[] | null) {
+/** 平铺 MenuCheck 组树，勾选以接口 checkArr 为准 */
+function buildAuthTree(list: Api.SystemManage.MenuCheck[]) {
   const map = new Map<string, TreeOption>();
   const nextParentMap = new Map<string, string>();
   const nextChildrenMap = new Map<string, string[]>();
@@ -120,7 +122,7 @@ function buildAuthTree(list: Api.SystemManage.MenuCheck[], preferredChecks: stri
       children: []
     });
     nextParentMap.set(item.menuId, item.parentId || '0');
-    if (preferredChecks === null && item.checkArr === '1') {
+    if (item.checkArr === '1') {
       checkedKeys.push(item.menuId);
     }
   });
@@ -145,7 +147,7 @@ function buildAuthTree(list: Api.SystemManage.MenuCheck[], preferredChecks: stri
   tree.value = roots;
   parentMap.value = nextParentMap;
   childrenMap.value = nextChildrenMap;
-  const rawChecks = preferredChecks !== null ? [...preferredChecks] : checkedKeys;
+  const rawChecks = checkedKeys;
   checks.value = toCascadeSafeChecks(rawChecks);
   allExpandableKeys.value = collectExpandableKeys(roots);
   allNodeKeys.value = collectAllKeys(roots);
@@ -203,12 +205,25 @@ async function loadTree() {
     childrenMap.value = new Map();
     return;
   }
-  buildAuthTree(data, props.draftMenuIds ?? null);
+  buildAuthTree(data);
 }
 
-/** 只回写父抽屉草稿（含祖先），不调保存接口 */
-function handleConfirm() {
-  emit('confirm', withAncestors(checks.value));
+/** 确认后直接保存角色菜单，并刷新当前用户的权限与路由 */
+async function handleConfirm() {
+  if (!props.roleId || saving.value) {
+    return;
+  }
+  saving.value = true;
+  const { error } = await fetchSaveRoleMenu({
+    roleId: props.roleId,
+    menuIds: withAncestors(checks.value).join(',')
+  });
+  saving.value = false;
+  if (error) return;
+
+  await authStore.refreshUserInfo();
+  await routeStore.reloadAuthRoute();
+  window.$message?.success($t('common.updateSuccess'));
   closeModal();
 }
 
@@ -245,7 +260,7 @@ watch(visible, val => {
         <NButton size="small" class="mt-16px" @click="closeModal">
           {{ $t('common.cancel') }}
         </NButton>
-        <NButton type="primary" size="small" class="mt-16px" @click="handleConfirm">
+        <NButton type="primary" size="small" class="mt-16px" :loading="saving" @click="handleConfirm">
           {{ $t('common.confirm') }}
         </NButton>
       </NSpace>

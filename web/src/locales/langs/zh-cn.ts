@@ -310,10 +310,25 @@ const local: App.I18n.Schema = {
           userLock: '请选择锁定状态',
           userRole: '请选择用户角色',
           deptId: '请选择部门',
-          postId: '请选择岗位'
+          postId: '请选择岗位',
+          userPassword: '请输入新密码',
+          confirmPassword: '请再次输入新密码'
         },
         addUser: '新增用户',
         editUser: '编辑用户',
+        more: '更多',
+        export: '导出',
+        exportSuccess: '导出成功',
+        resetPwd: '重置密码',
+        userPassword: '新密码',
+        confirmPassword: '确认密码',
+        passwordPolicy: '密码须 8～64 位，且同时包含字母、数字和特殊字符',
+        permDetail: '权限详情',
+        permTree: '权限树',
+        expandAll: '全部展开',
+        collapseAll: '全部收起',
+        kickSessions: '踢下线',
+        confirmKickSessions: '确认强退账号「{account}」的全部会话吗？',
         gender: {
           male: '男',
           female: '女'

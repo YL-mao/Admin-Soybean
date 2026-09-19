@@ -94,6 +94,28 @@ declare namespace Api {
       userId: string;
     };
 
+    /** 管理员重置密码（对齐 UserDto.UpdatePwd） */
+    type UserUpdatePwd = {
+      userId: string;
+      userPassword: string;
+    };
+
+    /** 用户权限详情（对齐 UserVo.UserPermDetailVo） */
+    type UserPermDetail = {
+      userId: string;
+      userName: string;
+      userAccount: string;
+      roles: Array<{
+        roleId: string;
+        roleName: string;
+      }>;
+      perms: Array<{
+        permId: string;
+        parentId: string;
+        permName: string;
+      }>;
+    };
+
     /**
      * menu type（对齐 sys_menu.menu_type）
      *
