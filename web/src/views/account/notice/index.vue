@@ -9,11 +9,12 @@ defineOptions({ name: 'AccountNotice' });
 
 const appStore = useAppStore();
 
-const searchParams = ref<Api.AutoboxScaffold.NoticeSearchParams>({
+const searchParams = ref<Api.SystemManage.NoticeSearchParams>({
   current: 1,
   size: 10,
   noticeTitle: null,
-  status: null
+  noticeType: null,
+  isSend: null
 });
 
 const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination } = useNaivePaginatedTable({

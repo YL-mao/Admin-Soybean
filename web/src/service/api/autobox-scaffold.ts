@@ -42,7 +42,14 @@ export async function fetchDeptTreeList(
   };
 }
 
-export function fetchNoticeList(params?: Api.AutoboxScaffold.NoticeSearchParams) {
+/** 我的公告仍用本地假数据；管理端列表已改走 /notice/list */
+export function fetchNoticeList(params?: {
+  current?: number | null;
+  size?: number | null;
+  noticeTitle?: string | null;
+  status?: Api.Common.EnableStatus | null;
+  isSend?: number | null;
+}) {
   const api = createStaticListApi<Api.AutoboxScaffold.Notice & Record<string, unknown>>(
     () =>
       mockNotices.map(n => ({
@@ -56,7 +63,11 @@ export function fetchNoticeList(params?: Api.AutoboxScaffold.NoticeSearchParams)
         expireTime: n.expireTime,
         status: n.isSend === 1 ? '1' : '2'
       })) as (Api.AutoboxScaffold.Notice & Record<string, unknown>)[],
-    (row, q) => matchLike(row.noticeTitle, q.noticeTitle) && statusMatch(row.status, q.status)
+    (row, q) =>
+      matchLike(row.noticeTitle, q.noticeTitle) &&
+      (q.isSend === null || q.isSend === undefined || q.isSend === ''
+        ? statusMatch(row.status, q.status)
+        : Number(row.isSend) === Number(q.isSend))
   );
   return api(params ?? {});
 }
@@ -74,7 +85,7 @@ export function fetchOperateLogList(params?: Api.AutoboxScaffold.OperateLogSearc
   });
 }
 
-/** 日志配置分组（log.loginEn / log.operEn / log.retainDays） */
+/** 日志配置分组（log.loginEn / log.operEn / log.configEn / log.retainDays） */
 export function fetchLogConfigGroup() {
   return request<Api.SystemManage.ConfigGroupItem[]>({
     url: '/config/group',

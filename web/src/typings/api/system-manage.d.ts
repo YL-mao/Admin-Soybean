@@ -382,5 +382,64 @@ declare namespace Api {
       configValue?: string | null;
       isEnabled?: EnabledFlag;
     };
+
+    /** 公告列表（对齐 NoticeListVo） */
+    type Notice = {
+      noticeId: string;
+      noticeTitle: string;
+      noticeContent: string;
+      noticeType: number;
+      noticeTypeName: string;
+      receiverType: number;
+      receiverTypeName: string;
+      receiverIds: string | null;
+      noticeDesc: string | null;
+      isSend: 0 | 1;
+      isSendName: string;
+      orderNum: number;
+      sendTime: string | null;
+      expireTime: string | null;
+      createBy: string | null;
+      createTime: string | null;
+      delivered: boolean;
+    };
+
+    type NoticeSearchParams = CommonType.RecordNullable<
+      {
+        noticeTitle: string;
+        noticeType: number;
+        isSend: 0 | 1;
+      } & CommonSearchParams
+    >;
+
+    type NoticeInsert = {
+      noticeTitle: string;
+      noticeContent: string;
+      noticeType: number;
+      receiverType: number;
+      receiverIds?: string | null;
+      noticeDesc?: string | null;
+      isSend: 0 | 1;
+      orderNum: number;
+      expireTime?: string | null;
+    };
+
+    type NoticeUpdate = NoticeInsert & {
+      noticeId: string;
+    };
+
+    type DictOption = {
+      dictDataLabel: string;
+      dictDataValue: string;
+      isDefault: string;
+      orderNum: number;
+    };
+
+    type UserOption = {
+      userId: string;
+      userAccount: string;
+      userName: string;
+      label: string;
+    };
   }
 }

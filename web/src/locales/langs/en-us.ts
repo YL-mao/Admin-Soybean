@@ -521,8 +521,23 @@ const local: App.I18n.Schema = {
         editNotice: 'Edit Notice',
         form: {
           noticeTitle: 'Please enter title',
-          status: 'Please select status'
-        }
+          noticeContent: 'Please enter content',
+          noticeType: 'Please select type',
+          receiverType: 'Please select audience',
+          receiverIds: 'Please select targets',
+          noticeDesc: 'Please enter description',
+          orderNum: 'Please enter order',
+          expireTime: 'Please select expire time',
+          isSend: 'Please select publish status'
+        },
+        receiverType: 'Audience',
+        noticeContent: 'Content',
+        noticeDesc: 'Description',
+        publishStatus: 'Publish',
+        draft: 'Draft',
+        published: 'Published',
+        publishedLocked: 'Published notices cannot be edited',
+        detailTitle: 'Notice Detail'
       },
       operateLog: {
         title: 'Operation Logs',

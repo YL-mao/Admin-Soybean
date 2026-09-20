@@ -84,10 +84,6 @@ public class LogAspect {
             if (controllerLog == null) {
                 return;
             }
-            // 仅配置明确为 false 时关闭；缺失/停用时仍记日志。
-            if (!isLoggingEnabled(controllerLog.loggingType())) {
-                return;
-            }
             HttpServletRequest request = ServletUtils.getRequest();
             OperateLog operateLog = new OperateLog();
             fillRequestInfo(operateLog, request);
@@ -97,16 +93,18 @@ public class LogAspect {
             fillResultInfo(operateLog, controllerLog, result, throwable);
             operateLog.setCostTime(costTime);
             operateLog.setOperateTime(LocalDateTime.now());
-            // 配置写成功且有变更项时，按 configCode 拆成多条审计日志。
+            // 配置写成功且有变更项时，按 configCode 拆成多条审计日志（独立开关 log.configEn）
             List<ConfigAuditItem> auditItems = ConfigAuditHolder.drain();
             if (operateLog.getIsSuccess() != null && operateLog.getIsSuccess() == 1) {
                 if (!auditItems.isEmpty()) {
-                    for (ConfigAuditItem item : auditItems) {
-                        OperateLog itemLog = copyOperateLog(operateLog);
-                        itemLog.setOperateTitle(ConfigAuditCodes.OPERATE_TITLE);
-                        itemLog.setRequestBody(StrUtil.sub(maskSensitive(toJson(item)), 0, BODY_LIMIT));
-                        itemLog.setRequestParam("");
-                        asyncInsert(itemLog);
+                    if (isConfigAuditEnabled()) {
+                        for (ConfigAuditItem item : auditItems) {
+                            OperateLog itemLog = copyOperateLog(operateLog);
+                            itemLog.setOperateTitle(ConfigAuditCodes.OPERATE_TITLE);
+                            itemLog.setRequestBody(StrUtil.sub(maskSensitive(toJson(item)), 0, BODY_LIMIT));
+                            itemLog.setRequestParam("");
+                            asyncInsert(itemLog);
+                        }
                     }
                     return;
                 }
@@ -114,6 +112,10 @@ public class LogAspect {
                 if (ConfigAuditCodes.OPERATE_TITLE.equals(operateLog.getOperateTitle())) {
                     return;
                 }
+            }
+            // 仅配置明确为 false 时关闭；缺失/停用时仍记日志。
+            if (!isLoggingEnabled(controllerLog.loggingType())) {
+                return;
             }
             asyncInsert(operateLog);
         } catch (Exception e) {
@@ -153,6 +155,11 @@ public class LogAspect {
             return configRuntimeService.getBoolean(LogConfigCodes.OPERATE_ENABLED).orElse(true);
         }
         return true;
+    }
+
+    /** 配置审计独立开关；缺失时默认开启。 */
+    private boolean isConfigAuditEnabled() {
+        return configRuntimeService.getBoolean(LogConfigCodes.CONFIG_AUDIT_ENABLED).orElse(true);
     }
 
         private void fillRequestInfo(OperateLog operateLog, HttpServletRequest request) {

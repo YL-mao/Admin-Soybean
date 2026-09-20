@@ -32,6 +32,7 @@ const logConfigItems = ref<Api.SystemManage.ConfigGroupItem[]>([]);
 const logConfigForm = reactive({
   loginEnabled: true,
   operateEnabled: true,
+  configEnabled: true,
   retainDays: 0
 });
 
@@ -202,20 +203,23 @@ async function openLogConfig() {
   logConfigItems.value = items || [];
   const login = logConfigItems.value.find(i => i.configCode === 'log.loginEn');
   const operate = logConfigItems.value.find(i => i.configCode === 'log.operEn');
+  const configAudit = logConfigItems.value.find(i => i.configCode === 'log.configEn');
   const retain = logConfigItems.value.find(i => i.configCode === 'log.retainDays');
   logConfigForm.loginEnabled = (login?.configValue || 'true').toLowerCase() === 'true';
   logConfigForm.operateEnabled = (operate?.configValue || 'true').toLowerCase() === 'true';
+  logConfigForm.configEnabled = (configAudit?.configValue || 'true').toLowerCase() === 'true';
   logConfigForm.retainDays = Number(retain?.configValue || 0) || 0;
 }
 
 async function saveLogConfig() {
   if (!hasAuth('system:config:log')) return;
   const payload = logConfigItems.value
-    .filter(i => ['log.loginEn', 'log.operEn', 'log.retainDays'].includes(i.configCode))
+    .filter(i => ['log.loginEn', 'log.operEn', 'log.configEn', 'log.retainDays'].includes(i.configCode))
     .map(item => {
       let configValue = item.configValue;
       if (item.configCode === 'log.loginEn') configValue = String(logConfigForm.loginEnabled);
       if (item.configCode === 'log.operEn') configValue = String(logConfigForm.operateEnabled);
+      if (item.configCode === 'log.configEn') configValue = String(logConfigForm.configEnabled);
       if (item.configCode === 'log.retainDays') configValue = String(logConfigForm.retainDays);
       return {
         configId: item.configId,
@@ -249,10 +253,21 @@ async function cleanByRetention() {
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <OperateLogSearch v-model:model="searchParams" :tab="activeTab" @search="getDataByPage" />
 
-    <NCard :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
+    <NCard
+      :title="$t('page.autobox.operateLog.title')"
+      :bordered="false"
+      size="small"
+      class="card-wrapper sm:flex-1-hidden"
+    >
       <template #header-extra>
         <NSpace>
-          <NButton v-if="hasAuth('system:config:log')" size="small" @click="openLogConfig">
+          <NButton
+            v-if="hasAuth('system:config:log')"
+            size="small"
+            ghost
+            type="primary"
+            @click="openLogConfig"
+          >
             {{ $t('page.autobox.operateLog.logConfig') }}
           </NButton>
           <TableHeaderOperation v-model:columns="columnChecks" :loading="loading" @refresh="getData">
@@ -358,6 +373,9 @@ async function cleanByRetention() {
             </NFormItem>
             <NFormItem :label="$t('page.autobox.operateLog.tabOperate')">
               <NSwitch v-model:value="logConfigForm.operateEnabled" />
+            </NFormItem>
+            <NFormItem :label="$t('page.autobox.operateLog.tabConfig')">
+              <NSwitch v-model:value="logConfigForm.configEnabled" />
             </NFormItem>
             <NFormItem :label="$t('page.autobox.operateLog.retainDays')">
               <NInputNumber v-model:value="logConfigForm.retainDays" :min="0" :precision="0" class="w-full" />

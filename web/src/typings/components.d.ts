@@ -58,6 +58,7 @@ declare module 'vue' {
     NCollapseItem: typeof import('naive-ui')['NCollapseItem']
     NColorPicker: typeof import('naive-ui')['NColorPicker']
     NDataTable: typeof import('naive-ui')['NDataTable']
+    NDatePicker: typeof import('naive-ui')['NDatePicker']
     NDescriptions: typeof import('naive-ui')['NDescriptions']
     NDescriptionsItem: typeof import('naive-ui')['NDescriptionsItem']
     NDialogProvider: typeof import('naive-ui')['NDialogProvider']
@@ -114,6 +115,7 @@ declare module 'vue' {
     TableHeaderOperation: typeof import('./../components/advanced/table-header-operation.vue')['default']
     TableSearchActions: typeof import('./../components/advanced/table-search-actions.vue')['default']
     ThemeSchemaSwitch: typeof import('./../components/common/theme-schema-switch.vue')['default']
+    WangEditor: typeof import('./../components/custom/wang-editor.vue')['default']
     WaveBg: typeof import('./../components/custom/wave-bg.vue')['default']
   }
 }
@@ -166,6 +168,7 @@ declare global {
   const NCollapseItem: typeof import('naive-ui')['NCollapseItem']
   const NColorPicker: typeof import('naive-ui')['NColorPicker']
   const NDataTable: typeof import('naive-ui')['NDataTable']
+  const NDatePicker: typeof import('naive-ui')['NDatePicker']
   const NDescriptions: typeof import('naive-ui')['NDescriptions']
   const NDescriptionsItem: typeof import('naive-ui')['NDescriptionsItem']
   const NDialogProvider: typeof import('naive-ui')['NDialogProvider']
@@ -222,5 +225,6 @@ declare global {
   const TableHeaderOperation: typeof import('./../components/advanced/table-header-operation.vue')['default']
   const TableSearchActions: typeof import('./../components/advanced/table-search-actions.vue')['default']
   const ThemeSchemaSwitch: typeof import('./../components/common/theme-schema-switch.vue')['default']
+  const WangEditor: typeof import('./../components/custom/wang-editor.vue')['default']
   const WaveBg: typeof import('./../components/custom/wave-bg.vue')['default']
 }

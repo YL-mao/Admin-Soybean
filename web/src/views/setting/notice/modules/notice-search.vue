@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { toRaw } from 'vue';
+import { onMounted, ref, toRaw } from 'vue';
 import { jsonClone } from '@sa/utils';
-import { enableStatusOptions } from '@/constants/business';
-import { translateOptions } from '@/utils/common';
+import { fetchGetDictOptions } from '@/service/api';
 import { $t } from '@/locales';
 
 defineOptions({ name: 'NoticeSearch' });
@@ -13,9 +12,16 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 
-const model = defineModel<Api.AutoboxScaffold.NoticeSearchParams>('model', { required: true });
+const model = defineModel<Api.SystemManage.NoticeSearchParams>('model', { required: true });
 
 const defaultModel = jsonClone(toRaw(model.value));
+
+const typeOptions = ref<{ label: string; value: number }[]>([]);
+
+const sendOptions = [
+  { label: $t('page.autobox.notice.draft'), value: 0 },
+  { label: $t('page.autobox.notice.published'), value: 1 }
+];
 
 function resetModel() {
   Object.assign(model.value, defaultModel);
@@ -24,6 +30,15 @@ function resetModel() {
 function search() {
   emit('search');
 }
+
+onMounted(async () => {
+  const { data, error } = await fetchGetDictOptions('sys_notice_type');
+  if (error || !data) return;
+  typeOptions.value = data.map(item => ({
+    label: item.dictDataLabel,
+    value: Number(item.dictDataValue)
+  }));
+});
 </script>
 
 <template>
@@ -35,8 +50,16 @@ function search() {
             <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.notice.noticeTitle')" class="pr-24px">
               <NInput v-model:value="model.noticeTitle" :placeholder="$t('page.autobox.notice.form.noticeTitle')" />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.common.status.enable')" class="pr-24px">
-              <NSelect v-model:value="model.status" clearable :options="translateOptions(enableStatusOptions)" />
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.notice.noticeType')" class="pr-24px">
+              <NSelect
+                v-model:value="model.noticeType"
+                clearable
+                :options="typeOptions"
+                :placeholder="$t('page.autobox.notice.form.noticeType')"
+              />
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.notice.publishStatus')" class="pr-24px">
+              <NSelect v-model:value="model.isSend" clearable :options="sendOptions" />
             </NFormItemGi>
             <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">
               <TableSearchActions @reset="resetModel" @search="search" />

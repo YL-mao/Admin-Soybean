@@ -166,13 +166,13 @@ public class NoticeService {
     }
 
     private NoticeVo.HeaderMessageItemVo toHeaderMessageItem(NoticeVo.UserInboxVo inbox) {
-        // 头部消息由前端拼 HTML；此处返回规范化后的纯文本，展示侧再转义。
+        // 头部消息由前端拼 HTML；摘要用纯文本，避免正文标签被拼进页面。
         return new NoticeVo.HeaderMessageItemVo(
                 inbox.noticeId(),
                 NoticeVo.noticeTypeIcon(inbox.noticeType()),
                 inbox.noticeType(),
-                nullToEmpty(inbox.noticeTitle()),
-                truncateNoticeContent(inbox.noticeContent()),
+                nullToEmpty(TextSafeUtils.noticeHtmlToPlain(inbox.noticeTitle())),
+                truncateNoticeContent(TextSafeUtils.noticeHtmlToPlain(inbox.noticeContent())),
                 nullToEmpty(inbox.noticeTypeName()),
                 inbox.sendTime() != null
                         ? inbox.sendTime().format(DATE_TIME_FORMATTER)
@@ -192,10 +192,18 @@ public class NoticeService {
         return value == null ? "" : value;
     }
 
-    /** 公告标题 / 正文 / 备注按纯文本规范化后入库。 */
+    /** 标题和正文按白名单 HTML 清洗；说明仍是纯文本。 */
     private void normalizeNoticePlainText(Notice notice) {
-        notice.setNoticeTitle(TextSafeUtils.normalizePlainText(notice.getNoticeTitle()));
-        notice.setNoticeContent(TextSafeUtils.normalizePlainText(notice.getNoticeContent()));
+        String title = TextSafeUtils.sanitizeNoticeHtml(notice.getNoticeTitle());
+        if (StrUtil.isBlank(TextSafeUtils.noticeHtmlToPlain(title))) {
+            throw new BusinessException("公告标题不能为空");
+        }
+        notice.setNoticeTitle(title);
+        String content = TextSafeUtils.sanitizeNoticeHtml(notice.getNoticeContent());
+        if (StrUtil.isBlank(TextSafeUtils.noticeHtmlToPlain(content))) {
+            throw new BusinessException("公告内容不能为空");
+        }
+        notice.setNoticeContent(content);
         notice.setNoticeDesc(TextSafeUtils.normalizePlainText(notice.getNoticeDesc()));
     }
 

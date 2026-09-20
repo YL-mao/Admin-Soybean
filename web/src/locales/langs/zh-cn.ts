@@ -517,8 +517,23 @@ const local: App.I18n.Schema = {
         editNotice: '编辑公告',
         form: {
           noticeTitle: '请输入公告标题',
-          status: '请选择状态'
-        }
+          noticeContent: '请输入公告内容',
+          noticeType: '请选择公告类型',
+          receiverType: '请选择接收范围',
+          receiverIds: '请选择接收对象',
+          noticeDesc: '请输入说明',
+          orderNum: '请输入排序',
+          expireTime: '请选择过期时间',
+          isSend: '请选择发布状态'
+        },
+        receiverType: '接收范围',
+        noticeContent: '公告内容',
+        noticeDesc: '说明',
+        publishStatus: '发布状态',
+        draft: '草稿',
+        published: '已发布',
+        publishedLocked: '已发布公告不能修改',
+        detailTitle: '公告详情'
       },
       operateLog: {
         title: '行为日志',

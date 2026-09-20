@@ -2,6 +2,7 @@ package com.ylmao.admin.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.ylmao.admin.common.TextSafeUtils;
 import com.ylmao.admin.entity.Notice;
 import com.ylmao.admin.vo.NoticeVo.ConsoleReceiverQueryVo;
 import com.ylmao.admin.vo.NoticeVo.UserInboxQueryVo;
@@ -43,8 +44,8 @@ public class NoticeVo {
         {
             return new NoticeListVo(
                     notice.getNoticeId(),
-                    notice.getNoticeTitle(),
-                    notice.getNoticeContent(),
+                    TextSafeUtils.sanitizeNoticeHtml(notice.getNoticeTitle()),
+                    TextSafeUtils.sanitizeNoticeHtml(notice.getNoticeContent()),
                     notice.getNoticeType(),
                     noticeTypeName,
                     notice.getReceiverType(),
@@ -82,8 +83,8 @@ public class NoticeVo {
         public static UserInboxVo from (UserInboxQueryVo query, String noticeTypeName){
             return new UserInboxVo(
                     query.getNoticeId(),
-                    query.getNoticeTitle(),
-                    query.getNoticeContent(),
+                    TextSafeUtils.sanitizeNoticeHtml(query.getNoticeTitle()),
+                    TextSafeUtils.sanitizeNoticeHtml(query.getNoticeContent()),
                     query.getNoticeType(),
                     noticeTypeName,
                     query.getSendTime(),
