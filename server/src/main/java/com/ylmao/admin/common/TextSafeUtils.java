@@ -11,30 +11,45 @@ import java.util.regex.Pattern;
 
 /**
  * 文本安全工具：纯文本规范化、HTML 转义，以及公告正文的白名单清洗。
- * 标题和说明仍是纯文本；公告正文只保留少量排版标签，不做全站请求体清洗。
+ * 公告标题和正文按白名单 HTML；说明仍是纯文本。不做全站请求体清洗。
  */
 public final class TextSafeUtils {
 
-    /** 公告正文允许的标签。style 只在清洗后再按属性白名单收紧。 */
+    /**
+     * 公告白名单对齐当前工具栏：标题、引用、加粗斜体下划线删除线、上下标、
+     * 行内代码、颜色背景色、链接。列表/表格/图片等工具栏已去掉，粘贴进来也会洗掉。
+     */
     private static final Safelist NOTICE_SAFELIST = Safelist.none()
-            .addTags("p", "br", "b", "strong", "i", "em", "u", "ul", "ol", "li", "a", "span")
+            .addTags("p", "br", "b", "strong", "i", "em", "u", "s", "a", "span",
+                    "h1", "h2", "h3", "h4", "h5", "blockquote",
+                    "code", "sub", "sup")
             .addAttributes("a", "href")
             .addProtocols("a", "href", "http", "https")
             .addEnforcedAttribute("a", "rel", "nofollow noopener noreferrer")
             .addAttributes("p", "style")
             .addAttributes("span", "style")
-            .addAttributes("li", "style")
+            .addAttributes("h1", "style")
+            .addAttributes("h2", "style")
+            .addAttributes("h3", "style")
+            .addAttributes("h4", "style")
+            .addAttributes("h5", "style")
+            .addAttributes("blockquote", "style")
             .addAttributes("b", "style")
             .addAttributes("strong", "style")
             .addAttributes("i", "style")
             .addAttributes("em", "style")
-            .addAttributes("u", "style");
+            .addAttributes("u", "style")
+            .addAttributes("s", "style")
+            .addAttributes("sub", "style")
+            .addAttributes("sup", "style")
+            .addAttributes("code", "style");
 
     private static final Document.OutputSettings NOTICE_OUTPUT = new Document.OutputSettings().prettyPrint(false);
 
-    private static final Pattern BLOCK_TAG = Pattern.compile("(?i)</?(?:p|br|ul|ol|li|div|h[1-6])\\b");
+    private static final Pattern BLOCK_TAG = Pattern.compile("(?i)</?(?:p|br|div|h[1-6]|blockquote)\\b");
 
-    private static final Set<String> STYLE_PROPS = Set.of("color", "font-weight", "text-align", "text-decoration");
+    private static final Set<String> STYLE_PROPS = Set.of(
+            "color", "background-color", "font-weight", "text-align", "text-decoration");
 
     private static final Pattern HEX_COLOR = Pattern.compile("#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})");
 
@@ -77,7 +92,7 @@ public final class TextSafeUtils {
     }
 
     /**
-     * 公告正文：去掉脚本、事件和危险样式，保留加粗、颜色、对齐、列表和 http(s) 链接。
+     * 公告 HTML：去掉脚本、事件和危险样式；只保留当前工具栏能产出的安全标签。
      * 没有块级标签时，换行改成 br，纯文本公告仍按行显示。
      */
     public static String sanitizeNoticeHtml(String value) {
@@ -132,7 +147,7 @@ public final class TextSafeUtils {
         return sb.toString();
     }
 
-    /** 只保留颜色、字重、对齐、下划线；其余样式声明丢掉。 */
+    /** 只保留文字色、背景色、字重、对齐、下划线；其余样式声明丢掉。 */
     private static String filterStyle(String style) {
         StringBuilder sb = new StringBuilder();
         for (String decl : style.split(";")) {
@@ -166,7 +181,7 @@ public final class TextSafeUtils {
             return null;
         }
         return switch (prop) {
-            case "color" -> matchColor(rawValue);
+            case "color", "background-color" -> matchColor(rawValue);
             case "font-weight" -> FONT_WEIGHT.matcher(lower).matches() ? lower : null;
             case "text-align" -> TEXT_ALIGN.matcher(lower).matches() ? lower : null;
             case "text-decoration" -> TEXT_DECORATION.matcher(lower).matches() ? lower : null;

@@ -239,4 +239,41 @@ async function handleDelete(noticeId: string) {
 .notice-html :deep(ol) {
   padding-left: 1.25em;
 }
+
+.notice-html :deep(h1) {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+.notice-html :deep(h2) {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.notice-html :deep(h3) {
+  font-size: 1.17em;
+  font-weight: bold;
+}
+
+.notice-html :deep(h4) {
+  font-size: 1em;
+  font-weight: bold;
+}
+
+.notice-html :deep(h5) {
+  font-size: 0.83em;
+  font-weight: bold;
+}
+
+.notice-html :deep(blockquote) {
+  margin: 0.5em 0;
+  padding: 0.4em 0.8em;
+  border-left: 4px solid #ccc;
+  color: #666;
+}
+
+.notice-html :deep(a) {
+  color: #2080f0;
+  text-decoration: underline;
+}
 </style>

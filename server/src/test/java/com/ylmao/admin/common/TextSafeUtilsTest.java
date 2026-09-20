@@ -33,11 +33,29 @@ class TextSafeUtilsTest {
     }
 
     @Test
-    void dropsEventHandler() {
-        String cleaned = TextSafeUtils.sanitizeNoticeHtml("<img src=x onerror=alert(1)><b>留下</b>");
-        assertFalse(cleaned.toLowerCase().contains("onerror"));
+    void keepsToolbarInlineExtras() {
+        String cleaned = TextSafeUtils.sanitizeNoticeHtml(
+                "<h2>标题</h2><blockquote>引用</blockquote><p><sub>下</sub><sup>上</sup><code>码</code></p>");
+        assertTrue(cleaned.contains("<h2>"));
+        assertTrue(cleaned.contains("<blockquote>"));
+        assertTrue(cleaned.contains("<sub>"));
+        assertTrue(cleaned.contains("<sup>"));
+        assertTrue(cleaned.contains("<code>"));
+    }
+
+    @Test
+    void dropsToolbarExcludedTags() {
+        String cleaned = TextSafeUtils.sanitizeNoticeHtml(
+                "<ul><li>列表</li></ul><table><tr><td>格</td></tr></table>"
+                        + "<img src=\"https://example.com/a.png\" onerror=alert(1)><b>留下</b>");
+        assertFalse(cleaned.toLowerCase().contains("<ul"));
+        assertFalse(cleaned.toLowerCase().contains("<table"));
         assertFalse(cleaned.toLowerCase().contains("<img"));
+        assertFalse(cleaned.toLowerCase().contains("onerror"));
         assertTrue(cleaned.contains("留下"));
+        // 被拆掉的标签文字仍可能作为纯文本留下
+        assertTrue(cleaned.contains("列表"));
+        assertTrue(cleaned.contains("格"));
     }
 
     @Test

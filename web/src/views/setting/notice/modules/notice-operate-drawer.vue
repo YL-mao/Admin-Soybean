@@ -58,6 +58,8 @@ const userOptions = ref<SelectOption[]>([]);
 const submitting = ref(false);
 /** 回填表单时忽略接收范围变更，避免把已选对象清掉 */
 const syncingModel = ref(false);
+/** 等选项和回填完成后再挂载编辑器，避免先闪旧内容 */
+const editorReady = ref(false);
 
 function createDefaultModel(): Model {
   return {
@@ -196,17 +198,22 @@ async function handleSubmit() {
 }
 
 watch(visible, async val => {
-  if (!val) return;
+  if (!val) {
+    editorReady.value = false;
+    return;
+  }
   // 选项加载和回填期间，接收范围变更不要清空已选对象
   syncingModel.value = true;
+  editorReady.value = false;
   await loadOptions();
   await handleInitModel();
   restoreValidation();
+  editorReady.value = true;
 });
 </script>
 
 <template>
-  <NDrawer v-model:show="visible" :width="720">
+  <NDrawer v-model:show="visible" :width="900">
     <NDrawerContent :title="title" closable>
       <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" :label-width="90">
         <NFormItem :label="$t('page.autobox.notice.noticeTitle')" path="noticeTitle">
@@ -215,7 +222,7 @@ watch(visible, async val => {
         <NFormItem :label="$t('page.autobox.notice.noticeContent')" path="noticeContent">
           <!-- 抽屉打开后再挂载，避免隐藏态初始化异常；key 保证增改切换时重建 -->
           <WangEditor
-            v-if="visible"
+            v-if="visible && editorReady"
             :key="`${operateType}-${rowData?.noticeId || 'new'}`"
             v-model:value="model.noticeContent"
             :height="280"
