@@ -36,6 +36,21 @@ public class AdminAuthVo {
     ) {
     }
 
+    /** 免登录品牌快照：对应 sys_config 的 system.* 展示值。 */
+    public record BrandingResult(
+            String name,
+            String shortName,
+            String logo,
+            String favicon,
+            String copyright,
+            String adminMail,
+            String version,
+            String website,
+            String icp,
+            String policeIcp
+    ) {
+    }
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record RouteItem(
             String id,

@@ -3,7 +3,8 @@ import { computed, reactive, ref } from 'vue';
 import { fetchGetConfigGroup, fetchUpdateConfigGroup } from '@/service/api';
 import { useAuth } from '@/hooks/business/auth';
 import { $t } from '@/locales';
-import { getServiceBaseURL } from '@/utils/service';
+import { resolveBackendAssetUrl } from '@/utils/service';
+import { useBrandingStore } from '@/store/modules/branding';
 
 defineOptions({ name: 'SettingConfig' });
 
@@ -14,7 +15,7 @@ defineOptions({ name: 'SettingConfig' });
 const SECTION_DEFS: { titleKey: App.I18n.I18nKey; codes: string[] }[] = [
   {
     titleKey: 'page.autobox.config.sectionBrand',
-    codes: ['system.name', 'system.shortNm', 'system.copyright', 'system.logo', 'system.favicon']
+    codes: ['system.name', 'system.shortName', 'system.copyright', 'system.logo', 'system.favicon']
   },
   {
     titleKey: 'page.autobox.config.sectionContact',
@@ -30,6 +31,7 @@ const SECTION_DEFS: { titleKey: App.I18n.I18nKey; codes: string[] }[] = [
 const IMAGE_PREVIEW_CODES = new Set(['system.logo', 'system.favicon']);
 
 const { hasAuth, guardAuth } = useAuth();
+const brandingStore = useBrandingStore();
 
 const loading = ref(false);
 const saving = ref(false);
@@ -65,18 +67,6 @@ function isImagePreview(code: string) {
   return IMAGE_PREVIEW_CODES.has(code);
 }
 
-/** 相对路径拼后端 baseURL（开发代理走 /proxy-default），绝对/ data URL 原样使用 */
-function resolveAssetUrl(path: string) {
-  const raw = path.trim();
-  if (!raw) return '';
-  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) {
-    return raw;
-  }
-  const isHttpProxy = import.meta.env.DEV && import.meta.env.VITE_HTTP_PROXY === 'Y';
-  const { baseURL } = getServiceBaseURL(import.meta.env, isHttpProxy);
-  return raw.startsWith('/') ? `${baseURL}${raw}` : `${baseURL}/${raw}`;
-}
-
 async function load() {
   loading.value = true;
   const { data, error } = await fetchGetConfigGroup('system');
@@ -110,6 +100,8 @@ async function save() {
   });
   saving.value = false;
   if (error) return;
+  // 保存后刷新全局品牌，登录页/布局立刻生效
+  await brandingStore.fetchBranding();
   window.$message?.success($t('common.updateSuccess'));
 }
 
@@ -158,7 +150,7 @@ void load();
                   <!-- Logo / Favicon：预览在输入框上方，点击可放大 -->
                   <NImage
                     v-if="isImagePreview(item.configCode) && valueMap[item.configId]?.trim()"
-                    :src="resolveAssetUrl(valueMap[item.configId])"
+                    :src="resolveBackendAssetUrl(valueMap[item.configId])"
                     :width="96"
                     :height="96"
                     object-fit="contain"

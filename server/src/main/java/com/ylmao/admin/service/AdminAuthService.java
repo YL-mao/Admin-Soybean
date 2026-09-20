@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.ylmao.admin.common.SystemConfigCodes;
 import com.ylmao.admin.config.exception.BusinessException;
 import com.ylmao.admin.config.saToken.SaTokenUtil;
 import com.ylmao.admin.entity.Menu;
@@ -39,6 +40,27 @@ public class AdminAuthService {
     private final StpInterface stpInterface;
     private final RoleMapper roleMapper;
     private final MenuMapper menuMapper;
+    private final ConfigRuntimeService configRuntimeService;
+
+    /** 免登录品牌引导：从启用态 system.* 配置组装展示快照。 */
+    public AdminAuthVo.BrandingResult buildBranding() {
+        return new AdminAuthVo.BrandingResult(
+                configValue(SystemConfigCodes.NAME),
+                configValue(SystemConfigCodes.SHORT_NAME),
+                configValue(SystemConfigCodes.LOGO),
+                configValue(SystemConfigCodes.FAVICON),
+                configValue(SystemConfigCodes.COPYRIGHT),
+                configValue(SystemConfigCodes.ADMIN_EMAIL),
+                configValue(SystemConfigCodes.VERSION),
+                configValue(SystemConfigCodes.WEBSITE),
+                configValue(SystemConfigCodes.ICP),
+                configValue(SystemConfigCodes.POLICE_ICP)
+        );
+    }
+
+    private String configValue(String configCode) {
+        return configRuntimeService.getString(configCode).orElse("");
+    }
 
     /** 登录成功后组装：userId / userName / role_code 列表。 */
     public AdminAuthVo.LoginResult buildLoginResult(String token) {

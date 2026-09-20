@@ -1,5 +1,5 @@
 <div align="center">
-	<img src="./public/favicon.svg" width="160" />
+	<img src="./public/favicon.png" width="160" />
 	<h1>SoybeanAdmin</h1>
   <span>中文 | <a href="./README.en_US.md">English</a></span>
 </div>
@@ -31,7 +31,7 @@
           <tr>
             <td>
               <a href="https://ui.soybeanjs.cn">
-                <img alt="SoybeanUI" src="./public/favicon.svg" width="52" />
+                <img alt="SoybeanUI" src="./public/favicon.png" width="52" />
               </a>
             </td>
             <td>

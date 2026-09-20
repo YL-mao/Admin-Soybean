@@ -54,6 +54,12 @@ public class AdminAuthController {
         return R.ok();
     }
 
+    /** 免登录品牌快照：登录页 / 布局配活用，字段来自 system.*。 */
+    @GetMapping("/getBranding")
+    public R<AdminAuthVo.BrandingResult> adminAuthGetBranding() {
+        return R.ok(adminAuthService.buildBranding());
+    }
+
     /** 薄版用户信息：角色码 + 按钮权限码（来自 sys_menu）。 */
     @GetMapping("/getUserInfo")
     public R<AdminAuthVo.UserInfoResult> adminAuthGetUserInfo() {

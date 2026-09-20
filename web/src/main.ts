@@ -5,6 +5,7 @@ import { setupAppVersionNotification, setupDayjs, setupIconifyOffline, setupLoad
 import { setupStore } from './store';
 import { setupRouter } from './router';
 import { getLocale, setupI18n } from './locales';
+import { useBrandingStore } from './store/modules/branding';
 import App from './App.vue';
 
 async function setupApp() {
@@ -19,6 +20,9 @@ async function setupApp() {
   const app = createApp(App);
 
   setupStore(app);
+
+  // 登录前拉品牌快照，供登录页 / favicon / 布局使用
+  await useBrandingStore().fetchBranding();
 
   await setupRouter(app);
 

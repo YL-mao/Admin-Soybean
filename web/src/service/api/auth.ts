@@ -30,3 +30,11 @@ export function fetchGetUserInfo() {
     method: 'get'
   });
 }
+
+/** 免登录品牌引导：系统名称 / Logo / 版权等展示快照 */
+export function fetchGetBranding() {
+  return request<Api.Auth.Branding>({
+    url: '/api/admin/auth/getBranding',
+    method: 'get'
+  });
+}

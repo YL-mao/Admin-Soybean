@@ -20,5 +20,19 @@ declare namespace Api {
       roles: string[];
       buttons: string[];
     }
+
+    /** 免登录品牌快照：对应 sys_config 的 system.* 展示值 */
+    interface Branding {
+      name: string;
+      shortName: string;
+      logo: string;
+      favicon: string;
+      copyright: string;
+      adminMail: string;
+      version: string;
+      website: string;
+      icp: string;
+      policeIcp: string;
+    }
   }
 }

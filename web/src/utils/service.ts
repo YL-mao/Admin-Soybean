@@ -62,6 +62,21 @@ export function getServiceBaseURL(env: Env.ImportMeta, isProxy: boolean) {
 }
 
 /**
+ * 后端静态/上传等相对路径拼 baseURL（开发代理走 /proxy-default）；
+ * 绝对 URL、data/blob 原样返回。
+ */
+export function resolveBackendAssetUrl(path?: string | null) {
+  const raw = (path ?? '').trim();
+  if (!raw) return '';
+  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) {
+    return raw;
+  }
+  const isHttpProxy = import.meta.env.DEV && import.meta.env.VITE_HTTP_PROXY === 'Y';
+  const { baseURL } = getServiceBaseURL(import.meta.env, isHttpProxy);
+  return raw.startsWith('/') ? `${baseURL}${raw}` : `${baseURL}/${raw}`;
+}
+
+/**
  * Get proxy pattern of backend service base url
  *
  * @param key If not set, will use the default key

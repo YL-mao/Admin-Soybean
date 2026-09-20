@@ -4,7 +4,7 @@ package com.ylmao.admin.common;
 public final class SystemConfigCodes {
 
     public static final String NAME = "system.name";
-    public static final String SHORT_NAME = "system.shortNm";
+    public static final String SHORT_NAME = "system.shortName";
     public static final String LOGO = "system.logo";
     public static final String FAVICON = "system.favicon";
     public static final String COPYRIGHT = "system.copyright";

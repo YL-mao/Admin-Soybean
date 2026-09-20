@@ -10,6 +10,7 @@ import { setDayjsLocale } from '@/locales/dayjs';
 import { useRouteStore } from '../route';
 import { useTabStore } from '../tab';
 import { useThemeStore } from '../theme';
+import { useBrandingStore } from '../branding';
 
 export const useAppStore = defineStore(SetupStoreId.App, () => {
   const themeStore = useThemeStore();
@@ -72,7 +73,9 @@ export const useAppStore = defineStore(SetupStoreId.App, () => {
   function updateDocumentTitleByLocale() {
     const { i18nKey, title } = router.currentRoute.value.meta;
 
-    const documentTitle = i18nKey ? $t(i18nKey) : title;
+    const pageTitle = i18nKey ? $t(i18nKey) : title;
+    const appName = useBrandingStore().displayTitle;
+    const documentTitle = pageTitle ? `${pageTitle} - ${appName}` : appName;
 
     useTitle(documentTitle);
   }
