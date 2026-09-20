@@ -239,7 +239,7 @@ const local: App.I18n.Schema = {
     setting_dict: '数据字典',
     setting_notice: '公告管理',
     'setting_notice-console': '公告控制台',
-    setting_config: '系统配置',
+    setting_config: '系统信息',
     setting_file: '文件管理',
     ops: '安全运维',
     'ops_operate-log': '行为日志',
@@ -460,6 +460,13 @@ const local: App.I18n.Schema = {
         isDefault: '默认',
         orderNum: '排序',
         selectType: '选中',
+        selectedType: '已选',
+        selectTypeFirst: '请先选择字典类型',
+        codeExists: '字典编码已存在',
+        labelExists: '同一字典类型下数据标签已存在',
+        valueExists: '同一字典类型下数据值已存在',
+        refreshCache: '刷新缓存',
+        refreshSuccess: '缓存已刷新',
         addDictType: '新增字典类型',
         editDictType: '编辑字典类型',
         addDictData: '新增字典数据',
@@ -467,13 +474,22 @@ const local: App.I18n.Schema = {
         form: {
           dictTypeName: '请输入字典名称',
           dictTypeCode: '请输入字典编码',
+          dictTypeCodeInvalid: '字典编码只能包含字母、数字、下划线和连字符',
           dictDataLabel: '请输入数据标签',
           dictDataValue: '请输入数据值',
+          dictTypeDesc: '请输入类型说明',
+          dictDataDesc: '请输入数据说明',
+          orderNum: '请输入排序',
           status: '请选择状态'
         }
       },
       config: {
-        title: '配置列表',
+        title: '系统信息',
+        configMissing: '未找到该分组配置项',
+        sectionBrand: '品牌信息',
+        sectionContact: '联系与版本',
+        sectionFiling: '备案信息',
+        sectionOther: '其他',
         configGroup: '配置分组',
         configName: '配置名称',
         configCode: '配置编码',
@@ -496,6 +512,7 @@ const local: App.I18n.Schema = {
         noticeType: '公告类型',
         sendTime: '发送时间',
         expireTime: '过期时间',
+        noticeConfig: '公告配置',
         addNotice: '新增公告',
         editNotice: '编辑公告',
         form: {
@@ -581,6 +598,7 @@ const local: App.I18n.Schema = {
         filterDesc: '说明',
         expireTime: '过期时间',
         createTime: '创建时间',
+        securityConfig: '安全配置',
         addFilter: '新增策略',
         editFilter: '编辑策略',
         form: {
@@ -614,7 +632,8 @@ const local: App.I18n.Schema = {
         form: {
           fileName: '请输入文件名称',
           sceneName: '请输入业务场景'
-        }
+        },
+        uploadConfig: '上传配置'
       },
       apidoc: {
         title: '接口文档',

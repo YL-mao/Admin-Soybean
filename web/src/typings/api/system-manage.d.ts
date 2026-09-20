@@ -299,5 +299,88 @@ declare namespace Api {
       deptName: string;
       children?: DeptOption[];
     };
+
+    /** 字典类型（对齐 DictTypeListVo） */
+    type DictType = {
+      dictTypeId: string;
+      dictTypeName: string;
+      dictTypeCode: string;
+      orderNum: number;
+      isEnabled: EnabledFlag;
+      dictTypeDesc: string | null;
+      createTime: string | null;
+    };
+
+    /** 字典类型搜索（后端只按名称模糊） */
+    type DictTypeSearchParams = CommonType.RecordNullable<Pick<DictType, 'dictTypeName'> & CommonSearchParams>;
+
+    type DictTypeInsert = {
+      dictTypeName: string;
+      dictTypeCode: string;
+      orderNum: number;
+      isEnabled: EnabledFlag;
+      dictTypeDesc?: string | null;
+    };
+
+    type DictTypeUpdate = DictTypeInsert & {
+      dictTypeId: string;
+    };
+
+    /** 字典数据默认项（库字段 is_default：0 否 / 1 是） */
+    type DictDefaultFlag = '0' | '1';
+
+    /** 字典数据（对齐 DictDataListVo） */
+    type DictData = {
+      dictDataId: string;
+      dictTypeCode: string;
+      dictDataLabel: string;
+      dictDataValue: string;
+      orderNum: number;
+      isDefault: DictDefaultFlag;
+      isEnabled: EnabledFlag;
+      dictDataDesc: string | null;
+      createTime: string | null;
+    };
+
+    /** 字典数据搜索（必须带当前字典编码；标签模糊） */
+    type DictDataSearchParams = CommonType.RecordNullable<
+      Pick<DictData, 'dictTypeCode' | 'dictDataLabel'> & CommonSearchParams
+    >;
+
+    type DictDataInsert = {
+      dictTypeCode: string;
+      dictDataLabel: string;
+      dictDataValue: string;
+      orderNum: number;
+      isEnabled: EnabledFlag;
+      dictDataDesc?: string | null;
+    };
+
+    type DictDataUpdate = DictDataInsert & {
+      dictDataId: string;
+    };
+
+    /** 配置分组明细项（对齐 ConfigListVo，供 /config/group） */
+    type ConfigGroupItem = {
+      configId: string;
+      configName: string;
+      configCode: string;
+      configValue: string | null;
+      configGroup: string;
+      valueType: string;
+      isBuiltin: number;
+      isEnabled: EnabledFlag;
+      orderNum: number;
+      configDesc: string | null;
+      createTime: string | null;
+    };
+
+    /** 分组保存单项 */
+    type ConfigGroupSaveItem = {
+      configId: string;
+      configCode?: string;
+      configValue?: string | null;
+      isEnabled?: EnabledFlag;
+    };
   }
 }

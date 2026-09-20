@@ -4,14 +4,18 @@ import { NButton, NPopconfirm, NTag } from 'naive-ui';
 import { enableStatusRecord } from '@/constants/business';
 import { fetchFilterList } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
+import { useAuth } from '@/hooks/business/auth';
 import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
+import ConfigGroupDrawer from '@/components/custom/config-group-drawer.vue';
 import FilterOperateDrawer from './modules/filter-operate-drawer.vue';
 import FilterSearch from './modules/filter-search.vue';
 
 defineOptions({ name: 'OpsFilter' });
 
 const appStore = useAppStore();
+const { hasAuth } = useAuth();
+const securityConfigVisible = ref(false);
 
 const searchParams = ref<Api.AutoboxScaffold.FilterSearchParams>({
   current: 1,
@@ -96,14 +100,25 @@ function handleDeleteRow() {
       class="card-wrapper sm:flex-1-hidden"
     >
       <template #header-extra>
-        <TableHeaderOperation
-          v-model:columns="columnChecks"
-          :disabled-delete="checkedRowKeys.length === 0"
-          :loading="loading"
-          @add="handleAdd"
-          @delete="onBatchDeleted"
-          @refresh="getData"
-        />
+        <NSpace>
+          <NButton
+            v-if="hasAuth('system:config:security')"
+            size="small"
+            ghost
+            type="primary"
+            @click="securityConfigVisible = true"
+          >
+            {{ $t('page.autobox.filter.securityConfig') }}
+          </NButton>
+          <TableHeaderOperation
+            v-model:columns="columnChecks"
+            :disabled-delete="checkedRowKeys.length === 0"
+            :loading="loading"
+            @add="handleAdd"
+            @delete="onBatchDeleted"
+            @refresh="getData"
+          />
+        </NSpace>
       </template>
       <NDataTable
         v-model:checked-row-keys="checkedRowKeys"
@@ -123,6 +138,12 @@ function handleDeleteRow() {
         :operate-type="operateType"
         :row-data="editingData"
         @submitted="getDataByPage"
+      />
+      <ConfigGroupDrawer
+        v-model:visible="securityConfigVisible"
+        config-group="security"
+        perm-code="system:config:security"
+        :title="$t('page.autobox.filter.securityConfig')"
       />
     </NCard>
   </div>

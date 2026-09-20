@@ -2,12 +2,13 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { NButton, NTag } from 'naive-ui';
-import { useBoolean } from '@sa/hooks';
 import { enableStatusRecord } from '@/constants/business';
 import { fetchJobList } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
+import { useAuth } from '@/hooks/business/auth';
 import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
+import ConfigGroupDrawer from '@/components/custom/config-group-drawer.vue';
 import JobOperateDrawer from './modules/job-operate-drawer.vue';
 import JobSearch from './modules/job-search.vue';
 
@@ -15,7 +16,8 @@ defineOptions({ name: 'OpsJob' });
 
 const appStore = useAppStore();
 const router = useRouter();
-const { bool: configVisible, setTrue: openConfig } = useBoolean();
+const { hasAuth } = useAuth();
+const jobConfigVisible = ref(false);
 
 const searchParams = ref<Api.AutoboxScaffold.JobSearchParams>({
   current: 1,
@@ -109,7 +111,15 @@ async function handleBatchDelete() {
     <NCard :title="$t('page.autobox.job.title')" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
       <template #header-extra>
         <NSpace>
-          <NButton size="small" @click="openConfig">{{ $t('page.autobox.job.jobConfig') }}</NButton>
+          <NButton
+            v-if="hasAuth('system:config:job')"
+            size="small"
+            ghost
+            type="primary"
+            @click="jobConfigVisible = true"
+          >
+            {{ $t('page.autobox.job.jobConfig') }}
+          </NButton>
           <TableHeaderOperation
             v-model:columns="columnChecks"
             :disabled-delete="checkedRowKeys.length === 0"
@@ -139,13 +149,12 @@ async function handleBatchDelete() {
         :row-data="editingData"
         @submitted="getDataByPage"
       />
+      <ConfigGroupDrawer
+        v-model:visible="jobConfigVisible"
+        config-group="job"
+        perm-code="system:config:job"
+        :title="$t('page.autobox.job.jobConfig')"
+      />
     </NCard>
-    <NDrawer v-model:show="configVisible" :width="360">
-      <NDrawerContent :title="$t('page.autobox.job.jobConfig')" closable>
-        <NForm label-placement="left" :label-width="120">
-          <NFormItem :label="$t('page.manage.common.status.enable')"><NSwitch :default-value="true" /></NFormItem>
-        </NForm>
-      </NDrawerContent>
-    </NDrawer>
   </div>
 </template>

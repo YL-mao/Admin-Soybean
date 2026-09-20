@@ -28,7 +28,7 @@ const showLogConfig = ref(false);
 const detailRow = ref<Api.AutoboxScaffold.OperateLog | null>(null);
 const logConfigLoading = ref(false);
 const logConfigSaving = ref(false);
-const logConfigItems = ref<Api.AutoboxScaffold.LogConfigItem[]>([]);
+const logConfigItems = ref<Api.SystemManage.ConfigGroupItem[]>([]);
 const logConfigForm = reactive({
   loginEnabled: true,
   operateEnabled: true,

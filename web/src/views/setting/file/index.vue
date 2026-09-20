@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { fetchFileList } from '@/service/api';
+import { useAuth } from '@/hooks/business/auth';
 import { defaultTransform, useNaivePaginatedTable } from '@/hooks/common/table';
 import { $t } from '@/locales';
+import ConfigGroupDrawer from '@/components/custom/config-group-drawer.vue';
 import FileSearch from './modules/file-search.vue';
 import FileCard from './modules/file-card.vue';
 
 defineOptions({ name: 'SettingFile' });
+
+const { hasAuth } = useAuth();
+const uploadConfigVisible = ref(false);
 
 const searchParams = ref<Api.AutoboxScaffold.FileSearchParams>({
   current: 1,
@@ -43,6 +48,15 @@ function handleDelete(_id: number) {
     <NCard :title="$t('page.autobox.file.title')" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
       <template #header-extra>
         <NSpace wrap justify="end" class="lt-sm:w-200px">
+          <NButton
+            v-if="hasAuth('system:config:upload')"
+            size="small"
+            ghost
+            type="primary"
+            @click="uploadConfigVisible = true"
+          >
+            {{ $t('page.autobox.file.uploadConfig') }}
+          </NButton>
           <NButton size="small" ghost type="primary">
             <template #icon>
               <icon-ic-round-upload class="text-icon" />
@@ -75,5 +89,12 @@ function handleDelete(_id: number) {
         </div>
       </div>
     </NCard>
+
+    <ConfigGroupDrawer
+      v-model:visible="uploadConfigVisible"
+      config-group="upload"
+      perm-code="system:config:upload"
+      :title="$t('page.autobox.file.uploadConfig')"
+    />
   </div>
 </template>

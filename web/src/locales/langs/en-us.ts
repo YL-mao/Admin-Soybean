@@ -243,7 +243,7 @@ const local: App.I18n.Schema = {
     setting_dict: 'Dictionary',
     setting_notice: 'Notice',
     'setting_notice-console': 'Notice Console',
-    setting_config: 'Configuration',
+    setting_config: 'System Info',
     setting_file: 'Files',
     ops: 'Security Ops',
     'ops_operate-log': 'Operation Log',
@@ -464,6 +464,13 @@ const local: App.I18n.Schema = {
         isDefault: 'Default',
         orderNum: 'Order',
         selectType: 'Select',
+        selectedType: 'Selected',
+        selectTypeFirst: 'Select a dict type first',
+        codeExists: 'Dict code already exists',
+        labelExists: 'Label already exists in this dict type',
+        valueExists: 'Value already exists in this dict type',
+        refreshCache: 'Refresh Cache',
+        refreshSuccess: 'Cache refreshed',
         addDictType: 'Add Dict Type',
         editDictType: 'Edit Dict Type',
         addDictData: 'Add Dict Data',
@@ -471,13 +478,22 @@ const local: App.I18n.Schema = {
         form: {
           dictTypeName: 'Please enter dict name',
           dictTypeCode: 'Please enter dict code',
+          dictTypeCodeInvalid: 'Code allows letters, digits, underscore and hyphen only',
           dictDataLabel: 'Please enter label',
           dictDataValue: 'Please enter value',
+          dictTypeDesc: 'Please enter description',
+          dictDataDesc: 'Please enter description',
+          orderNum: 'Please enter order',
           status: 'Please select status'
         }
       },
       config: {
-        title: 'Config List',
+        title: 'System Info',
+        configMissing: 'No config items in this group',
+        sectionBrand: 'Brand',
+        sectionContact: 'Contact & Version',
+        sectionFiling: 'ICP Filing',
+        sectionOther: 'Other',
         configGroup: 'Group',
         configName: 'Name',
         configCode: 'Code',
@@ -500,6 +516,7 @@ const local: App.I18n.Schema = {
         noticeType: 'Type',
         sendTime: 'Send Time',
         expireTime: 'Expire Time',
+        noticeConfig: 'Notice Config',
         addNotice: 'Add Notice',
         editNotice: 'Edit Notice',
         form: {
@@ -585,6 +602,7 @@ const local: App.I18n.Schema = {
         filterDesc: 'Description',
         expireTime: 'Expire',
         createTime: 'Created',
+        securityConfig: 'Security Config',
         addFilter: 'Add Filter',
         editFilter: 'Edit Filter',
         form: {
@@ -618,7 +636,8 @@ const local: App.I18n.Schema = {
         form: {
           fileName: 'Please enter file name',
           sceneName: 'Please enter scene'
-        }
+        },
+        uploadConfig: 'Upload Config'
       },
       apidoc: {
         title: 'API Docs',

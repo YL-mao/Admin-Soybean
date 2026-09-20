@@ -1,9 +1,6 @@
 import type { FlatResponseData } from '@sa/axios';
 import {
-  mockConfigItems,
   mockDeptTree,
-  mockDictData,
-  mockDictTypes,
   mockFiles,
   mockFilters,
   mockJobs,
@@ -45,77 +42,6 @@ export async function fetchDeptTreeList(
   };
 }
 
-export function fetchDictTypeList(params?: Api.AutoboxScaffold.DictTypeSearchParams) {
-  const api = createStaticListApi<Api.AutoboxScaffold.DictType & Record<string, unknown>>(
-    () =>
-      mockDictTypes.map(t => ({
-        id: stableId(t.dictTypeId),
-        dictTypeId: t.dictTypeId,
-        dictTypeName: t.dictTypeName,
-        dictTypeCode: t.dictTypeCode,
-        dictTypeDesc: t.dictTypeDesc,
-        orderNum: t.orderNum,
-        status: enabledToStatus(t.isEnabled)
-      })) as (Api.AutoboxScaffold.DictType & Record<string, unknown>)[],
-    (row, q) =>
-      matchLike(row.dictTypeName, q.dictTypeName) &&
-      matchLike(row.dictTypeCode, q.dictTypeCode) &&
-      statusMatch(row.status, q.status)
-  );
-  return api(params ?? {});
-}
-
-export function fetchDictDataList(params?: Api.AutoboxScaffold.DictDataSearchParams) {
-  const api = createStaticListApi<Api.AutoboxScaffold.DictData & Record<string, unknown>>(
-    () =>
-      mockDictData.map(d => ({
-        id: stableId(d.dictDataId),
-        dictDataId: d.dictDataId,
-        dictTypeId: d.dictTypeId,
-        dictDataLabel: d.dictDataLabel,
-        dictDataValue: d.dictDataValue,
-        dictDataDesc: d.dictDataDesc,
-        orderNum: d.orderNum,
-        isDefault: d.isDefault === 1 ? 'Y' : 'N',
-        status: enabledToStatus(d.isEnabled)
-      })) as (Api.AutoboxScaffold.DictData & Record<string, unknown>)[],
-    (row, q) => {
-      if (q.dictTypeId && row.dictTypeId !== q.dictTypeId) return false;
-      return (
-        matchLike(row.dictDataLabel, q.dictDataLabel) &&
-        matchLike(row.dictDataValue, q.dictDataValue) &&
-        statusMatch(row.status, q.status)
-      );
-    }
-  );
-  return api(params ?? {});
-}
-
-export function fetchConfigItemList(params?: Api.AutoboxScaffold.ConfigSearchParams) {
-  const api = createStaticListApi<Api.AutoboxScaffold.ConfigItem & Record<string, unknown>>(
-    () =>
-      mockConfigItems.map(c => ({
-        id: stableId(c.configId),
-        configId: c.configId,
-        configGroup: c.configGroup,
-        configName: c.configName,
-        configCode: c.configCode,
-        configValue: c.configValue,
-        valueType: c.valueType,
-        isBuiltin: c.isBuiltin,
-        orderNum: c.orderNum,
-        configDesc: c.configDesc,
-        status: enabledToStatus(c.isEnabled)
-      })) as (Api.AutoboxScaffold.ConfigItem & Record<string, unknown>)[],
-    (row, q) =>
-      matchLike(row.configGroup, q.configGroup) &&
-      matchLike(row.configName, q.configName) &&
-      matchLike(row.configCode, q.configCode) &&
-      statusMatch(row.status, q.status)
-  );
-  return api(params ?? {});
-}
-
 export function fetchNoticeList(params?: Api.AutoboxScaffold.NoticeSearchParams) {
   const api = createStaticListApi<Api.AutoboxScaffold.Notice & Record<string, unknown>>(
     () =>
@@ -150,7 +76,7 @@ export function fetchOperateLogList(params?: Api.AutoboxScaffold.OperateLogSearc
 
 /** 日志配置分组（log.loginEn / log.operEn / log.retainDays） */
 export function fetchLogConfigGroup() {
-  return request<Api.AutoboxScaffold.LogConfigItem[]>({
+  return request<Api.SystemManage.ConfigGroupItem[]>({
     url: '/config/group',
     method: 'get',
     params: { configGroup: 'log' }
@@ -160,7 +86,7 @@ export function fetchLogConfigGroup() {
 /** 保存日志配置分组 */
 export function fetchUpdateLogConfigGroup(data: {
   configGroup: string;
-  configs: Array<{ configId: string; configCode?: string; configValue?: string | null; isEnabled?: number }>;
+  configs: Api.SystemManage.ConfigGroupSaveItem[];
 }) {
   return request<null>({
     url: '/config/updateGroup',
