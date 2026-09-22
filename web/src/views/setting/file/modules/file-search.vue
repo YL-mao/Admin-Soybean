@@ -11,12 +11,14 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 
-const model = defineModel<Api.AutoboxScaffold.FileSearchParams>('model', { required: true });
+const model = defineModel<Api.SystemManage.FileSearchParams>('model', { required: true });
 
 const defaultModel = jsonClone(toRaw(model.value));
 
 function resetModel() {
-  Object.assign(model.value, defaultModel);
+  // 重置时保留当前目录筛选
+  const folderId = model.value.folderId;
+  Object.assign(model.value, defaultModel, { folderId });
 }
 
 function search() {
@@ -30,11 +32,8 @@ function search() {
       <NCollapseItem :title="$t('common.search')" name="file-search">
         <NForm :model="model" label-placement="left" :label-width="80">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.file.fileName')" class="pr-24px">
-              <NInput v-model:value="model.fileName" :placeholder="$t('page.autobox.file.form.fileName')" />
-            </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.file.sceneName')" class="pr-24px">
-              <NInput v-model:value="model.sceneName" :placeholder="$t('page.autobox.file.form.sceneName')" />
+            <NFormItemGi span="24 s:12 m:8" :label="$t('page.autobox.file.fileName')" class="pr-24px">
+              <NInput v-model:value="model.originalName" :placeholder="$t('page.autobox.file.form.fileName')" />
             </NFormItemGi>
             <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">
               <TableSearchActions @reset="resetModel" @search="search" />

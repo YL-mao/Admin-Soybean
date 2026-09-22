@@ -310,7 +310,8 @@ public class FileResourceService {
 
     /**
      * 预览：needLogin=1 且未登录 → 401；
-     * 图片软删或磁盘缺失 → 默认头像字节；文档类 → 404。
+     * 记录不存在 → 404（避免把随机/错误 id 回成默认头像造成「串图」错觉）；
+     * 已登记的图片软删或磁盘缺失 → 默认头像字节；文档类 → 404。
      */
     public ResponseEntity<Resource> preview(String fileId) {
         if (StrUtil.isBlank(fileId)) {
@@ -318,7 +319,7 @@ public class FileResourceService {
         }
         FileResource file = fileResourceMapper.selectByIdIncludeDeleted(fileId);
         if (file == null) {
-            return defaultAvatarResponse();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
         // /upload/** 已从全局登录拦截排除，此处按单文件 needLogin 校验。
         if (Integer.valueOf(1).equals(file.getNeedLogin())) {

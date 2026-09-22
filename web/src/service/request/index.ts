@@ -32,6 +32,11 @@ export const request = createFlatRequest(
       // 管理端指纹：deviceId 只走 Header，不进登录 body
       Object.assign(config.headers, { [DEVICE_ID_HEADER]: getDeviceId() });
 
+      // FormData 必须去掉默认 application/json，否则 axios 会把表单序列化成 JSON 导致上传失败
+      if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+        config.headers.set('Content-Type', null);
+      }
+
       return config;
     },
     isBackendSuccess(response) {

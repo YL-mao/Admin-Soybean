@@ -24,6 +24,29 @@ export function createViteProxy(env: Env.ImportMeta, enable: boolean) {
     Object.assign(proxy, createProxyItem(item, isEnableProxyLog));
   });
 
+  // accessUrl 形如 /upload/{fileId}；开发态在前端域名直接打开时须转发到后端，
+  // 否则会进 Vue history 路由被鉴权守卫当成「未登录」。
+  Object.assign(proxy, createUploadProxy(baseURL, isEnableProxyLog));
+
+  return proxy;
+}
+
+/** 把 /upload/** 原样代理到后端，不经 /proxy-default 前缀 */
+function createUploadProxy(target: string, enableLog: boolean) {
+  const proxy: Record<string, ProxyOptions> = {
+    '/upload': {
+      target,
+      changeOrigin: true,
+      configure: (_proxy, options) => {
+        _proxy.on('proxyReq', (_proxyReq, req) => {
+          if (!enableLog) return;
+          consola.log(
+            `${lightBlue('[upload proxy]')}: ${bgYellow(` ${req.method} `)} ${green(`${options.target}${req.url}`)}`
+          );
+        });
+      }
+    }
+  };
   return proxy;
 }
 

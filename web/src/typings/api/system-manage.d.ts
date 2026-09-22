@@ -441,5 +441,73 @@ declare namespace Api {
       userName: string;
       label: string;
     };
+
+    /** 虚拟目录（对齐 FolderOptionVo） */
+    type FolderOption = {
+      folderId: string;
+      parentId: string;
+      folderName: string;
+      isBuiltin: 0 | 1;
+      orderNum: number;
+      children?: FolderOption[];
+    };
+
+    type FolderInsert = {
+      parentId?: string | null;
+      folderName: string;
+      orderNum: number;
+    };
+
+    type FolderUpdate = FolderInsert & {
+      folderId: string;
+    };
+
+    /** 文件列表项（对齐 FileListVo） */
+    type FileResource = {
+      fileId: string;
+      folderId: string;
+      originalName: string;
+      storageType: string;
+      fileSuffix: string;
+      contentType: string | null;
+      fileSize: number;
+      fileScene: string;
+      needLogin: 0 | 1;
+      accessUrl: string;
+      createTime: string | null;
+    };
+
+    type FileSearchParams = CommonType.RecordNullable<
+      {
+        folderId: string;
+        originalName: string;
+      } & CommonSearchParams
+    >;
+
+    type FileUploadParams = {
+      folderId?: string | null;
+      fileScene: string;
+      needLogin?: 0 | 1 | null;
+      forceOverwrite?: boolean | null;
+    };
+
+    type FileUpdate = {
+      fileId: string;
+      folderId: string;
+      originalName: string;
+      needLogin: 0 | 1;
+    };
+
+    type FileUploadRules = {
+      maxFileSizeMb: number;
+      imageExtensions: string[];
+      documentExtensions: string[];
+      excelExtensions: string[];
+    };
+
+    type FileCheckRefResult = {
+      referenced: boolean;
+      message: string;
+    };
   }
 }
