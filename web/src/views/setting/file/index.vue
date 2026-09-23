@@ -6,6 +6,7 @@ import {
   fetchDeleteFile,
   fetchDeleteFolder,
   fetchGetFileList,
+  fetchGetFileUploadRules,
   fetchGetFolderTree
 } from '@/service/api';
 import { useAuth } from '@/hooks/business/auth';
@@ -39,12 +40,16 @@ const folderRowData = ref<Api.SystemManage.FolderOption | null>(null);
 const folderDefaultParentId = ref(FILE_ROOT_FOLDER_ID);
 
 const uploadDrawerVisible = ref(false);
+/** 上传探活进行中，防止连点并发请求 */
+const uploadOpening = ref(false);
+/** 探活成功的规则快照，交给抽屉避免二次请求竞态 */
+const uploadRulesSnapshot = ref<Api.SystemManage.FileUploadRules | null>(null);
 const detailVisible = ref(false);
 const detailRow = ref<Api.SystemManage.FileResource | null>(null);
 
 const searchParams = ref<Api.SystemManage.FileSearchParams>({
   current: 1,
-  size: 18,
+  size: 12,
   folderId: FILE_ROOT_FOLDER_ID,
   originalName: null
 });
@@ -78,7 +83,7 @@ const { data, getData, getDataByPage, loading, mobilePagination, pagination } = 
     backendPageTransform<Api.SystemManage.FileResource>(
       response,
       searchParams.value.current || 1,
-      searchParams.value.size || 18
+      searchParams.value.size || 12
     ),
   paginationProps: {
     pageSizes: [12, 18, 24, 36]
@@ -94,8 +99,8 @@ const { data, getData, getDataByPage, loading, mobilePagination, pagination } = 
   ]
 });
 
-// hook 默认 pageSize=10，与本页 18 对齐，避免分页器与请求条数不一致
-pagination.pageSize = 18;
+// hook 默认 pageSize=10，与本页 12 对齐，避免分页器与请求条数不一致
+pagination.pageSize = 12;
 async function loadFolderTree() {
   if (!hasAuth('system:file:tree')) {
     treeOptions.value = mapFolderTreeOptions([], $t('page.autobox.file.rootFolder'));
@@ -155,8 +160,26 @@ function handleFolderDelete() {
   });
 }
 
-function openUpload() {
-  uploadDrawerVisible.value = true;
+/** 先探活上传开关/规则；连点忽略，关闭时绝不打开抽屉 */
+async function openUpload() {
+  if (uploadOpening.value || uploadDrawerVisible.value) return;
+  uploadOpening.value = true;
+  try {
+    const { data, error } = await fetchGetFileUploadRules();
+    if (error || !data) {
+      uploadRulesSnapshot.value = null;
+      return;
+    }
+    uploadRulesSnapshot.value = data;
+    uploadDrawerVisible.value = true;
+  } finally {
+    uploadOpening.value = false;
+  }
+}
+
+function handleUploadDrawerVisible(val: boolean) {
+  uploadDrawerVisible.value = val;
+  if (!val) uploadRulesSnapshot.value = null;
 }
 
 function openDetail(item: Api.SystemManage.FileResource) {
@@ -305,7 +328,14 @@ onMounted(() => {
               >
                 {{ $t('page.autobox.file.uploadConfig') }}
               </NButton>
-              <NButton size="small" ghost type="primary" @click="openUpload">
+              <NButton
+                size="small"
+                ghost
+                type="primary"
+                :loading="uploadOpening"
+                :disabled="uploadOpening"
+                @click="openUpload"
+              >
                 <template #icon>
                   <icon-ic-round-upload class="text-icon" />
                 </template>
@@ -377,9 +407,11 @@ onMounted(() => {
     />
 
     <FileUploadDrawer
-      v-model:visible="uploadDrawerVisible"
+      :visible="uploadDrawerVisible"
       :folder-id="selectedFolderId"
       :folder-label="selectedFolderLabel"
+      :rules="uploadRulesSnapshot"
+      @update:visible="handleUploadDrawerVisible"
       @submitted="handleFileSubmitted"
     />
 

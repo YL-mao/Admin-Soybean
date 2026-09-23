@@ -17,9 +17,15 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const model = defineModel<Api.AutoboxScaffold.OperateLogSearchParams>('model', { required: true });
+const model = defineModel<Api.SystemManage.OperateLogSearchParams>('model', { required: true });
 
 const defaultModel = jsonClone(toRaw(model.value));
+
+/** 访问状态：成功 / 失败 */
+const successOptions = [
+  { label: $t('page.autobox.operateLog.visitSuccess'), value: 1 as const },
+  { label: $t('page.autobox.operateLog.visitFail'), value: 0 as const }
+];
 
 const businessTypeOptions = computed(() => {
   if (props.tab === 'login') {
@@ -29,6 +35,7 @@ const businessTypeOptions = computed(() => {
     ];
   }
   if (props.tab === 'config') {
+    // 筛的是库字段 businessType（@Log），不是 requestBody.action（INSERT/ENABLE）
     return [
       { label: 'ADD', value: 'ADD' },
       { label: 'UPDATE', value: 'UPDATE' },
@@ -44,6 +51,20 @@ const businessTypeOptions = computed(() => {
   ];
 });
 
+/** 时间范围 ↔ startTime/endTime（后端 yyyy-MM-dd HH:mm:ss） */
+const timeRange = computed({
+  get(): [string, string] | null {
+    if (model.value.startTime && model.value.endTime) {
+      return [model.value.startTime, model.value.endTime];
+    }
+    return null;
+  },
+  set(val: [string, string] | null) {
+    model.value.startTime = val?.[0] ?? null;
+    model.value.endTime = val?.[1] ?? null;
+  }
+});
+
 function resetModel() {
   const keep = {
     loggingType: model.value.loggingType,
@@ -53,7 +74,11 @@ function resetModel() {
   Object.assign(model.value, defaultModel, keep, {
     businessType: null,
     operateName: null,
-    operateIp: null
+    operateIp: null,
+    requestUri: null,
+    isSuccess: null,
+    startTime: null,
+    endTime: null
   });
 }
 
@@ -95,6 +120,31 @@ function search() {
             </NFormItemGi>
             <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.operateLog.operateIp')" class="pr-24px">
               <NInput v-model:value="model.operateIp" :placeholder="$t('page.autobox.operateLog.form.operateIp')" />
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.operateLog.requestUri')" class="pr-24px">
+              <NInput
+                v-model:value="model.requestUri"
+                :placeholder="$t('page.autobox.operateLog.form.requestUri')"
+              />
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.operateLog.visitStatus')" class="pr-24px">
+              <NSelect
+                v-model:value="model.isSuccess"
+                clearable
+                :placeholder="$t('page.autobox.operateLog.form.isSuccess')"
+                :options="successOptions"
+              />
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.operateLog.timeRange')" class="pr-24px">
+              <!-- 输入框最宽对齐双月历 datetimerange 面板，避免占满半行 -->
+              <NDatePicker
+                v-model:formatted-value="timeRange"
+                type="datetimerange"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                clearable
+                class="w-full max-w-640px"
+                :placeholder="$t('page.autobox.operateLog.form.timeRange')"
+              />
             </NFormItemGi>
             <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">
               <TableSearchActions @reset="resetModel" @search="search" />

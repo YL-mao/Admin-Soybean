@@ -509,5 +509,104 @@ declare namespace Api {
       referenced: boolean;
       message: string;
     };
+
+    /** 对齐后端 OperateLogVo.OperateLogListVo */
+    type OperateLog = {
+      operateId: string;
+      loggingType: string;
+      businessType: string;
+      operateTitle: string;
+      requestMethod: string;
+      operateMethod: string | null;
+      requestUri: string;
+      requestParam: string | null;
+      requestBody: string | null;
+      responseBody: string | null;
+      isSuccess: 0 | 1;
+      statusCode: number | null;
+      errorClass: string | null;
+      errorMsg: string | null;
+      errorStack: string | null;
+      userId: string | null;
+      operateName: string | null;
+      operateIp: string | null;
+      serverIp: string | null;
+      userAgent: string | null;
+      browser: string | null;
+      systemOs: string | null;
+      traceId: string | null;
+      costTime: number | null;
+      operateTime: string;
+    };
+
+    type OperateLogSearchParams = CommonType.RecordNullable<
+      Pick<OperateLog, 'operateTitle' | 'businessType' | 'operateName' | 'operateIp' | 'loggingType'> &
+        CommonSearchParams & {
+          operateTitleExact?: boolean;
+          isSuccess?: 0 | 1;
+          startTime?: string;
+          endTime?: string;
+          requestUri?: string;
+        }
+    >;
+
+    /** 配置变更审计写入 requestBody 的 JSON 结构 */
+    type ConfigAuditItem = {
+      action: string;
+      configCode: string;
+      configName: string;
+      isBuiltin: number | null;
+      beforeValue: string | null;
+      afterValue: string | null;
+      beforeEnabled: number | null;
+      afterEnabled: number | null;
+    };
+
+    /** 对齐后端 FilterVo.FilterListVo */
+    type Filter = {
+      filterId: string;
+      filterType: string;
+      filterTypeName: string;
+      filterValue: string;
+      valueLabel: string;
+      filterSource: string;
+      filterSourceName: string;
+      policyMode: string;
+      policyModeName: string;
+      filterDesc: string | null;
+      expireTime: string;
+      permanent: EnabledFlag;
+      isEnabled: EnabledFlag;
+      createTime: string | null;
+    };
+
+    type FilterSearchParams = CommonType.RecordNullable<
+      {
+        filterType: string;
+        filterValue: string;
+        filterSource: string;
+        policyMode: string;
+        isEnabled: EnabledFlag;
+      } & CommonSearchParams
+    >;
+
+    type FilterInsert = {
+      filterType: string;
+      filterValue: string;
+      filterDesc?: string | null;
+      policyMode: string;
+      expireTime: string;
+      isEnabled: EnabledFlag;
+    };
+
+    type FilterUpdate = {
+      filterId: string;
+      filterType: string;
+      filterValue: string;
+      filterDesc?: string | null;
+      policyMode: string;
+      expireTime: string;
+      isEnabled: EnabledFlag;
+    };
   }
 }

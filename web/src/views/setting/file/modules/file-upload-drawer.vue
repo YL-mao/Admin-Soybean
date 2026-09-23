@@ -16,9 +16,13 @@ interface Props {
   /** 当前左侧选中目录；根目录上传时传 0 */
   folderId: string;
   folderLabel: string;
+  /** 父级探活成功后传入，打开时不再二次请求，避免连点竞态先开后关 */
+  rules?: Api.SystemManage.FileUploadRules | null;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  rules: null
+});
 
 interface Emits {
   (e: 'submitted'): void;
@@ -64,16 +68,21 @@ const rules = {
   needLogin: defaultRequiredRule
 };
 
-async function loadRules() {
-  const { data, error } = await fetchGetFileUploadRules();
-  if (error || !data) {
-    window.$message?.error($t('page.autobox.file.loadRulesFailed'));
-    visible.value = false;
-    return;
-  }
+function applyRules(data: Api.SystemManage.FileUploadRules) {
   cachedRules.value = data;
   maxMb.value = data.maxFileSizeMb || 10;
   applyAccept(model.value.fileScene, data);
+}
+
+async function loadRules() {
+  const { data, error } = await fetchGetFileUploadRules();
+  // 抽屉已关时丢弃迟到响应，避免把后续打开又关掉
+  if (!visible.value) return;
+  if (error || !data) {
+    visible.value = false;
+    return;
+  }
+  applyRules(data);
 }
 
 function applyAccept(scene: string, rulesData?: Api.SystemManage.FileUploadRules | null) {
@@ -155,6 +164,11 @@ watch(visible, async val => {
   fileList.value = [];
   cachedRules.value = null;
   restoreValidation();
+  // 优先用父级已探活规则，避免二次请求与连点竞态
+  if (props.rules) {
+    applyRules(props.rules);
+    return;
+  }
   await loadRules();
 });
 </script>

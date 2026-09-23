@@ -1,11 +1,14 @@
 package com.ylmao.admin.service;
 
+import cn.dev33.satoken.session.SaSession;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ylmao.admin.common.FilterCodes;
+import com.ylmao.admin.common.OnlineSessionKeys;
 import com.ylmao.admin.common.SecurityConfigCodes;
 import com.ylmao.admin.config.exception.BusinessException;
 import com.ylmao.admin.dto.FilterDto;
@@ -82,6 +85,13 @@ public class FilterService {
         if (rows <= 0) {
             throw new BusinessException("新增访问控制失败");
         }
+        // 黑名单启用且未过期才清会话，避免拉黑后仍挂着；已过期不踢
+        kickSessionsIfBlacklistActive(
+                row.getPolicyMode(),
+                row.getFilterType(),
+                row.getFilterValue(),
+                row.getIsEnabled(),
+                row.getExpireTime());
     }
 
     @Transactional
@@ -102,6 +112,12 @@ public class FilterService {
         if (rows <= 0) {
             throw new BusinessException("修改访问控制失败");
         }
+        kickSessionsIfBlacklistActive(
+                row.getPolicyMode(),
+                row.getFilterType(),
+                row.getFilterValue(),
+                row.getIsEnabled(),
+                row.getExpireTime());
     }
 
     @Transactional
@@ -115,6 +131,12 @@ public class FilterService {
         if (rows <= 0) {
             throw new BusinessException("修改访问控制状态失败");
         }
+        kickSessionsIfBlacklistActive(
+                old.getPolicyMode(),
+                old.getFilterType(),
+                old.getFilterValue(),
+                old.getIsEnabled(),
+                old.getExpireTime());
     }
 
     @Transactional
@@ -172,21 +194,29 @@ public class FilterService {
         LocalDateTime now = LocalDateTime.now();
         Filter existing = findActiveByTypeAndValue(FilterCodes.TYPE_IP, ip);
         if (existing != null) {
+            // 生效白名单已在上方 isIpWhitelisted 短路；此处若仍是 WHITE，必为禁用/已过期，可覆盖为自动黑名单
             if (FilterCodes.MODE_WHITE.equals(existing.getPolicyMode())) {
-                log.info("登录失败自动拉黑跳过：IP[{}]记录为白名单", ip);
-                return;
+                log.info("失效白名单覆盖为自动黑名单 ip={}", ip);
             }
-            LocalDateTime base = existing.getExpireTime() != null && existing.getExpireTime().isAfter(now)
-                    ? existing.getExpireTime()
-                    : now;
+            // 未过期黑名单：在原过期时间上续期；白名单/已过期：从当前起算
+            LocalDateTime base = now;
+            if (FilterCodes.MODE_BLACK.equals(existing.getPolicyMode())
+                    && existing.getExpireTime() != null
+                    && existing.getExpireTime().isAfter(now)) {
+                base = existing.getExpireTime();
+            }
             existing.setExpireTime(base.plusMinutes(banMinutes));
             existing.setIsEnabled(1);
             existing.setPolicyMode(FilterCodes.MODE_BLACK);
-            if (StrUtil.isBlank(existing.getFilterSource())) {
-                existing.setFilterSource(FilterCodes.SOURCE_AUTO);
-            }
+            existing.setFilterSource(FilterCodes.SOURCE_AUTO);
             existing.setFilterDesc(filterDesc);
             filterMapper.updateById(existing);
+            kickSessionsIfBlacklistActive(
+                    existing.getPolicyMode(),
+                    existing.getFilterType(),
+                    existing.getFilterValue(),
+                    existing.getIsEnabled(),
+                    existing.getExpireTime());
             return;
         }
         Filter row = new Filter();
@@ -198,6 +228,83 @@ public class FilterService {
         row.setExpireTime(now.plusMinutes(banMinutes));
         row.setIsEnabled(1);
         filterMapper.insert(row);
+        kickSessionsIfBlacklistActive(
+                row.getPolicyMode(),
+                row.getFilterType(),
+                row.getFilterValue(),
+                row.getIsEnabled(),
+                row.getExpireTime());
+    }
+
+    /**
+     * 黑名单且启用、未过期时清会话：USER_ID 整户踢；IP 按 Token-Session 登录 IP 精确匹配踢。
+     * 已过期不踢；清会话失败只记日志，不回滚名单写入。
+     */
+    private void kickSessionsIfBlacklistActive(
+            String policyMode,
+            String filterType,
+            String filterValue,
+            Integer isEnabled,
+            LocalDateTime expireTime
+    ) {
+        if (!FilterCodes.MODE_BLACK.equals(policyMode) || isEnabled == null || isEnabled != 1) {
+            return;
+        }
+        // 与 isBlocked 一致：过期黑名单不执行清会话
+        if (expireTime == null || !expireTime.isAfter(LocalDateTime.now())) {
+            return;
+        }
+        if (StrUtil.isBlank(filterType) || StrUtil.isBlank(filterValue)) {
+            return;
+        }
+        try {
+            if (FilterCodes.TYPE_USER_ID.equals(filterType)) {
+                StpUtil.logout(filterValue.trim());
+                log.info("黑名单生效踢用户会话 userId={}", filterValue);
+                return;
+            }
+            if (FilterCodes.TYPE_IP.equals(filterType)) {
+                int kicked = kickSessionsByLoginIp(filterValue.trim());
+                log.info("黑名单生效踢 IP 会话 ip={} kicked={}", filterValue, kicked);
+            }
+        } catch (Exception e) {
+            log.warn("黑名单清会话失败 type={} value={}", filterType, filterValue, e);
+        }
+    }
+
+    /** 扫有效 Token，登录 IP 与名单值全等则注销该 token。 */
+    private int kickSessionsByLoginIp(String ip) {
+        List<String> tokenKeys = StpUtil.searchTokenValue("", 0, -1, false);
+        if (tokenKeys == null || tokenKeys.isEmpty()) {
+            return 0;
+        }
+        int kicked = 0;
+        String prefix = StpUtil.getStpLogic().splicingKeyTokenValue("");
+        for (String tokenKey : tokenKeys) {
+            String tokenValue = toTokenValue(tokenKey, prefix);
+            if (StrUtil.isBlank(tokenValue) || StpUtil.getLoginIdByToken(tokenValue) == null) {
+                continue;
+            }
+            SaSession tokenSession = StpUtil.getStpLogic().getTokenSessionByToken(tokenValue, false);
+            String loginIp = tokenSession != null ? tokenSession.getString(OnlineSessionKeys.IP) : null;
+            if (!ip.equals(loginIp)) {
+                continue;
+            }
+            StpUtil.logoutByTokenValue(tokenValue);
+            kicked++;
+        }
+        return kicked;
+    }
+
+    private static String toTokenValue(String tokenKey, String prefix) {
+        if (StrUtil.isBlank(tokenKey)) {
+            return "";
+        }
+        if (StrUtil.isNotBlank(prefix) && tokenKey.startsWith(prefix)) {
+            return tokenKey.substring(prefix.length());
+        }
+        int idx = tokenKey.lastIndexOf(':');
+        return idx >= 0 ? tokenKey.substring(idx + 1) : tokenKey;
     }
 
     private static String buildIpAutoBanReason(int ipFailCount, int ipLimit, String failScene, boolean newRecord) {
@@ -265,9 +372,8 @@ public class FilterService {
     }
 
     private void validateTypeValueMode(String type, String value, String policyMode) {
-        if (!FilterCodes.TYPE_IP.equals(type)
-                && !FilterCodes.TYPE_USER_ID.equals(type)
-                && !FilterCodes.TYPE_DEVICE.equals(type)) {
+        // 管理端仅开放 IP / USER_ID；DEVICE 不再写入
+        if (!FilterCodes.TYPE_IP.equals(type) && !FilterCodes.TYPE_USER_ID.equals(type)) {
             throw new BusinessException("参数不合法");
         }
         if (!FilterCodes.MODE_BLACK.equals(policyMode) && !FilterCodes.MODE_WHITE.equals(policyMode)) {

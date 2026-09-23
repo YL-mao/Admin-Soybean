@@ -242,8 +242,8 @@ INSERT INTO `sys_file` VALUES ('2078772824181030913', '1229000000000000001', '�
 DROP TABLE IF EXISTS `sys_filter`;
 CREATE TABLE `sys_filter`  (
   `filter_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '访问控制ID（雪花）',
-  `filter_type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '类型：IP / USER_ID / DEVICE',
-  `filter_value` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '过滤值：IP / 用户ID / 设备标识',
+  `filter_type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '类型：IP / USER_ID',
+  `filter_value` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '过滤值：IP / 用户ID',
   `filter_source` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'MANUAL' COMMENT '来源：MANUAL人工 AUTO自动',
   `filter_desc` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '说明',
   `policy_mode` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'BLACK' COMMENT '策略：WHITE白名单 BLACK黑名单',
@@ -318,7 +318,7 @@ CREATE TABLE `sys_job`  (
 -- ----------------------------
 -- Records of sys_job
 -- ----------------------------
-INSERT INTO `sys_job` VALUES ('1229000000000000101', 'operateLogRetention', '操作日志保留清理', '0 0 3 * * ?', '按 log.retentionDays 清理过期操作日志', 1, 0, 'system', '2026-07-22 00:00:00', '', NULL, 0);
+INSERT INTO `sys_job` VALUES ('1229000000000000101', 'operateLogRetention', '操作日志保留清理', '0 0 3 * * ?', '按 log.retainDays 清理过期操作日志', 1, 0, 'system', '2026-07-22 00:00:00', '', NULL, 0);
 INSERT INTO `sys_job` VALUES ('1229000000000000102', 'noticeExpireClean', '过期公告清理', '0 10 3 * * ?', '软删除已过期公告及收件箱关联', 2, 0, 'system', '2026-07-22 00:00:00', '', NULL, 0);
 INSERT INTO `sys_job` VALUES ('1229000000000000103', 'noticeReadClean', '收件箱已读清理', '0 20 3 * * ?', '按 notice.readDays 软删收件箱已读记录', 3, 0, 'system', '2026-08-25 00:00:00', '', NULL, 0);
 INSERT INTO `sys_job` VALUES ('1229000000000000104', 'noticeUnreadClean', '收件箱未读清理', '0 30 3 * * ?', '按 notice.unreadDays 软删收件箱未读记录', 4, 0, 'system', '2026-08-25 00:00:00', '', NULL, 0);

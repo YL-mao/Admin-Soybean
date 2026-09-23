@@ -2,7 +2,6 @@ import type { FlatResponseData } from '@sa/axios';
 import {
   mockDeptTree,
   mockFiles,
-  mockFilters,
   mockJobs,
   mockNotices,
   mockOnlineUsers,
@@ -10,7 +9,6 @@ import {
 } from '@/mock/autobox/data';
 import { createStaticListApi, matchLike } from '@/mock/autobox/list-api';
 import { enabledToStatus, mapDeptTree, mapPost, stableId } from '@/mock/autobox/mappers';
-import { request } from '../request';
 
 type PaginatingRecord<T> = Api.Common.PaginatingQueryRecord<T>;
 
@@ -72,48 +70,6 @@ export function fetchNoticeList(params?: {
   return api(params ?? {});
 }
 
-export function fetchOperateLogList(params?: Api.AutoboxScaffold.OperateLogSearchParams) {
-  const { current, size, ...rest } = params || {};
-  return request<Api.AutoboxScaffold.OperateLog[]>({
-    url: '/operateLog/list',
-    method: 'get',
-    params: {
-      ...rest,
-      page: current,
-      limit: size
-    }
-  });
-}
-
-/** 日志配置分组（log.loginEn / log.operEn / log.configEn / log.retainDays） */
-export function fetchLogConfigGroup() {
-  return request<Api.SystemManage.ConfigGroupItem[]>({
-    url: '/config/group',
-    method: 'get',
-    params: { configGroup: 'log' }
-  });
-}
-
-/** 保存日志配置分组 */
-export function fetchUpdateLogConfigGroup(data: {
-  configGroup: string;
-  configs: Api.SystemManage.ConfigGroupSaveItem[];
-}) {
-  return request<null>({
-    url: '/config/updateGroup',
-    method: 'put',
-    data
-  });
-}
-
-/** 按保留天数清理过期日志 */
-export function fetchCleanOperateLogByRetention() {
-  return request<number>({
-    url: '/operateLog/cleanByRetention',
-    method: 'delete'
-  });
-}
-
 export function fetchJobList(params?: Api.AutoboxScaffold.JobSearchParams) {
   const api = createStaticListApi<Api.AutoboxScaffold.Job & Record<string, unknown>>(
     () =>
@@ -163,29 +119,6 @@ export function fetchJobLogList(params?: Api.AutoboxScaffold.JobLogSearchParams)
       if (q.runStatus && row.runStatus !== q.runStatus) return false;
       return true;
     }
-  );
-  return api(params ?? {});
-}
-
-export function fetchFilterList(params?: Api.AutoboxScaffold.FilterSearchParams) {
-  const api = createStaticListApi<Api.AutoboxScaffold.Filter & Record<string, unknown>>(
-    () =>
-      mockFilters.map(f => ({
-        id: stableId(f.filterId),
-        filterId: f.filterId,
-        policyModeName: f.policyModeName,
-        filterTypeName: f.filterTypeName,
-        valueLabel: f.valueLabel,
-        filterSourceName: f.filterSourceName,
-        filterDesc: f.filterDesc,
-        expireTime: f.expireTime,
-        createTime: f.createTime,
-        status: enabledToStatus(f.isEnabled)
-      })) as (Api.AutoboxScaffold.Filter & Record<string, unknown>)[],
-    (row, q) =>
-      matchLike(row.valueLabel, q.valueLabel) &&
-      matchLike(row.filterTypeName, q.filterTypeName) &&
-      statusMatch(row.status, q.status)
   );
   return api(params ?? {});
 }

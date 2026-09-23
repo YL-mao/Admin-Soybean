@@ -597,6 +597,78 @@ export function fetchUpdateConfigGroup(data: {
   });
 }
 
+/** 行为日志分页列表 */
+export function fetchOperateLogList(params?: Api.SystemManage.OperateLogSearchParams) {
+  const { current, size, ...rest } = params || {};
+  return request<Api.SystemManage.OperateLog[]>({
+    url: '/operateLog/list',
+    method: 'get',
+    params: {
+      ...rest,
+      page: current,
+      limit: size
+    }
+  });
+}
+
+/** 按保留天数清理过期日志 */
+export function fetchCleanOperateLogByRetention() {
+  return request<number>({
+    url: '/operateLog/cleanByRetention',
+    method: 'delete'
+  });
+}
+
+/** 访问控制分页列表 */
+export function fetchGetFilterList(params?: Api.SystemManage.FilterSearchParams) {
+  const { current, size, ...rest } = params || {};
+  return request<Api.SystemManage.Filter[]>({
+    url: '/filter/list',
+    method: 'get',
+    params: {
+      ...rest,
+      page: current,
+      limit: size
+    }
+  });
+}
+
+/** 新增访问控制 */
+export function fetchCreateFilter(data: Api.SystemManage.FilterInsert) {
+  return request<null>({
+    url: '/filter/add',
+    method: 'post',
+    data
+  });
+}
+
+/** 修改访问控制 */
+export function fetchUpdateFilter(data: Api.SystemManage.FilterUpdate) {
+  return request<null>({
+    url: '/filter/update',
+    method: 'put',
+    data
+  });
+}
+
+/** 删除访问控制 */
+export function fetchDeleteFilter(ids: string) {
+  return request<null>({
+    url: '/filter/delete',
+    method: 'delete',
+    params: { ids }
+  });
+}
+
+/** 启停访问控制 */
+export function fetchUpdateFilterEnabled(data: { filterId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
+  return request<null>({
+    url: '/filter/updateEnabled',
+    method: 'patch',
+    data
+  });
+}
+
 /** 运行时字典选项（登录即可） */
 export function fetchGetDictOptions(dictTypeCode: string) {
   return request<Api.SystemManage.DictOption[]>({
@@ -719,11 +791,15 @@ export function fetchGetFileList(params?: Api.SystemManage.FileSearchParams) {
   });
 }
 
-/** 上传规则（后缀/大小） */
+/** 上传规则（后缀/大小）；禁缓存，避免关开关后命中旧成功响应误开抽屉 */
 export function fetchGetFileUploadRules() {
   return request<Api.SystemManage.FileUploadRules>({
     url: '/file/uploadRules',
-    method: 'get'
+    method: 'get',
+    headers: {
+      'Cache-Control': 'no-cache',
+      Pragma: 'no-cache'
+    }
   });
 }
 

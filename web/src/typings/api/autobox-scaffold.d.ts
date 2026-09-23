@@ -82,72 +82,6 @@ declare namespace Api {
 
     type NoticeSearchParams = CommonType.RecordNullable<Pick<Notice, 'noticeTitle' | 'status'> & CommonSearchParams>;
 
-    /** 对齐后端 OperateLogVo.OperateLogListVo */
-    type OperateLog = {
-      operateId: string;
-      loggingType: string;
-      businessType: string;
-      operateTitle: string;
-      requestMethod: string;
-      operateMethod: string | null;
-      requestUri: string;
-      requestParam: string | null;
-      requestBody: string | null;
-      responseBody: string | null;
-      isSuccess: 0 | 1;
-      statusCode: number | null;
-      errorClass: string | null;
-      errorMsg: string | null;
-      errorStack: string | null;
-      userId: string | null;
-      operateName: string | null;
-      operateIp: string | null;
-      serverIp: string | null;
-      userAgent: string | null;
-      browser: string | null;
-      systemOs: string | null;
-      traceId: string | null;
-      costTime: number | null;
-      operateTime: string;
-    };
-
-    type OperateLogSearchParams = CommonType.RecordNullable<
-      Pick<OperateLog, 'operateTitle' | 'businessType' | 'operateName' | 'operateIp' | 'loggingType'> &
-        CommonSearchParams & {
-          operateTitleExact?: boolean;
-          isSuccess?: 0 | 1;
-          startTime?: string;
-          endTime?: string;
-          requestUri?: string;
-        }
-    >;
-
-    /** 配置变更审计写入 requestBody 的 JSON 结构 */
-    type ConfigAuditItem = {
-      action: string;
-      configCode: string;
-      configName: string;
-      isBuiltin: number | null;
-      beforeValue: string | null;
-      afterValue: string | null;
-      beforeEnabled: number | null;
-      afterEnabled: number | null;
-    };
-
-    type LogConfigItem = {
-      configId: string;
-      configName: string;
-      configCode: string;
-      configValue: string | null;
-      configGroup: string;
-      valueType: string;
-      isBuiltin: number;
-      isEnabled: number;
-      orderNum: number;
-      configDesc: string | null;
-      createTime: string | null;
-    };
-
     type Job = Common.CommonRecord<{
       jobId: string;
       jobName: string;
@@ -174,21 +108,6 @@ declare namespace Api {
     }>;
 
     type JobLogSearchParams = CommonType.RecordNullable<Pick<JobLog, 'runStatus' | 'jobId'> & CommonSearchParams>;
-
-    type Filter = Common.CommonRecord<{
-      filterId: string;
-      policyModeName: string;
-      filterTypeName: string;
-      valueLabel: string;
-      filterSourceName: string;
-      filterDesc: string;
-      expireTime: string;
-      createTime: string;
-    }>;
-
-    type FilterSearchParams = CommonType.RecordNullable<
-      Pick<Filter, 'valueLabel' | 'filterTypeName' | 'status'> & CommonSearchParams
-    >;
 
     type OnlineUser = Common.CommonRecord<{
       tokenId: string;

@@ -12,6 +12,7 @@ public final class FilterCodes {
 
     public static final String TYPE_IP = "IP";
     public static final String TYPE_USER_ID = "USER_ID";
+    /** 历史预留；管理端增改已不再接受 DEVICE。 */
     public static final String TYPE_DEVICE = "DEVICE";
 
     public static final String SOURCE_MANUAL = "MANUAL";

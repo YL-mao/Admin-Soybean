@@ -406,32 +406,6 @@ export const mockNotices: MockNotice[] = [
   }
 ];
 
-export interface MockFilter {
-  filterId: string;
-  policyModeName: string;
-  filterTypeName: string;
-  valueLabel: string;
-  filterSourceName: string;
-  filterDesc: string;
-  expireTime: string;
-  isEnabled: 0 | 1;
-  createTime: string;
-}
-
-export const mockFilters: MockFilter[] = [
-  {
-    filterId: '1',
-    policyModeName: '黑名单',
-    filterTypeName: 'IP',
-    valueLabel: '192.168.1.100',
-    filterSourceName: '手动',
-    filterDesc: '示例',
-    expireTime: '2026-12-31 23:59:59',
-    isEnabled: 1,
-    createTime: '2026-06-20 11:00:00'
-  }
-];
-
 export interface MockJob {
   jobId: string;
   jobName: string;

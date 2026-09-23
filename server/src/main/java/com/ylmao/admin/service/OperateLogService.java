@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,18 +29,6 @@ public class OperateLogService {
 
     private final OperateLogMapper operateLogMapper;
     private final ConfigRuntimeService configRuntimeService;
-
-    /**
-     * 获取最新10条日志
-     * @return List<TsysOperLog>
-     */
-    public List<OperateLog> getNEW(){
-        LambdaQueryWrapper<OperateLog> operateLogQueryWrapper = new LambdaQueryWrapper<>();
-        operateLogQueryWrapper.orderByDesc(OperateLog::getOperateTime);
-        // MySQL：limit 10 取最新 10 条；limit 1,10 会跳过最新 1 条。
-        operateLogQueryWrapper.last("limit 10");
-        return operateLogMapper.selectList(operateLogQueryWrapper);
-    }
 
     public IPage<OperateLogVo.OperateLogListVo> selectPageList(PageQuery pageQuery, OperateLogDto.OperateLogList operateLogList){
         LambdaQueryWrapper<OperateLog> operateLogQueryWrapper = new LambdaQueryWrapper<>();

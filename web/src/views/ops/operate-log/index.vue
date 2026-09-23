@@ -3,9 +3,9 @@ import { computed, reactive, ref, watch } from 'vue';
 import { NButton, NInputNumber, NTag } from 'naive-ui';
 import {
   fetchCleanOperateLogByRetention,
-  fetchLogConfigGroup,
+  fetchGetConfigGroup,
   fetchOperateLogList,
-  fetchUpdateLogConfigGroup
+  fetchUpdateConfigGroup
 } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
 import { useAuth } from '@/hooks/business/auth';
@@ -25,7 +25,7 @@ const { hasAuth } = useAuth();
 const activeTab = ref<LogTab>('operate');
 const showDetail = ref(false);
 const showLogConfig = ref(false);
-const detailRow = ref<Api.AutoboxScaffold.OperateLog | null>(null);
+const detailRow = ref<Api.SystemManage.OperateLog | null>(null);
 const logConfigLoading = ref(false);
 const logConfigSaving = ref(false);
 const logConfigItems = ref<Api.SystemManage.ConfigGroupItem[]>([]);
@@ -36,7 +36,7 @@ const logConfigForm = reactive({
   retainDays: 0
 });
 
-const searchParams = ref<Api.AutoboxScaffold.OperateLogSearchParams>({
+const searchParams = ref<Api.SystemManage.OperateLogSearchParams>({
   current: 1,
   size: 10,
   operateTitle: null,
@@ -44,12 +44,20 @@ const searchParams = ref<Api.AutoboxScaffold.OperateLogSearchParams>({
   loggingType: 'OPERATE',
   businessType: null,
   operateName: null,
-  operateIp: null
+  operateIp: null,
+  requestUri: null,
+  isSuccess: null,
+  startTime: null,
+  endTime: null
 });
 
 function applyTabFilters(tab: LogTab) {
   searchParams.value.current = 1;
   searchParams.value.businessType = null;
+  searchParams.value.requestUri = null;
+  searchParams.value.isSuccess = null;
+  searchParams.value.startTime = null;
+  searchParams.value.endTime = null;
   if (tab === 'login') {
     searchParams.value.loggingType = 'LOGIN';
     searchParams.value.operateTitle = null;
@@ -65,16 +73,16 @@ function applyTabFilters(tab: LogTab) {
   }
 }
 
-function parseConfigAudit(row: Api.AutoboxScaffold.OperateLog): Api.AutoboxScaffold.ConfigAuditItem | null {
+function parseConfigAudit(row: Api.SystemManage.OperateLog): Api.SystemManage.ConfigAuditItem | null {
   if (!row.requestBody) return null;
   try {
-    return JSON.parse(row.requestBody) as Api.AutoboxScaffold.ConfigAuditItem;
+    return JSON.parse(row.requestBody) as Api.SystemManage.ConfigAuditItem;
   } catch {
     return null;
   }
 }
 
-function openDetail(row: Api.AutoboxScaffold.OperateLog) {
+function openDetail(row: Api.SystemManage.OperateLog) {
   detailRow.value = row;
   showDetail.value = true;
 }
@@ -84,7 +92,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
   api: () =>
     hasAuth('system:log:select')
       ? fetchOperateLogList(searchParams.value)
-      : Promise.resolve(emptyAuthListResponse<Api.AutoboxScaffold.OperateLog>()),
+      : Promise.resolve(emptyAuthListResponse<Api.SystemManage.OperateLog>()),
   transform: response =>
     backendPageTransform(response, searchParams.value.current || 1, searchParams.value.size || 10),
   onPaginationParamsChange: params => {
@@ -98,26 +106,37 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
           key: 'configCode',
           title: $t('page.autobox.config.configCode'),
           align: 'center',
-          minWidth: 140,
           render: row => parseConfigAudit(row)?.configCode || '-'
         },
         {
           key: 'configName',
           title: $t('page.autobox.config.configName'),
           align: 'center',
-          minWidth: 120,
           render: row => parseConfigAudit(row)?.configName || '-'
         },
         {
           key: 'action',
           title: $t('page.autobox.operateLog.auditAction'),
           align: 'center',
-          width: 100,
-          render: row => parseConfigAudit(row)?.action || row.businessType
+          render: row => parseConfigAudit(row)?.action || '-'
         },
-        { key: 'operateName', title: $t('page.autobox.operateLog.operateName'), align: 'center', width: 100 },
-        { key: 'operateIp', title: $t('page.autobox.operateLog.operateIp'), align: 'center', width: 120 },
-        { key: 'operateTime', title: $t('page.autobox.operateLog.operateTime'), align: 'center', width: 170 },
+        { key: 'businessType', title: $t('page.autobox.operateLog.businessType'), align: 'center' },
+        { key: 'requestUri', title: $t('page.autobox.operateLog.requestUri'), align: 'center' },
+        { key: 'operateName', title: $t('page.autobox.operateLog.operateName'), align: 'center' },
+        { key: 'operateIp', title: $t('page.autobox.operateLog.operateIp'), align: 'center' },
+        {
+          key: 'isSuccess',
+          title: $t('page.autobox.operateLog.visitStatus'),
+          align: 'center',
+          render: row => (
+            <NTag type={row.isSuccess === 1 ? 'success' : 'error'}>
+              {row.isSuccess === 1
+                ? $t('page.autobox.operateLog.visitSuccess')
+                : $t('page.autobox.operateLog.visitFail')}
+            </NTag>
+          )
+        },
+        { key: 'operateTime', title: $t('page.autobox.operateLog.operateTime'), align: 'center' },
         {
           key: 'operate',
           title: $t('common.operate'),
@@ -132,24 +151,23 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       ];
     }
 
-    const cols: NaiveUI.TableColumn<Api.AutoboxScaffold.OperateLog>[] = [
-      { key: 'operateTitle', title: $t('page.autobox.operateLog.operateTitle'), align: 'center', minWidth: 120 },
-      { key: 'businessType', title: $t('page.autobox.operateLog.businessType'), align: 'center', width: 100 },
-      { key: 'requestMethod', title: $t('page.autobox.operateLog.requestMethod'), align: 'center', width: 90 },
-      { key: 'requestUri', title: $t('page.autobox.operateLog.requestUri'), align: 'center', minWidth: 160 },
-      { key: 'browser', title: $t('page.autobox.operateLog.browser'), align: 'center', width: 90 },
-      { key: 'operateIp', title: $t('page.autobox.operateLog.operateIp'), align: 'center', width: 120 },
-      { key: 'systemOs', title: $t('page.autobox.operateLog.systemOs'), align: 'center', width: 100 },
-      { key: 'operateTime', title: $t('page.autobox.operateLog.operateTime'), align: 'center', width: 170 },
-      { key: 'operateName', title: $t('page.autobox.operateLog.operateName'), align: 'center', width: 90 }
+    const cols: NaiveUI.TableColumn<Api.SystemManage.OperateLog>[] = [
+      { key: 'operateTitle', title: $t('page.autobox.operateLog.operateTitle'), align: 'center' },
+      { key: 'businessType', title: $t('page.autobox.operateLog.businessType'), align: 'center' },
+      { key: 'requestMethod', title: $t('page.autobox.operateLog.requestMethod'), align: 'center' },
+      { key: 'requestUri', title: $t('page.autobox.operateLog.requestUri'), align: 'center' },
+      { key: 'browser', title: $t('page.autobox.operateLog.browser'), align: 'center' },
+      { key: 'operateIp', title: $t('page.autobox.operateLog.operateIp'), align: 'center' },
+      { key: 'systemOs', title: $t('page.autobox.operateLog.systemOs'), align: 'center' },
+      { key: 'operateTime', title: $t('page.autobox.operateLog.operateTime'), align: 'center' },
+      { key: 'operateName', title: $t('page.autobox.operateLog.operateName'), align: 'center' }
     ];
 
     if (activeTab.value === 'operate') {
       cols.push({
         key: 'costTime',
         title: $t('page.autobox.operateLog.costTime'),
-        align: 'center',
-        width: 90
+        align: 'center'
       });
     }
 
@@ -158,10 +176,11 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
         key: 'isSuccess',
         title: $t('page.autobox.operateLog.visitStatus'),
         align: 'center',
-        width: 100,
         render: row => (
           <NTag type={row.isSuccess === 1 ? 'success' : 'error'}>
-            {row.isSuccess === 1 ? $t('common.yesOrNo.yes') : $t('common.yesOrNo.no')}
+            {row.isSuccess === 1
+              ? $t('page.autobox.operateLog.visitSuccess')
+              : $t('page.autobox.operateLog.visitFail')}
           </NTag>
         )
       },
@@ -197,7 +216,7 @@ async function openLogConfig() {
   }
   showLogConfig.value = true;
   logConfigLoading.value = true;
-  const { data: items, error } = await fetchLogConfigGroup();
+  const { data: items, error } = await fetchGetConfigGroup('log');
   logConfigLoading.value = false;
   if (error) return;
   logConfigItems.value = items || [];
@@ -233,7 +252,7 @@ async function saveLogConfig() {
     return;
   }
   logConfigSaving.value = true;
-  const { error } = await fetchUpdateLogConfigGroup({ configGroup: 'log', configs: payload });
+  const { error } = await fetchUpdateConfigGroup({ configGroup: 'log', configs: payload });
   logConfigSaving.value = false;
   if (error) return;
   window.$message?.success($t('common.updateSuccess'));
@@ -286,7 +305,6 @@ async function cleanByRetention() {
         :columns="columns"
         :data="data"
         size="small"
-        :scroll-x="activeTab === 'config' ? 1100 : 1500"
         :flex-height="!appStore.isMobile"
         :loading="loading"
         remote
@@ -299,19 +317,41 @@ async function cleanByRetention() {
       </div>
     </NCard>
 
-    <NModal v-model:show="showDetail" preset="card" :title="$t('page.autobox.operateLog.detailTitle')" class="w-720px">
-      <NDescriptions v-if="detailRow" bordered :column="1" label-placement="left" size="small">
+    <NModal v-model:show="showDetail" preset="card" :title="$t('page.autobox.operateLog.detailTitle')" class="w-860px">
+      <NDescriptions
+        v-if="detailRow"
+        bordered
+        :column="2"
+        label-placement="left"
+        size="small"
+        label-style="width: 110px"
+      >
         <NDescriptionsItem :label="$t('page.autobox.operateLog.operateTitle')">
           {{ detailRow.operateTitle }}
         </NDescriptionsItem>
         <NDescriptionsItem :label="$t('page.autobox.operateLog.businessType')">
-          {{ detailRow.businessType }}
+          {{ detailRow.businessType || '-' }}
         </NDescriptionsItem>
         <NDescriptionsItem :label="$t('page.autobox.operateLog.requestMethod')">
-          {{ detailRow.requestMethod }}
+          {{ detailRow.requestMethod || '-' }}
         </NDescriptionsItem>
-        <NDescriptionsItem :label="$t('page.autobox.operateLog.requestUri')">
-          {{ detailRow.requestUri }}
+        <NDescriptionsItem :label="$t('page.autobox.operateLog.visitStatus')">
+          <NTag :type="detailRow.isSuccess === 1 ? 'success' : 'error'">
+            {{
+              detailRow.isSuccess === 1
+                ? $t('page.autobox.operateLog.visitSuccess')
+                : $t('page.autobox.operateLog.visitFail')
+            }}
+          </NTag>
+        </NDescriptionsItem>
+        <NDescriptionsItem :label="$t('page.autobox.operateLog.requestUri')" :span="2">
+          {{ detailRow.requestUri || '-' }}
+        </NDescriptionsItem>
+        <NDescriptionsItem :label="$t('page.autobox.operateLog.operateMethod')" :span="2">
+          {{ detailRow.operateMethod || '-' }}
+        </NDescriptionsItem>
+        <NDescriptionsItem :label="$t('page.autobox.operateLog.userId')">
+          {{ detailRow.userId || '-' }}
         </NDescriptionsItem>
         <NDescriptionsItem :label="$t('page.autobox.operateLog.operateName')">
           {{ detailRow.operateName || '-' }}
@@ -319,19 +359,26 @@ async function cleanByRetention() {
         <NDescriptionsItem :label="$t('page.autobox.operateLog.operateIp')">
           {{ detailRow.operateIp || '-' }}
         </NDescriptionsItem>
+        <NDescriptionsItem :label="$t('page.autobox.operateLog.serverIp')">
+          {{ detailRow.serverIp || '-' }}
+        </NDescriptionsItem>
         <NDescriptionsItem :label="$t('page.autobox.operateLog.browser')">
           {{ detailRow.browser || '-' }}
         </NDescriptionsItem>
         <NDescriptionsItem :label="$t('page.autobox.operateLog.systemOs')">
           {{ detailRow.systemOs || '-' }}
         </NDescriptionsItem>
+        <NDescriptionsItem :label="$t('page.autobox.operateLog.userAgent')" :span="2">
+          <span class="break-all">{{ detailRow.userAgent || '-' }}</span>
+        </NDescriptionsItem>
+        <NDescriptionsItem :label="$t('page.autobox.operateLog.traceId')">
+          {{ detailRow.traceId || '-' }}
+        </NDescriptionsItem>
         <NDescriptionsItem :label="$t('page.autobox.operateLog.costTime')">
           {{ detailRow.costTime ?? '-' }}
         </NDescriptionsItem>
-        <NDescriptionsItem :label="$t('page.autobox.operateLog.visitStatus')">
-          <NTag :type="detailRow.isSuccess === 1 ? 'success' : 'error'">
-            {{ detailRow.isSuccess === 1 ? $t('common.yesOrNo.yes') : $t('common.yesOrNo.no') }}
-          </NTag>
+        <NDescriptionsItem :label="$t('page.autobox.operateLog.statusCode')">
+          {{ detailRow.statusCode ?? '-' }}
         </NDescriptionsItem>
         <NDescriptionsItem :label="$t('page.autobox.operateLog.operateTime')">
           {{ detailRow.operateTime }}
@@ -343,23 +390,61 @@ async function cleanByRetention() {
           <NDescriptionsItem :label="$t('page.autobox.config.configName')">
             {{ detailAudit.configName }}
           </NDescriptionsItem>
-          <NDescriptionsItem :label="$t('page.autobox.operateLog.auditAction')">
+          <NDescriptionsItem :label="$t('page.autobox.operateLog.auditAction')" :span="2">
             {{ detailAudit.action }}
           </NDescriptionsItem>
-          <NDescriptionsItem :label="$t('page.autobox.operateLog.beforeValue')">
+          <NDescriptionsItem :label="$t('page.autobox.operateLog.beforeEnabled')">
+            {{
+              detailAudit.beforeEnabled == null
+                ? '-'
+                : detailAudit.beforeEnabled === 1
+                  ? $t('common.yesOrNo.yes')
+                  : $t('common.yesOrNo.no')
+            }}
+          </NDescriptionsItem>
+          <NDescriptionsItem :label="$t('page.autobox.operateLog.afterEnabled')">
+            {{
+              detailAudit.afterEnabled == null
+                ? '-'
+                : detailAudit.afterEnabled === 1
+                  ? $t('common.yesOrNo.yes')
+                  : $t('common.yesOrNo.no')
+            }}
+          </NDescriptionsItem>
+          <NDescriptionsItem :label="$t('page.autobox.operateLog.beforeValue')" :span="2">
             {{ detailAudit.beforeValue ?? '-' }}
           </NDescriptionsItem>
-          <NDescriptionsItem :label="$t('page.autobox.operateLog.afterValue')">
+          <NDescriptionsItem :label="$t('page.autobox.operateLog.afterValue')" :span="2">
             {{ detailAudit.afterValue ?? '-' }}
           </NDescriptionsItem>
         </template>
-        <NDescriptionsItem v-else-if="detailRow.requestBody" :label="$t('page.autobox.operateLog.requestBody')">
-          <pre class="max-h-160px overflow-auto whitespace-pre-wrap break-all text-12px">{{
-            detailRow.requestBody
-          }}</pre>
+        <template v-else>
+          <NDescriptionsItem v-if="detailRow.requestParam" :label="$t('page.autobox.operateLog.requestParam')" :span="2">
+            <pre class="max-h-160px overflow-auto whitespace-pre-wrap break-all text-12px">{{
+              detailRow.requestParam
+            }}</pre>
+          </NDescriptionsItem>
+          <NDescriptionsItem v-if="detailRow.requestBody" :label="$t('page.autobox.operateLog.requestBody')" :span="2">
+            <pre class="max-h-160px overflow-auto whitespace-pre-wrap break-all text-12px">{{
+              detailRow.requestBody
+            }}</pre>
+          </NDescriptionsItem>
+          <NDescriptionsItem v-if="detailRow.responseBody" :label="$t('page.autobox.operateLog.responseBody')" :span="2">
+            <pre class="max-h-160px overflow-auto whitespace-pre-wrap break-all text-12px">{{
+              detailRow.responseBody
+            }}</pre>
+          </NDescriptionsItem>
+        </template>
+        <NDescriptionsItem v-if="detailRow.errorClass" :label="$t('page.autobox.operateLog.errorClass')" :span="2">
+          {{ detailRow.errorClass }}
         </NDescriptionsItem>
-        <NDescriptionsItem v-if="detailRow.errorMsg" :label="$t('page.autobox.operateLog.errorMsg')">
+        <NDescriptionsItem v-if="detailRow.errorMsg" :label="$t('page.autobox.operateLog.errorMsg')" :span="2">
           {{ detailRow.errorMsg }}
+        </NDescriptionsItem>
+        <NDescriptionsItem v-if="detailRow.errorStack" :label="$t('page.autobox.operateLog.errorStack')" :span="2">
+          <pre class="max-h-240px overflow-auto whitespace-pre-wrap break-all text-12px">{{
+            detailRow.errorStack
+          }}</pre>
         </NDescriptionsItem>
       </NDescriptions>
     </NModal>

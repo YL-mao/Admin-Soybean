@@ -46,7 +46,7 @@ public class LoginService {
         // 验证码错误不计账号/IP 失败次数。
         captchaService.validateAndConsume(loginRequest.captcha(), request, response);
 
-        // IP 白名单：跳过 IP 失败计数与自动拉黑，仍校验黑名单与账号规则。
+        // IP 白名单：跳过 IP 黑名单、IP 失败计数与自动拉黑；仍校验用户黑名单与账号规则。
         boolean ipWhitelisted = filterService.isIpWhitelisted(clientIp);
 
         if (!ipWhitelisted && filterService.isBlocked(FilterCodes.TYPE_IP, clientIp)) {
