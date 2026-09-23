@@ -41,7 +41,7 @@ const searchParams = ref<Api.SystemManage.OperateLogSearchParams>({
   size: 10,
   operateTitle: null,
   operateTitleExact: false,
-  loggingType: 'OPERATE',
+  logType: 'OPERATE',
   businessType: null,
   operateName: null,
   operateIp: null,
@@ -59,15 +59,15 @@ function applyTabFilters(tab: LogTab) {
   searchParams.value.startTime = null;
   searchParams.value.endTime = null;
   if (tab === 'login') {
-    searchParams.value.loggingType = 'LOGIN';
+    searchParams.value.logType = 'LOGIN';
     searchParams.value.operateTitle = null;
     searchParams.value.operateTitleExact = false;
   } else if (tab === 'config') {
-    searchParams.value.loggingType = 'OPERATE';
+    searchParams.value.logType = 'OPERATE';
     searchParams.value.operateTitle = CONFIG_AUDIT_TITLE;
     searchParams.value.operateTitleExact = true;
   } else {
-    searchParams.value.loggingType = 'OPERATE';
+    searchParams.value.logType = 'OPERATE';
     searchParams.value.operateTitle = null;
     searchParams.value.operateTitleExact = false;
   }

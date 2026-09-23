@@ -12,7 +12,7 @@ public class OperateLogVo {
     // 行为日志列表出口字段，同时供详情抽屉展示完整日志信息。
     public record OperateLogListVo(
             String operateId,
-            String loggingType,
+            String logType,
             String businessType,
             String operateTitle,
             String requestMethod,
@@ -42,7 +42,7 @@ public class OperateLogVo {
         public static OperateLogListVo from(OperateLog operateLog) {
             return new OperateLogListVo(
                     operateLog.getOperateId(),
-                    operateLog.getLoggingType(),
+                    operateLog.getLogType(),
                     operateLog.getBusinessType(),
                     operateLog.getOperateTitle(),
                     operateLog.getRequestMethod(),

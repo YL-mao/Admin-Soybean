@@ -513,7 +513,7 @@ declare namespace Api {
     /** 对齐后端 OperateLogVo.OperateLogListVo */
     type OperateLog = {
       operateId: string;
-      loggingType: string;
+      logType: string;
       businessType: string;
       operateTitle: string;
       requestMethod: string;
@@ -540,7 +540,7 @@ declare namespace Api {
     };
 
     type OperateLogSearchParams = CommonType.RecordNullable<
-      Pick<OperateLog, 'operateTitle' | 'businessType' | 'operateName' | 'operateIp' | 'loggingType'> &
+      Pick<OperateLog, 'operateTitle' | 'businessType' | 'operateName' | 'operateIp' | 'logType'> &
         CommonSearchParams & {
           operateTitleExact?: boolean;
           isSuccess?: 0 | 1;

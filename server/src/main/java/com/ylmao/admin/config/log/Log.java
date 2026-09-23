@@ -14,8 +14,8 @@ public @interface Log {
     /** 模块标题，写入 operate_title */
     String title() default "";
 
-    /** 日志类型：LOGIN / OPERATE */
-    String loggingType() default "OPERATE";
+    /** 日志类型：LOGIN / OPERATE，写入 log_type */
+    String logType() default "OPERATE";
 
     /** 业务类型：QUERY/ADD/UPDATE/DELETE/LOGIN/LOGOUT/OTHER 等 */
     String businessType() default "OTHER";

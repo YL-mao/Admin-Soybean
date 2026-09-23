@@ -13,7 +13,7 @@ public class OperateLogDto {
             @Size(max = 128, message = "操作标题参数不合法") String operateTitle,
             // true：标题精确匹配（配置变更页签）；默认 false 仍模糊搜。
             Boolean operateTitleExact,
-            @Size(max = 32, message = "日志类型参数不合法") String loggingType,
+            @Size(max = 32, message = "日志类型参数不合法") String logType,
             @Min(value = 0, message = "操作结果参数不合法") @Max(value = 1, message = "操作结果参数不合法")
             Integer isSuccess,
             @Size(max = 19, message = "开始时间参数不合法") String startTime,

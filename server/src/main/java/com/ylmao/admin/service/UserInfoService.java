@@ -55,7 +55,7 @@ public class UserInfoService {
         }
         LambdaQueryWrapper<OperateLog> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(OperateLog::getUserId, userId)
-                .eq(OperateLog::getLoggingType, "LOGIN")
+                .eq(OperateLog::getLogType, "LOGIN")
                 .eq(OperateLog::getBusinessType, "LOGIN")
                 .eq(OperateLog::getIsSuccess, 1)
                 .orderByDesc(OperateLog::getOperateTime)
@@ -168,7 +168,7 @@ public class UserInfoService {
     private LocalDateTime getLatestLoginTime(String userId) {
         LambdaQueryWrapper<OperateLog> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(OperateLog::getUserId, userId)
-                .eq(OperateLog::getLoggingType, "LOGIN")
+                .eq(OperateLog::getLogType, "LOGIN")
                 .eq(OperateLog::getBusinessType, "LOGIN")
                 .eq(OperateLog::getIsSuccess, 1)
                 .orderByDesc(OperateLog::getOperateTime)

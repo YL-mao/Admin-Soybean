@@ -41,9 +41,9 @@ public class OperateLogService {
                 operateLogQueryWrapper.like(OperateLog::getOperateTitle, operateLogList.operateTitle());
             }
         }
-        operateLogQueryWrapper.eq(StrUtil.isNotBlank(operateLogList.loggingType()), OperateLog::getLoggingType, operateLogList.loggingType());
+        operateLogQueryWrapper.eq(StrUtil.isNotBlank(operateLogList.logType()), OperateLog::getLogType, operateLogList.logType());
         // 行为日志页签与配置审计分开展示：OPERATE 列表默认排除「系统配置变更」。
-        if ("OPERATE".equalsIgnoreCase(StrUtil.blankToDefault(operateLogList.loggingType(), ""))
+        if ("OPERATE".equalsIgnoreCase(StrUtil.blankToDefault(operateLogList.logType(), ""))
                 && !Boolean.TRUE.equals(operateLogList.operateTitleExact())) {
             operateLogQueryWrapper.ne(OperateLog::getOperateTitle, ConfigAuditCodes.OPERATE_TITLE);
         }

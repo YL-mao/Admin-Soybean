@@ -30,7 +30,7 @@ public class AdminAuthController {
     private final LoginService loginService;
     private final AdminAuthService adminAuthService;
 
-    @Log(title = "管理端登录", loggingType = "LOGIN", businessType = "LOGIN")
+    @Log(title = "管理端登录", logType = "LOGIN", businessType = "LOGIN")
     @PostMapping("/login")
     public R<AdminAuthVo.LoginResult> adminAuthLogin(
             @Valid @RequestBody LoginDto.LoginRequest loginRequest,
@@ -41,7 +41,7 @@ public class AdminAuthController {
         return R.ok(adminAuthService.buildLoginResult(StpUtil.getTokenValue()));
     }
 
-    @Log(title = "管理端注销", loggingType = "LOGIN", businessType = "LOGOUT")
+    @Log(title = "管理端注销", logType = "LOGIN", businessType = "LOGOUT")
     @PostMapping("/logout")
     public R<Void> adminAuthLogout() {
         try {

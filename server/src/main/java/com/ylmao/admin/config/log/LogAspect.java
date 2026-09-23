@@ -114,7 +114,7 @@ public class LogAspect {
                 }
             }
             // 仅配置明确为 false 时关闭；缺失/停用时仍记日志。
-            if (!isLoggingEnabled(controllerLog.loggingType())) {
+            if (!isLoggingEnabled(controllerLog.logType())) {
                 return;
             }
             asyncInsert(operateLog);
@@ -147,11 +147,11 @@ public class LogAspect {
     }
 
     /** LOGIN / OPERATE 分别读对应开关；未识别类型默认记。 */
-    private boolean isLoggingEnabled(String loggingType) {
-        if ("LOGIN".equalsIgnoreCase(loggingType)) {
+    private boolean isLoggingEnabled(String logType) {
+        if ("LOGIN".equalsIgnoreCase(logType)) {
             return configRuntimeService.getBoolean(LogConfigCodes.LOGIN_ENABLED).orElse(true);
         }
-        if ("OPERATE".equalsIgnoreCase(loggingType)) {
+        if ("OPERATE".equalsIgnoreCase(logType)) {
             return configRuntimeService.getBoolean(LogConfigCodes.OPERATE_ENABLED).orElse(true);
         }
         return true;
@@ -211,7 +211,7 @@ public class LogAspect {
 
     private void fillAnnotationInfo(OperateLog operateLog, Log controllerLog, ProceedingJoinPoint joinPoint) {
         operateLog.setOperateTitle(controllerLog.title());
-        operateLog.setLoggingType(controllerLog.loggingType());
+        operateLog.setLogType(controllerLog.logType());
         operateLog.setBusinessType(controllerLog.businessType());
         fillLoginAttemptName(operateLog, controllerLog, joinPoint);
         if (controllerLog.isSaveRequestData()) {
@@ -239,7 +239,7 @@ public class LogAspect {
     }
 
     private void fillLoginAttemptName(OperateLog operateLog, Log controllerLog, ProceedingJoinPoint joinPoint) {
-        if (!"LOGIN".equalsIgnoreCase(controllerLog.loggingType()) || StrUtil.isNotBlank(operateLog.getOperateName())) {
+        if (!"LOGIN".equalsIgnoreCase(controllerLog.logType()) || StrUtil.isNotBlank(operateLog.getOperateName())) {
             return;
         }
         // 登录失败时还没有会话，使用提交账号作为日志操作人。

@@ -18,7 +18,7 @@ public final class OperateLog {
 
     @TableId(type = IdType.ASSIGN_ID)
     private String operateId;
-    private String loggingType;
+    private String logType;
     private String businessType;
     private String operateTitle;
     private String requestMethod;

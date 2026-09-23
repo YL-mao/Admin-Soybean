@@ -67,7 +67,7 @@ const timeRange = computed({
 
 function resetModel() {
   const keep = {
-    loggingType: model.value.loggingType,
+    logType: model.value.logType,
     operateTitleExact: model.value.operateTitleExact,
     operateTitle: model.value.operateTitleExact ? model.value.operateTitle : null
   };
