@@ -9,10 +9,13 @@ import com.ylmao.admin.dto.JobDto;
 import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.service.JobService;
 import com.ylmao.admin.vo.JobVo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "定时任务", description = "任务启停、手动执行与执行日志")
 @RestController
 @RequestMapping("/job")
 @RequiredArgsConstructor
@@ -20,6 +23,7 @@ public class JobController extends BaseController {
 
     private final JobService jobService;
 
+    @Operation(summary = "定时任务分页列表")
     @Log(title = "定时任务分页查询", businessType = "QUERY")
     @SaCheckPermission("system:job:select")
     @GetMapping("/list")
@@ -28,6 +32,7 @@ public class JobController extends BaseController {
         return pageData(iPage.getRecords(), iPage.getTotal());
     }
 
+    @Operation(summary = "修改定时任务启停状态")
     @Log(title = "修改定时任务状态", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:job:updateEnabled")
     @PatchMapping("/updateEnabled")
@@ -36,6 +41,7 @@ public class JobController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "手动执行定时任务")
     @Log(title = "手动执行定时任务", businessType = "OTHER", isSaveResponseData = true)
     @SaCheckPermission("system:job:run")
     @PostMapping("/run")
@@ -44,6 +50,7 @@ public class JobController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "定时任务执行日志")
     @Log(title = "定时任务执行日志", businessType = "QUERY")
     @SaCheckPermission("system:job:log")
     @GetMapping("/logList")

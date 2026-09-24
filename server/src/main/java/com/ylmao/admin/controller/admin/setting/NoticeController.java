@@ -12,12 +12,15 @@ import com.ylmao.admin.service.NoticeService;
 import com.ylmao.admin.service.UserService;
 import com.ylmao.admin.vo.NoticeVo;
 import com.ylmao.admin.vo.UserVo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "公告", description = "通知公告与控制台")
 @RestController
 @RequestMapping("/notice")
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class NoticeController extends BaseController {
     private final NoticeService noticeService;
     private final UserService userService;
 
+    @Operation(summary = "公告分页列表")
     @Log(title = "公告分页查询", businessType = "QUERY")
     @SaCheckPermission("system:notice:select")
     @GetMapping("/list")
@@ -34,6 +38,7 @@ public class NoticeController extends BaseController {
         return pageData(noticePage.getRecords(), noticePage.getTotal());
     }
 
+    @Operation(summary = "公告用户检索")
     @Log(title = "公告用户检索", businessType = "QUERY")
     @SaCheckPermission(value = {"system:notice:insert", "system:notice:update"}, mode = SaMode.OR)
     @GetMapping("/searchUser")
@@ -42,6 +47,7 @@ public class NoticeController extends BaseController {
         return R.ok(users);
     }
 
+    @Operation(summary = "新增公告")
     @Log(title = "新增公告数据", businessType = "ADD", isSaveResponseData = true)
     @SaCheckPermission("system:notice:insert")
     @PostMapping("/add")
@@ -50,6 +56,7 @@ public class NoticeController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改公告")
     @Log(title = "修改公告数据", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:notice:update")
     @PutMapping("/update")
@@ -58,6 +65,7 @@ public class NoticeController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "删除公告")
     @Log(title = "删除公告数据", businessType = "DELETE", isSaveResponseData = true)
     @SaCheckPermission("system:notice:delete")
     @DeleteMapping("/delete")
@@ -66,6 +74,7 @@ public class NoticeController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改公告发布状态")
     @Log(title = "修改公告发布状态", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:notice:updateEnabled")
     @PatchMapping("/updateEnabled")
@@ -74,6 +83,7 @@ public class NoticeController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "公告控制台统计")
     @Log(title = "公告控制台统计", businessType = "QUERY")
     @SaCheckPermission("system:notice:console")
     @GetMapping("/consoleStats")
@@ -81,6 +91,7 @@ public class NoticeController extends BaseController {
         return okData(noticeService.getConsoleStats(noticeId));
     }
 
+    @Operation(summary = "公告控制台接收人")
     @Log(title = "公告控制台接收人", businessType = "QUERY")
     @SaCheckPermission("system:notice:console")
     @GetMapping("/receiverList")

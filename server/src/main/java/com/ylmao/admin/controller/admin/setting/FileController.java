@@ -10,11 +10,14 @@ import com.ylmao.admin.dto.FileResourceDto;
 import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.service.FileResourceService;
 import com.ylmao.admin.vo.FileResourceVo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+@Tag(name = "文件", description = "文件资源上传与维护")
 @RestController
 @RequestMapping("/file")
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class FileController extends BaseController {
 
     private final FileResourceService fileResourceService;
 
+    @Operation(summary = "文件分页列表")
     @Log(title = "文件分页查询", businessType = "QUERY")
     @SaCheckPermission("system:file:select")
     @GetMapping("/list")
@@ -31,6 +35,7 @@ public class FileController extends BaseController {
     }
 
     /** 公共上传：仅校验登录，不要求文件管理权限。 */
+    @Operation(summary = "上传文件")
     @Log(title = "上传文件", businessType = "ADD", isSaveResponseData = true)
     @SaCheckLogin
     @PostMapping("/upload")
@@ -39,12 +44,14 @@ public class FileController extends BaseController {
     }
 
     /** 上传规则（后缀/大小），供选择器限定与失败提示。 */
+    @Operation(summary = "上传规则")
     @SaCheckLogin
     @GetMapping("/uploadRules")
     public R<?> fileUploadRules() {
         return okData(fileResourceService.uploadRules());
     }
 
+    @Operation(summary = "覆盖上传文件")
     @Log(title = "覆盖上传文件", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:file:update")
     @PostMapping("/overwrite")
@@ -53,6 +60,7 @@ public class FileController extends BaseController {
         return okData(fileResourceService.overwrite(fileId, file));
     }
 
+    @Operation(summary = "修改文件元数据")
     @Log(title = "修改文件数据", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:file:update")
     @PutMapping("/update")
@@ -61,6 +69,7 @@ public class FileController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "删除文件")
     @Log(title = "删除文件数据", businessType = "DELETE", isSaveResponseData = true)
     @SaCheckPermission("system:file:delete")
     @DeleteMapping("/delete")
@@ -69,6 +78,7 @@ public class FileController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "文件名是否唯一")
     @Log(title = "查询文件名是否唯一", businessType = "QUERY")
     @SaCheckLogin
     @GetMapping("/checkName")
@@ -76,6 +86,7 @@ public class FileController extends BaseController {
         return R.ok(fileResourceService.checkOriginalNameUnique(folderId, originalName) == null);
     }
 
+    @Operation(summary = "查询文件引用")
     @Log(title = "查询文件引用", businessType = "QUERY")
     @SaCheckPermission("system:file:delete")
     @GetMapping("/checkRef")

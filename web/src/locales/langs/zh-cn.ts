@@ -720,9 +720,12 @@ const local: App.I18n.Schema = {
       },
       apidoc: {
         title: '接口文档',
-        desc: '开发环境可通过 SpringDoc 查看 OpenAPI 文档。',
-        openDoc: '打开 Swagger UI'
+        desc: '开发环境本页嵌入 Swagger UI；OpenAPI 与试调均携带登录 saToken。',
+        openDoc: '打开 Swagger UI',
+        group: '文档分组',
+        devOnly: '接口文档仅在开发环境可用；生产环境已关闭 springdoc。'
       },
+
       account: {
         infoTitle: '个人中心',
         noticeTitle: '我的公告',

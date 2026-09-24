@@ -10,6 +10,8 @@ import com.ylmao.admin.dto.DictTypeDto;
 import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.service.DictTypeService;
 import com.ylmao.admin.vo.DictVo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "字典类型", description = "字典类型 CRUD")
 @RestController
 @RequestMapping("/dictType")
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class DictTypeController extends BaseController {
 
     private final DictTypeService dictTypeService;
 
+    @Operation(summary = "字典类型分页列表")
     @Log(title = "字典类型分页查询", businessType = "QUERY")
     @SaCheckPermission("system:dictType:select")
     @GetMapping("/list")
@@ -37,6 +41,7 @@ public class DictTypeController extends BaseController {
         return pageData(dictTypePage.getRecords(), dictTypePage.getTotal());
     }
 
+    @Operation(summary = "新增字典类型")
     @Log(title = "新增字典类型", businessType = "ADD", isSaveResponseData = true)
     @SaCheckPermission("system:dictType:insert")
     @PostMapping("/add")
@@ -45,6 +50,7 @@ public class DictTypeController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改字典类型")
     @Log(title = "修改字典类型", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:dictType:update")
     @PutMapping("/update")
@@ -53,6 +59,7 @@ public class DictTypeController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "删除字典类型")
     @Log(title = "删除字典类型", businessType = "DELETE", isSaveResponseData = true)
     @SaCheckPermission("system:dictType:delete")
     @DeleteMapping("/delete")
@@ -61,6 +68,7 @@ public class DictTypeController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改字典类型启停状态")
     @Log(title = "修改字典类型状态", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:dictType:updateEnabled")
     @PatchMapping("/updateEnabled")
@@ -70,6 +78,7 @@ public class DictTypeController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "字典编码是否唯一")
     @Log(title = "查询字典编码是否唯一", businessType = "QUERY")
     @SaCheckPermission(value = {"system:dictType:insert", "system:dictType:update"}, mode = SaMode.OR)
     @GetMapping("/checkCode")

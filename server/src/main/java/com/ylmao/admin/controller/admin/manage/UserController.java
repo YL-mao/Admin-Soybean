@@ -13,6 +13,8 @@ import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.dto.UserDto;
 import com.ylmao.admin.service.UserService;
 import com.ylmao.admin.vo.UserVo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import java.io.IOException;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "用户", description = "用户管理与权限")
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -27,6 +30,7 @@ public class UserController extends BaseController {
 
     private final UserService userService;
 
+    @Operation(summary = "用户分页列表")
     @Log(title = "用户分页查询", businessType = "QUERY")
     @SaCheckPermission("system:user:select")
     @GetMapping(value = "/list")
@@ -36,6 +40,7 @@ public class UserController extends BaseController {
         return pageData(userIPage.getRecords(), userIPage.getTotal());
     }
 
+    @Operation(summary = "导出用户列表")
     @Log(title = "导出用户列表", businessType = "EXPORT")
     @SaCheckPermission("system:user:export")
     @GetMapping("/export")
@@ -43,6 +48,7 @@ public class UserController extends BaseController {
         userService.exportUserList(userDto, response);
     }
 
+    @Operation(summary = "账户是否唯一")
     @Log(title = "查询账户是否唯一", businessType = "QUERY")
     @SaCheckPermission(value = {"system:user:insert", "system:user:update"}, mode = SaMode.OR)
     @GetMapping("/checkAccount")
@@ -50,6 +56,7 @@ public class UserController extends BaseController {
         return R.ok(userService.getUserByAccount(userAccount) == null);
     }
 
+    @Operation(summary = "新增用户")
     @Log(title = "新增用户数据", businessType = "ADD", isSaveResponseData = true)
     @SaCheckPermission("system:user:insert")
     @PostMapping("/add")
@@ -58,6 +65,7 @@ public class UserController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改用户")
     @Log(title = "修改用户数据", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:user:update")
     @PutMapping("/update")
@@ -73,6 +81,7 @@ public class UserController extends BaseController {
     }
 
 
+    @Operation(summary = "管理员重置密码")
     @Log(title = "管理员重置密码", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:user:updatePwd")
     @PatchMapping("/updatePwd")
@@ -81,6 +90,7 @@ public class UserController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改用户启停状态")
     @Log(title = "修改用户状态", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:user:updateEnabled")
     @PatchMapping("/updateEnabled")
@@ -90,6 +100,7 @@ public class UserController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "解锁用户")
     @Log(title = "解锁用户", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:user:unlock")
     @PatchMapping("/unlock")
@@ -98,6 +109,7 @@ public class UserController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改用户锁定状态")
     @Log(title = "修改用户锁定状态", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:user:unlock")
     @PatchMapping("/updateLock")
@@ -106,6 +118,7 @@ public class UserController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "按用户强退全部会话")
     @Log(title = "按用户强退全部会话", businessType = "OTHER", isSaveResponseData = true)
     @SaCheckPermission("system:online:kick")
     @PatchMapping("/kickSessions")
@@ -114,6 +127,7 @@ public class UserController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "删除用户")
     @Log(title = "删除用户数据", businessType = "DELETE", isSaveResponseData = true)
     @SaCheckPermission("system:user:delete")
     @DeleteMapping("/delete")
@@ -122,6 +136,7 @@ public class UserController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "用户权限详情")
     @Log(title = "用户权限详情", businessType = "QUERY")
     @SaCheckPermission("system:user:permDetail")
     @GetMapping("/permDetail")

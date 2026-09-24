@@ -13,6 +13,8 @@ import com.ylmao.admin.dto.ConfigDto;
 import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.service.ConfigService;
 import com.ylmao.admin.vo.ConfigVo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Tag(name = "系统配置", description = "系统参数维护与分组配置")
 @RestController
 @RequestMapping("/config")
 @RequiredArgsConstructor
@@ -33,6 +36,7 @@ public class ConfigController extends BaseController {
 
     private final ConfigService configService;
 
+    @Operation(summary = "配置分页列表")
     @Log(title = "系统配置分页查询", businessType = "QUERY")
     @SaCheckPermission("system:config:maintain")
     @GetMapping("/list")
@@ -41,6 +45,7 @@ public class ConfigController extends BaseController {
         return pageData(configPage.getRecords(), configPage.getTotal());
     }
 
+    @Operation(summary = "配置分组列表")
     @Log(title = "系统配置分组查询", businessType = "QUERY")
     @SaCheckPermission("system:config:maintain")
     @GetMapping("/groups")
@@ -50,6 +55,7 @@ public class ConfigController extends BaseController {
         return pageData(groups, groups.size());
     }
 
+    @Operation(summary = "配置分组明细")
     @Log(title = "系统配置分组明细", businessType = "QUERY")
     // 上传配置入口已迁到文件页，允许仅持有分组权限（无需 system:config:view）访问对应分组。
     @SaCheckPermission(value = {"system:config:system", "system:config:upload", "system:config:log", "system:config:security", "system:config:job", "system:config:notice"}, mode = SaMode.OR)
@@ -59,6 +65,7 @@ public class ConfigController extends BaseController {
         return okData(configService.selectByGroup(configGroup));
     }
 
+    @Operation(summary = "按分组保存配置")
     @Log(title = ConfigAuditCodes.OPERATE_TITLE, businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission(value = {"system:config:system", "system:config:upload", "system:config:log", "system:config:security", "system:config:job", "system:config:notice"}, mode = SaMode.OR)
     @PutMapping("/updateGroup")
@@ -68,6 +75,7 @@ public class ConfigController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "新增配置")
     @Log(title = ConfigAuditCodes.OPERATE_TITLE, businessType = "ADD", isSaveResponseData = true)
     @SaCheckPermission("system:config:insert")
     @PostMapping("/add")
@@ -76,6 +84,7 @@ public class ConfigController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改配置")
     @Log(title = ConfigAuditCodes.OPERATE_TITLE, businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:config:update")
     @PutMapping("/update")
@@ -84,6 +93,7 @@ public class ConfigController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "删除配置")
     @Log(title = ConfigAuditCodes.OPERATE_TITLE, businessType = "DELETE", isSaveResponseData = true)
     @SaCheckPermission("system:config:delete")
     @DeleteMapping("/delete")
@@ -92,6 +102,7 @@ public class ConfigController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改配置启停状态")
     @Log(title = ConfigAuditCodes.OPERATE_TITLE, businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:config:updateEnabled")
     @PatchMapping("/updateEnabled")
@@ -100,6 +111,7 @@ public class ConfigController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "配置编码是否唯一")
     @Log(title = "查询系统配置编码是否唯一", businessType = "QUERY")
     @SaCheckPermission(value = {"system:config:insert", "system:config:update"}, mode = SaMode.OR)
     @GetMapping("/checkCode")

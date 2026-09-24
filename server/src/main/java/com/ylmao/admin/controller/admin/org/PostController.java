@@ -16,7 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "岗位", description = "岗位 CRUD 样板；约定见 doc/接口文档与开发说明.md")
+@Tag(name = "岗位", description = "岗位 CRUD 与下拉")
 @RestController
 @RequestMapping("/post")
 @RequiredArgsConstructor
@@ -86,6 +86,7 @@ public class PostController extends BaseController {
     }
 
     /** 用户分配等下拉：返回 postId + postName */
+    @Operation(summary = "岗位下拉选项")
     @SaCheckPermission(value = {"system:user:insert", "system:user:update"}, mode = SaMode.OR)
     @GetMapping("/options")
     public R<?> postOptions() {

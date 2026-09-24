@@ -12,6 +12,8 @@ import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.service.DictDataService;
 import com.ylmao.admin.service.DictRuntimeService;
 import com.ylmao.admin.vo.DictVo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
+@Tag(name = "字典数据", description = "字典项 CRUD 与运行时选项")
 @RestController
 @RequestMapping("/dictData")
 @RequiredArgsConstructor
@@ -33,6 +36,7 @@ public class DictDataController extends BaseController {
     private final DictDataService dictDataService;
     private final DictRuntimeService dictRuntimeService;
 
+    @Operation(summary = "字典选项")
     @Log(title = "字典选项查询", businessType = "QUERY")
     @GetMapping("/options")
     public R<?> dictDataOptions(String dictTypeCode) {
@@ -40,6 +44,7 @@ public class DictDataController extends BaseController {
         return R.ok(dictRuntimeService.getOptions(dictTypeCode));
     }
 
+    @Operation(summary = "字典选项批量查询")
     @Log(title = "字典选项批量查询", businessType = "QUERY")
     @GetMapping("/optionsBatch")
     public R<?> dictDataOptionsBatch(String dictTypeCodes) {
@@ -49,6 +54,7 @@ public class DictDataController extends BaseController {
         return R.ok(dictRuntimeService.getOptionsBatch(codeList));
     }
 
+    @Operation(summary = "刷新字典缓存")
     @Log(title = "刷新字典缓存", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:dictData:update")
     @PatchMapping("/refreshCache")
@@ -57,6 +63,7 @@ public class DictDataController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "字典数据分页列表")
     @Log(title = "字典数据分页查询", businessType = "QUERY")
     @SaCheckPermission("system:dictData:select")
     @GetMapping("/list")
@@ -66,6 +73,7 @@ public class DictDataController extends BaseController {
         return pageData(dictDataPage.getRecords(), dictDataPage.getTotal());
     }
 
+    @Operation(summary = "新增字典数据")
     @Log(title = "新增字典数据", businessType = "ADD", isSaveResponseData = true)
     @SaCheckPermission("system:dictData:insert")
     @PostMapping("/add")
@@ -74,6 +82,7 @@ public class DictDataController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改字典数据")
     @Log(title = "修改字典数据", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:dictData:update")
     @PutMapping("/update")
@@ -82,6 +91,7 @@ public class DictDataController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "删除字典数据")
     @Log(title = "删除字典数据", businessType = "DELETE", isSaveResponseData = true)
     @SaCheckPermission("system:dictData:delete")
     @DeleteMapping("/delete")
@@ -90,6 +100,7 @@ public class DictDataController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改字典数据启停状态")
     @Log(title = "修改字典数据状态", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:dictData:updateEnabled")
     @PatchMapping("/updateEnabled")
@@ -99,6 +110,7 @@ public class DictDataController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改字典默认项")
     @Log(title = "修改字典默认状态", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:dictData:updateDefault")
     @PatchMapping("/updateDefault")
@@ -108,6 +120,7 @@ public class DictDataController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "字典标签是否唯一")
     @Log(title = "查询字典数据标签是否唯一", businessType = "QUERY")
     @SaCheckPermission(value = {"system:dictData:insert", "system:dictData:update"}, mode = SaMode.OR)
     @GetMapping("/checkLabel")
@@ -115,6 +128,7 @@ public class DictDataController extends BaseController {
         return R.ok(dictDataService.checkDictDataLabelUnique(dictTypeCode, dictDataLabel) == null);
     }
 
+    @Operation(summary = "字典值是否唯一")
     @Log(title = "查询字典数据值是否唯一", businessType = "QUERY")
     @SaCheckPermission(value = {"system:dictData:insert", "system:dictData:update"}, mode = SaMode.OR)
     @GetMapping("/checkValue")

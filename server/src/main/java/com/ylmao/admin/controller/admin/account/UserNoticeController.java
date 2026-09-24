@@ -11,6 +11,8 @@ import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.service.NoticeService;
 import com.ylmao.admin.service.NoticeUserService;
 import com.ylmao.admin.vo.NoticeVo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Tag(name = "我的公告", description = "当前用户收件箱")
 @RestController
 @RequestMapping("/user/notice")
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class UserNoticeController extends BaseController {
     private final NoticeService noticeService;
     private final NoticeUserService noticeUserService;
 
+    @Operation(summary = "头部公告消息")
     @Log(title = "用户公告头部消息", businessType = "QUERY")
     @GetMapping("/header")
     public R<List<NoticeVo.HeaderMessageTabVo>> userNoticeHeader() {
@@ -39,6 +43,7 @@ public class UserNoticeController extends BaseController {
         return okData(noticeService.buildUserNoticeHeader(8));
     }
 
+    @Operation(summary = "我的公告分页列表")
     @Log(title = "用户公告分页查询", businessType = "QUERY")
     @SaCheckPermission("user:notice:view")
     @GetMapping("/list")
@@ -48,6 +53,7 @@ public class UserNoticeController extends BaseController {
         return pageData(noticePage.getRecords(), noticePage.getTotal());
     }
 
+    @Operation(summary = "标记公告已读")
     @Log(title = "用户公告标记已读", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("user:notice:view")
     @PatchMapping("/updateRead")
@@ -57,6 +63,7 @@ public class UserNoticeController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "全部标记已读")
     @Log(title = "用户公告全部已读", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("user:notice:view")
     @PatchMapping("/readAll")

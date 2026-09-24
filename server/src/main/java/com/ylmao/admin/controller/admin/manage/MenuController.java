@@ -8,12 +8,15 @@ import com.ylmao.admin.config.log.Log;
 import com.ylmao.admin.dto.MenuDto;
 import com.ylmao.admin.service.MenuService;
 import com.ylmao.admin.vo.MenuVo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "菜单", description = "菜单/权限树与授权")
 @RestController
 @RequestMapping("/menu")
 @RequiredArgsConstructor
@@ -21,12 +24,14 @@ public class MenuController extends BaseController {
 
     private final MenuService menuService;
 
+    @Operation(summary = "角色菜单授权树")
     @SaCheckPermission("system:role:auth")
     @GetMapping("/roleTree")
     public R<?> queryRoleMenuTree(String roleId) {
         return okData(menuService.queryMenuCheckVoByRoleId(roleId));
     }
 
+    @Operation(summary = "保存角色菜单授权")
     @Log(title = "菜单授权保存")
     // 保存后由 MenuService 清理在线用户的权限码 Session 缓存。
     @SaCheckPermission("system:role:auth")
@@ -36,6 +41,7 @@ public class MenuController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "菜单列表")
     @Log(title = "菜单列表查询", businessType = "QUERY")
     @SaCheckPermission("system:menu:select")
     @GetMapping("/list")
@@ -44,6 +50,7 @@ public class MenuController extends BaseController {
         return pageData(list, list.size());
     }
 
+    @Operation(summary = "新增菜单")
     @Log(title = "新增菜单数据", businessType = "ADD", isSaveResponseData = true)
     @SaCheckPermission("system:menu:insert")
     @PostMapping("/add")
@@ -52,6 +59,7 @@ public class MenuController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改菜单")
     @Log(title = "修改菜单数据", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:menu:update")
     @PutMapping("/update")
@@ -60,6 +68,7 @@ public class MenuController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "删除菜单")
     @Log(title = "删除菜单数据", businessType = "DELETE", isSaveResponseData = true)
     @SaCheckPermission("system:menu:delete")
     @DeleteMapping("/delete")
@@ -68,6 +77,7 @@ public class MenuController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "菜单名称是否唯一")
     @Log(title = "查询菜单名称是否唯一", businessType = "QUERY")
     @SaCheckPermission(value = {"system:menu:insert", "system:menu:update"}, mode = SaMode.OR)
     @GetMapping("/checkName")
@@ -75,6 +85,7 @@ public class MenuController extends BaseController {
         return R.ok(menuService.checkMenuNameUnique(parentId, menuName) == null);
     }
 
+    @Operation(summary = "权限标识是否唯一")
     @Log(title = "查询权限标识是否唯一", businessType = "QUERY")
     @SaCheckPermission(value = {"system:menu:insert", "system:menu:update"}, mode = SaMode.OR)
     @GetMapping("/checkCode")
@@ -82,6 +93,7 @@ public class MenuController extends BaseController {
         return R.ok(menuService.checkMenuCodeUnique(permCode) == null);
     }
 
+    @Operation(summary = "修改菜单启停状态")
     @Log(title = "修改菜单状态", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:menu:updateEnabled")
     @PatchMapping("/updateEnabled")
@@ -90,6 +102,7 @@ public class MenuController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "查询上级菜单")
     @SaCheckPermission(value = {"system:menu:insert", "system:menu:update"}, mode = SaMode.OR)
     @GetMapping("/selectParent")
     public R<?> selectMenuParent() {

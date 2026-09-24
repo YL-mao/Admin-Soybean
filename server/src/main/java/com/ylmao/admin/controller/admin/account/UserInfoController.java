@@ -7,6 +7,8 @@ import com.ylmao.admin.config.log.Log;
 import com.ylmao.admin.dto.UserInfoDto;
 import com.ylmao.admin.service.UserInfoService;
 import com.ylmao.admin.vo.UserInfoVo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Tag(name = "个人中心", description = "当前用户资料与密码")
 @RestController
 @RequestMapping("/user/info")
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class UserInfoController extends BaseController {
 
     private final UserInfoService userInfoService;
 
+    @Operation(summary = "个人资料详情")
     @Log(title = "个人资料详情", businessType = "QUERY")
     @SaCheckPermission("user:info:view")
     @GetMapping("/detail")
@@ -33,6 +37,7 @@ public class UserInfoController extends BaseController {
         return R.ok(profileDetail);
     }
 
+    @Operation(summary = "个人最近登录")
     @Log(title = "个人最近登录", businessType = "QUERY")
     @SaCheckPermission("user:info:view")
     @GetMapping("/loginLog")
@@ -41,6 +46,7 @@ public class UserInfoController extends BaseController {
         return R.ok(loginLogs);
     }
 
+    @Operation(summary = "保存个人资料")
     @Log(title = "保存个人资料", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("user:info:view")
     @PutMapping("/update")
@@ -50,6 +56,7 @@ public class UserInfoController extends BaseController {
         return success();
     }
 
+    @Operation(summary = "修改个人密码")
     @Log(title = "修改个人密码", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("user:info:view")
     @PatchMapping("/updatePwd")
@@ -59,6 +66,7 @@ public class UserInfoController extends BaseController {
         return success("密码修改成功，请重新登录");
     }
 
+    @Operation(summary = "修改个人头像")
     @Log(title = "修改个人头像", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("user:info:view")
     @PatchMapping("/updateAvatar")
