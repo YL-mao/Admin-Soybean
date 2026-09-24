@@ -406,34 +406,6 @@ export const mockNotices: MockNotice[] = [
   }
 ];
 
-export interface MockOnlineUser {
-  tokenId: string;
-  userAccount: string;
-  userName: string;
-  loginIp: string;
-  loginTime: string;
-  browser: string;
-  systemOs: string;
-  timeoutText: string;
-  tokenDisplay: string;
-  self: 0 | 1;
-}
-
-export const mockOnlineUsers: MockOnlineUser[] = [
-  {
-    tokenId: '1',
-    userAccount: 'admin',
-    userName: '管理员',
-    loginIp: '127.0.0.1',
-    loginTime: '2026-06-20 15:00:00',
-    browser: 'Chrome',
-    systemOs: 'Windows',
-    timeoutText: '25分钟',
-    tokenDisplay: 'a1b2…c3d4',
-    self: 1
-  }
-];
-
 export interface MockFileItem {
   fileId: string;
   fileName: string;

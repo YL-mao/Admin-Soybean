@@ -3,11 +3,10 @@ import {
   mockDeptTree,
   mockFiles,
   mockNotices,
-  mockOnlineUsers,
   mockPosts
 } from '@/mock/autobox/data';
 import { createStaticListApi, matchLike } from '@/mock/autobox/list-api';
-import { enabledToStatus, mapDeptTree, mapPost, stableId } from '@/mock/autobox/mappers';
+import { mapDeptTree, mapPost, stableId } from '@/mock/autobox/mappers';
 
 type PaginatingRecord<T> = Api.Common.PaginatingQueryRecord<T>;
 
@@ -65,31 +64,6 @@ export function fetchNoticeList(params?: {
       (q.isSend === null || q.isSend === undefined || q.isSend === ''
         ? statusMatch(row.status, q.status)
         : Number(row.isSend) === Number(q.isSend))
-  );
-  return api(params ?? {});
-}
-
-export function fetchOnlineUserList(params?: Api.AutoboxScaffold.OnlineSearchParams) {
-  const api = createStaticListApi<Api.AutoboxScaffold.OnlineUser & Record<string, unknown>>(
-    () =>
-      mockOnlineUsers.map(u => ({
-        id: stableId(u.tokenId),
-        tokenId: u.tokenId,
-        userAccount: u.userAccount,
-        userName: u.userName,
-        loginIp: u.loginIp,
-        loginTime: u.loginTime,
-        browser: u.browser,
-        systemOs: u.systemOs,
-        timeoutText: u.timeoutText,
-        tokenDisplay: u.tokenDisplay,
-        self: u.self,
-        status: '1'
-      })) as (Api.AutoboxScaffold.OnlineUser & Record<string, unknown>)[],
-    (row, q) =>
-      matchLike(row.userAccount, q.userAccount) &&
-      matchLike(row.userName, q.userName) &&
-      matchLike(row.loginIp, q.loginIp)
   );
   return api(params ?? {});
 }

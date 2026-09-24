@@ -658,6 +658,7 @@ const local: App.I18n.Schema = {
       },
       online: {
         title: '在线用户',
+        accountOrName: '账号/姓名',
         userAccount: '登录账号',
         userName: '用户名称',
         loginIp: '登录地址',
@@ -666,10 +667,12 @@ const local: App.I18n.Schema = {
         systemOs: '操作系统',
         timeoutText: '剩余有效期',
         tokenDisplay: 'Token',
+        currentSession: '当前',
         forceLogout: '强退',
+        forceLogoutConfirm: '确认强退该会话？',
+        forceLogoutSuccess: '已强退该会话',
         form: {
-          userAccount: '请输入登录账号',
-          userName: '请输入用户名称',
+          accountOrName: '请输入账号或姓名',
           loginIp: '请输入登录地址'
         }
       },

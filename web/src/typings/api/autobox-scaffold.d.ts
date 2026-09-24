@@ -82,23 +82,6 @@ declare namespace Api {
 
     type NoticeSearchParams = CommonType.RecordNullable<Pick<Notice, 'noticeTitle' | 'status'> & CommonSearchParams>;
 
-    type OnlineUser = Common.CommonRecord<{
-      tokenId: string;
-      userAccount: string;
-      userName: string;
-      loginIp: string;
-      loginTime: string;
-      browser: string;
-      systemOs: string;
-      timeoutText: string;
-      tokenDisplay: string;
-      self: 0 | 1;
-    }>;
-
-    type OnlineSearchParams = CommonType.RecordNullable<
-      Pick<OnlineUser, 'userAccount' | 'userName' | 'loginIp'> & CommonSearchParams
-    >;
-
     type FileItem = Common.CommonRecord<{
       fileId: string;
       fileName: string;

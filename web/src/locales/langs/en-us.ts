@@ -662,6 +662,7 @@ const local: App.I18n.Schema = {
       },
       online: {
         title: 'Online Users',
+        accountOrName: 'Account / Name',
         userAccount: 'Account',
         userName: 'Name',
         loginIp: 'IP',
@@ -670,10 +671,12 @@ const local: App.I18n.Schema = {
         systemOs: 'OS',
         timeoutText: 'Timeout',
         tokenDisplay: 'Token',
+        currentSession: 'Current',
         forceLogout: 'Force Logout',
+        forceLogoutConfirm: 'Force logout this session?',
+        forceLogoutSuccess: 'Session logged out',
         form: {
-          userAccount: 'Please enter account',
-          userName: 'Please enter name',
+          accountOrName: 'Please enter account or name',
           loginIp: 'Please enter IP'
         }
       },

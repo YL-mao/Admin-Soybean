@@ -715,6 +715,29 @@ export function fetchGetJobLogList(params?: Api.SystemManage.JobLogSearchParams)
   });
 }
 
+/** 在线用户（会话）分页列表 */
+export function fetchGetOnlineUserList(params?: Api.SystemManage.OnlineSearchParams) {
+  const { current, size, ...rest } = params || {};
+  return request<Api.SystemManage.OnlineUser[]>({
+    url: '/online/list',
+    method: 'get',
+    params: {
+      ...rest,
+      page: current,
+      limit: size
+    }
+  });
+}
+
+/** 按 Token 强退单个会话 */
+export function fetchKickOnlineSession(data: { tokenValue: string }) {
+  return request<null>({
+    url: '/online/kick',
+    method: 'patch',
+    data
+  });
+}
+
 /** 运行时字典选项（登录即可） */
 export function fetchGetDictOptions(dictTypeCode: string) {
   return request<Api.SystemManage.DictOption[]>({

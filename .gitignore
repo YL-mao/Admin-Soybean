@@ -27,6 +27,8 @@ dump.rdb
 # 后端构建与本地数据（与 server/.gitignore 双保险）
 server/target/
 server/upload/
+# 进程 cwd 在仓库根时，upload.locPath=upload 会落到根目录
+/upload/
 server/HELP.md
 
 # 前端依赖与构建（与 web/.gitignore 双保险）

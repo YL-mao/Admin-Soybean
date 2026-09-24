@@ -11,7 +11,7 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 
-const model = defineModel<Api.AutoboxScaffold.OnlineSearchParams>('model', { required: true });
+const model = defineModel<Api.SystemManage.OnlineSearchParams>('model', { required: true });
 
 const defaultModel = jsonClone(toRaw(model.value));
 
@@ -30,16 +30,21 @@ function search() {
       <NCollapseItem :title="$t('common.search')" name="online-search">
         <NForm :model="model" label-placement="left" :label-width="80">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.online.userAccount')" class="pr-24px">
-              <NInput v-model:value="model.userAccount" :placeholder="$t('page.autobox.online.form.userAccount')" />
-            </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.online.userName')" class="pr-24px">
-              <NInput v-model:value="model.userName" :placeholder="$t('page.autobox.online.form.userName')" />
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.online.accountOrName')" class="pr-24px">
+              <NInput
+                v-model:value="model.userAccount"
+                :placeholder="$t('page.autobox.online.form.accountOrName')"
+                clearable
+              />
             </NFormItemGi>
             <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.online.loginIp')" class="pr-24px">
-              <NInput v-model:value="model.loginIp" :placeholder="$t('page.autobox.online.form.loginIp')" />
+              <NInput
+                v-model:value="model.loginIp"
+                :placeholder="$t('page.autobox.online.form.loginIp')"
+                clearable
+              />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" class="pr-24px" :show-label="false" :show-feedback="false">
+            <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">
               <TableSearchActions @reset="resetModel" @search="search" />
             </NFormItemGi>
           </NGrid>

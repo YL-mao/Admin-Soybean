@@ -654,5 +654,30 @@ declare namespace Api {
         runStatus: string;
       } & CommonSearchParams
     >;
+
+    /** 对齐后端 OnlineVo.OnlineListVo（一行一个会话） */
+    type OnlineUser = {
+      tokenValue: string;
+      tokenDisplay: string;
+      userId: string;
+      userAccount: string;
+      userName: string;
+      loginIp: string;
+      loginTime: string;
+      browser: string;
+      systemOs: string;
+      timeoutSeconds: number;
+      timeoutText: string;
+      /** 是否当前登录会话（禁止强退） */
+      self: boolean;
+    };
+
+    type OnlineSearchParams = CommonType.RecordNullable<
+      {
+        /** 后端同时模糊匹配账号与姓名 */
+        userAccount: string;
+        loginIp: string;
+      } & CommonSearchParams
+    >;
   }
 }
