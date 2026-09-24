@@ -593,20 +593,19 @@ const local: App.I18n.Schema = {
         jobName: '任务名称',
         jobCode: '任务编码',
         jobCronDesc: '执行周期',
-        cronExpression: 'Cron 表达式',
         jobDesc: '任务说明',
         lastRunTime: '最近执行',
         runStatus: '执行结果',
         nextRunTime: '下次执行',
         runOnce: '执行一次',
+        runOnceConfirm: '确认立即执行该任务？',
+        runOnceSuccess: '已触发执行',
         viewLog: '日志',
         jobConfig: '任务配置',
-        addJob: '新增任务',
-        editJob: '编辑任务',
         form: {
           jobName: '请输入任务名称',
           jobCode: '请输入任务编码',
-          status: '请选择状态'
+          isEnabled: '请选择状态'
         }
       },
       jobLog: {
@@ -618,6 +617,11 @@ const local: App.I18n.Schema = {
         triggerType: '触发方式',
         costMs: '耗时(ms)',
         message: '消息',
+        statusSuccess: '成功',
+        statusFailed: '失败',
+        statusSkipped: '跳过',
+        missingJobId: '请从定时任务列表进入执行日志',
+        useDrawerHint: '执行日志已改为任务列表内抽屉查看',
         form: {
           runStatus: '请选择执行结果'
         }

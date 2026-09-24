@@ -597,20 +597,19 @@ const local: App.I18n.Schema = {
         jobName: 'Job Name',
         jobCode: 'Job Code',
         jobCronDesc: 'Schedule',
-        cronExpression: 'Cron',
         jobDesc: 'Description',
         lastRunTime: 'Last Run',
         runStatus: 'Result',
         nextRunTime: 'Next Run',
         runOnce: 'Run Once',
+        runOnceConfirm: 'Run this job now?',
+        runOnceSuccess: 'Job triggered',
         viewLog: 'Logs',
         jobConfig: 'Job Config',
-        addJob: 'Add Job',
-        editJob: 'Edit Job',
         form: {
           jobName: 'Please enter job name',
           jobCode: 'Please enter job code',
-          status: 'Please select status'
+          isEnabled: 'Please select status'
         }
       },
       jobLog: {
@@ -622,6 +621,11 @@ const local: App.I18n.Schema = {
         triggerType: 'Trigger',
         costMs: 'Cost(ms)',
         message: 'Message',
+        statusSuccess: 'Success',
+        statusFailed: 'Failed',
+        statusSkipped: 'Skipped',
+        missingJobId: 'Open job logs from the scheduled jobs list',
+        useDrawerHint: 'Job logs are now shown in a drawer on the jobs page',
         form: {
           runStatus: 'Please select result'
         }

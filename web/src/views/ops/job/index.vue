@@ -1,107 +1,148 @@
 <script setup lang="tsx">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { NButton, NTag } from 'naive-ui';
-import { enableStatusRecord } from '@/constants/business';
-import { fetchJobList } from '@/service/api';
+import { NButton, NPopconfirm, NSwitch, NTag } from 'naive-ui';
+import { enabledFlagRecord } from '@/constants/business';
+import { fetchGetJobList, fetchRunJob, fetchUpdateJobEnabled } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
 import { useAuth } from '@/hooks/business/auth';
-import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
+import { backendPageTransform, emptyAuthListResponse, useNaivePaginatedTable } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import ConfigGroupDrawer from '@/components/custom/config-group-drawer.vue';
-import JobOperateDrawer from './modules/job-operate-drawer.vue';
+import JobLogDrawer from './modules/job-log-drawer.vue';
 import JobSearch from './modules/job-search.vue';
 
 defineOptions({ name: 'OpsJob' });
 
 const appStore = useAppStore();
-const router = useRouter();
 const { hasAuth } = useAuth();
 const jobConfigVisible = ref(false);
 
-const searchParams = ref<Api.AutoboxScaffold.JobSearchParams>({
+const logDrawerVisible = ref(false);
+const logJobId = ref('');
+const logJobName = ref('');
+const logJobCode = ref('');
+
+const searchParams = ref<Api.SystemManage.JobSearchParams>({
   current: 1,
   size: 10,
   jobName: null,
   jobCode: null,
-  status: null
+  isEnabled: null
 });
 
+function runStatusTagType(runStatus: string | null): NaiveUI.ThemeColor {
+  if (runStatus === 'SUCCESS') return 'success';
+  if (runStatus === 'FAILED') return 'error';
+  if (runStatus === 'SKIPPED') return 'warning';
+  return 'default';
+}
+
+function openLogDrawer(row: Api.SystemManage.Job) {
+  logJobId.value = row.jobId;
+  logJobName.value = row.jobName;
+  logJobCode.value = row.jobCode;
+  logDrawerVisible.value = true;
+}
+
 const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination } = useNaivePaginatedTable({
-  api: () => fetchJobList(searchParams.value),
-  transform: response => defaultTransform(response),
+  api: () =>
+    hasAuth('system:job:select')
+      ? fetchGetJobList(searchParams.value)
+      : Promise.resolve(emptyAuthListResponse<Api.SystemManage.Job>()),
+  transform: response =>
+    backendPageTransform(response, searchParams.value.current || 1, searchParams.value.size || 10),
   onPaginationParamsChange: params => {
     searchParams.value.current = params.page;
     searchParams.value.size = params.pageSize;
   },
   columns: () => [
-    { type: 'selection', align: 'center', width: 48 },
     { key: 'jobName', title: $t('page.autobox.job.jobName'), align: 'center', minWidth: 140 },
-    { key: 'jobCode', title: $t('page.autobox.job.jobCode'), align: 'center', minWidth: 120 },
+    { key: 'jobCode', title: $t('page.autobox.job.jobCode'), align: 'center', minWidth: 140 },
     { key: 'jobCronDesc', title: $t('page.autobox.job.jobCronDesc'), align: 'center', minWidth: 120 },
-    { key: 'jobDesc', title: $t('page.autobox.job.jobDesc'), align: 'center', minWidth: 160 },
+    { key: 'jobDesc', title: $t('page.autobox.job.jobDesc'), align: 'center', minWidth: 180 },
     {
-      key: 'status',
+      key: 'isEnabled',
       title: $t('page.manage.common.status.enable'),
       align: 'center',
-      width: 90,
+      width: 100,
       render: row => {
-        if (row.status === null) return null;
-        const tagMap: Record<Api.Common.EnableStatus, NaiveUI.ThemeColor> = { '1': 'success', '2': 'warning' };
-        return <NTag type={tagMap[row.status]}>{$t(enableStatusRecord[row.status])}</NTag>;
+        if (!hasAuth('system:job:updateEnabled')) {
+          return (
+            <NTag type={row.isEnabled === 1 ? 'success' : 'warning'}>
+              {$t(enabledFlagRecord[row.isEnabled])}
+            </NTag>
+          );
+        }
+        return (
+          <NSwitch
+            value={row.isEnabled === 1}
+            rubberBand={false}
+            onUpdateValue={value => handleUpdateEnabled(row, value)}
+          >
+            {{
+              checked: () => $t(enabledFlagRecord[1]),
+              unchecked: () => $t(enabledFlagRecord[0])
+            }}
+          </NSwitch>
+        );
       }
     },
     { key: 'lastRunTime', title: $t('page.autobox.job.lastRunTime'), align: 'center', minWidth: 160 },
     {
-      key: 'runStatus',
+      key: 'runStatusName',
       title: $t('page.autobox.job.runStatus'),
       align: 'center',
       width: 100,
-      render: row => <NTag type="success">{row.runStatus}</NTag>
+      render: row => <NTag type={runStatusTagType(row.runStatus)}>{row.runStatusName}</NTag>
     },
     { key: 'nextRunTime', title: $t('page.autobox.job.nextRunTime'), align: 'center', minWidth: 160 },
     {
       key: 'operate',
       title: $t('common.operate'),
       align: 'center',
-      width: 220,
+      width: 200,
       fixed: 'right',
       render: row => (
         <div class="flex-center gap-8px">
-          <NButton
-            size="small"
-            ghost
-            type="info"
-            onClick={() =>
-              router.push({
-                name: 'ops_job-log',
-                query: { jobId: row.jobId, jobName: row.jobName, jobCode: row.jobCode }
-              })
-            }
-          >
-            {$t('page.autobox.job.viewLog')}
-          </NButton>
-          <NButton size="small" ghost type="primary">
-            {$t('page.autobox.job.runOnce')}
-          </NButton>
-          <NButton size="small" ghost type="primary" onClick={() => edit(row.id)}>
-            {$t('common.edit')}
-          </NButton>
+          {hasAuth('system:job:log') && (
+            <NButton size="small" ghost type="info" onClick={() => openLogDrawer(row)}>
+              {$t('page.autobox.job.viewLog')}
+            </NButton>
+          )}
+          {hasAuth('system:job:run') && (
+            <NPopconfirm onPositiveClick={() => handleRunOnce(row)}>
+              {{
+                default: () => $t('page.autobox.job.runOnceConfirm'),
+                trigger: () => (
+                  <NButton size="small" ghost type="primary">
+                    {$t('page.autobox.job.runOnce')}
+                  </NButton>
+                )
+              }}
+            </NPopconfirm>
+          )}
         </div>
       )
     }
   ]
 });
 
-const { drawerVisible, operateType, editingData, handleAdd, handleEdit, checkedRowKeys, onBatchDeleted } =
-  useTableOperate(data, 'id', getData);
-
-function edit(id: number) {
-  handleEdit(id);
+async function handleUpdateEnabled(row: Api.SystemManage.Job, checked: boolean) {
+  const isEnabled = checked ? 1 : 0;
+  // 启停立即通知调度器取消/重建触发。
+  const { error } = await fetchUpdateJobEnabled({ jobId: row.jobId, isEnabled });
+  if (error) return;
+  row.isEnabled = isEnabled;
+  window.$message?.success($t('common.updateSuccess'));
+  getData();
 }
 
-async function handleBatchDelete() {
-  onBatchDeleted();
+async function handleRunOnce(row: Api.SystemManage.Job) {
+  // 手动执行不受启停限制，与后端约定一致。
+  const { error } = await fetchRunJob({ jobId: row.jobId });
+  if (error) return;
+  window.$message?.success($t('page.autobox.job.runOnceSuccess'));
+  getData();
 }
 </script>
 
@@ -122,32 +163,30 @@ async function handleBatchDelete() {
           </NButton>
           <TableHeaderOperation
             v-model:columns="columnChecks"
-            :disabled-delete="checkedRowKeys.length === 0"
+            :show-add="false"
+            :show-delete="false"
             :loading="loading"
-            @add="handleAdd"
-            @delete="handleBatchDelete"
             @refresh="getData"
           />
         </NSpace>
       </template>
       <NDataTable
-        v-model:checked-row-keys="checkedRowKeys"
         :columns="columns"
         :data="data"
         size="small"
         :flex-height="!appStore.isMobile"
-        :scroll-x="1400"
+        :scroll-x="1300"
         :loading="loading"
         remote
-        :row-key="row => row.id"
+        :row-key="row => row.jobId"
         :pagination="mobilePagination"
         class="sm:h-full"
       />
-      <JobOperateDrawer
-        v-model:visible="drawerVisible"
-        :operate-type="operateType"
-        :row-data="editingData"
-        @submitted="getDataByPage"
+      <JobLogDrawer
+        v-model:visible="logDrawerVisible"
+        :job-id="logJobId"
+        :job-name="logJobName"
+        :job-code="logJobCode"
       />
       <ConfigGroupDrawer
         v-model:visible="jobConfigVisible"

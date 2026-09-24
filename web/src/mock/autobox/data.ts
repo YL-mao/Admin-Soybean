@@ -406,34 +406,6 @@ export const mockNotices: MockNotice[] = [
   }
 ];
 
-export interface MockJob {
-  jobId: string;
-  jobName: string;
-  jobCode: string;
-  jobCronDesc: string;
-  cronExpression: string;
-  jobDesc: string;
-  isEnabled: 0 | 1;
-  lastRunTime: string;
-  runStatus: string;
-  nextRunTime: string;
-}
-
-export const mockJobs: MockJob[] = [
-  {
-    jobId: '1',
-    jobName: '清理临时文件',
-    jobCode: 'cleanTemp',
-    jobCronDesc: '每天 02:00',
-    cronExpression: '0 0 2 * * ?',
-    jobDesc: '清理上传临时目录',
-    isEnabled: 1,
-    lastRunTime: '2026-06-20 02:00:00',
-    runStatus: 'SUCCESS',
-    nextRunTime: '2026-06-21 02:00:00'
-  }
-];
-
 export interface MockOnlineUser {
   tokenId: string;
   userAccount: string;

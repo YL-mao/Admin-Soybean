@@ -82,33 +82,6 @@ declare namespace Api {
 
     type NoticeSearchParams = CommonType.RecordNullable<Pick<Notice, 'noticeTitle' | 'status'> & CommonSearchParams>;
 
-    type Job = Common.CommonRecord<{
-      jobId: string;
-      jobName: string;
-      jobCode: string;
-      jobCronDesc: string;
-      cronExpression: string;
-      jobDesc: string;
-      lastRunTime: string;
-      runStatus: string;
-      nextRunTime: string;
-    }>;
-
-    type JobSearchParams = CommonType.RecordNullable<Pick<Job, 'jobName' | 'jobCode' | 'status'> & CommonSearchParams>;
-
-    type JobLog = Common.CommonRecord<{
-      jobLogId: string;
-      jobId: string;
-      runStatus: string;
-      triggerType: string;
-      costMs: number;
-      startTime: string;
-      endTime: string;
-      message: string;
-    }>;
-
-    type JobLogSearchParams = CommonType.RecordNullable<Pick<JobLog, 'runStatus' | 'jobId'> & CommonSearchParams>;
-
     type OnlineUser = Common.CommonRecord<{
       tokenId: string;
       userAccount: string;

@@ -2,7 +2,6 @@ import type { FlatResponseData } from '@sa/axios';
 import {
   mockDeptTree,
   mockFiles,
-  mockJobs,
   mockNotices,
   mockOnlineUsers,
   mockPosts
@@ -66,59 +65,6 @@ export function fetchNoticeList(params?: {
       (q.isSend === null || q.isSend === undefined || q.isSend === ''
         ? statusMatch(row.status, q.status)
         : Number(row.isSend) === Number(q.isSend))
-  );
-  return api(params ?? {});
-}
-
-export function fetchJobList(params?: Api.AutoboxScaffold.JobSearchParams) {
-  const api = createStaticListApi<Api.AutoboxScaffold.Job & Record<string, unknown>>(
-    () =>
-      mockJobs.map(j => ({
-        id: stableId(j.jobId),
-        jobId: j.jobId,
-        jobName: j.jobName,
-        jobCode: j.jobCode,
-        jobCronDesc: j.jobCronDesc,
-        cronExpression: j.cronExpression,
-        jobDesc: j.jobDesc,
-        lastRunTime: j.lastRunTime,
-        runStatus: j.runStatus,
-        nextRunTime: j.nextRunTime,
-        status: enabledToStatus(j.isEnabled)
-      })) as (Api.AutoboxScaffold.Job & Record<string, unknown>)[],
-    (row, q) =>
-      matchLike(row.jobName, q.jobName) && matchLike(row.jobCode, q.jobCode) && statusMatch(row.status, q.status)
-  );
-  return api(params ?? {});
-}
-
-const mockJobLogs: Api.AutoboxScaffold.JobLog[] = [
-  {
-    id: 1,
-    createBy: '',
-    createTime: '',
-    updateBy: '',
-    updateTime: '',
-    jobLogId: '1',
-    jobId: '1',
-    runStatus: 'SUCCESS',
-    triggerType: 'CRON',
-    costMs: 120,
-    startTime: '2026-06-20 02:00:00',
-    endTime: '2026-06-20 02:00:02',
-    message: '执行成功',
-    status: '1'
-  }
-];
-
-export function fetchJobLogList(params?: Api.AutoboxScaffold.JobLogSearchParams) {
-  const api = createStaticListApi<Api.AutoboxScaffold.JobLog & Record<string, unknown>>(
-    () => mockJobLogs as (Api.AutoboxScaffold.JobLog & Record<string, unknown>)[],
-    (row, q) => {
-      if (q.jobId && row.jobId !== q.jobId) return false;
-      if (q.runStatus && row.runStatus !== q.runStatus) return false;
-      return true;
-    }
   );
   return api(params ?? {});
 }

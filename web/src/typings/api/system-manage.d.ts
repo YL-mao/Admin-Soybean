@@ -608,5 +608,51 @@ declare namespace Api {
       expireTime: string;
       isEnabled: EnabledFlag;
     };
+
+    /** 对齐后端 JobVo.JobListVo（列表不展示 cron 原文） */
+    type Job = {
+      jobId: string;
+      jobCode: string;
+      jobName: string;
+      jobCron: string;
+      jobCronDesc: string;
+      jobDesc: string | null;
+      orderNum: number;
+      isEnabled: EnabledFlag;
+      lastRunTime: string | null;
+      runStatus: string | null;
+      runStatusName: string;
+      nextRunTime: string | null;
+    };
+
+    type JobSearchParams = CommonType.RecordNullable<
+      {
+        jobCode: string;
+        jobName: string;
+        isEnabled: EnabledFlag;
+      } & CommonSearchParams
+    >;
+
+    /** 对齐后端 JobVo.JobLogListVo */
+    type JobLog = {
+      jobLogId: string;
+      jobId: string;
+      jobCode: string;
+      triggerType: number;
+      triggerTypeName: string;
+      runStatus: string;
+      runStatusName: string;
+      startTime: string | null;
+      endTime: string | null;
+      costMs: number | null;
+      message: string | null;
+    };
+
+    type JobLogSearchParams = CommonType.RecordNullable<
+      {
+        jobId: string;
+        runStatus: string;
+      } & CommonSearchParams
+    >;
   }
 }
