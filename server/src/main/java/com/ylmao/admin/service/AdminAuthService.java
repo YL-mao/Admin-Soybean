@@ -82,6 +82,7 @@ public class AdminAuthService {
         return new AdminAuthVo.UserInfoResult(
                 user.getUserId(),
                 user.getUserName(),
+                user.getUserAvatar(),
                 loadRoleCodes(roleIds),
                 collectButtons(menus)
         );

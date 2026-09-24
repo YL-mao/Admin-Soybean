@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { UploadFileInfo } from 'naive-ui';
-import {
-  fetchCheckFileNameUnique,
-  fetchGetFileUploadRules,
-  fetchUploadFile
-} from '@/service/api';
+import { fetchGetFileUploadRules, fetchUploadFile } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
 import { FILE_ROOT_FOLDER_ID } from './shared';
@@ -116,7 +112,9 @@ function handleBeforeUpload(options: { file: UploadFileInfo; fileList: UploadFil
   return false;
 }
 
-async function doUpload(forceOverwrite: boolean) {
+/** 上传永远新建，同名并存；覆盖请走详情里的覆盖上传 */
+async function handleSubmit() {
+  await validate();
   const raw = fileList.value[0]?.file;
   if (!raw) {
     window.$message?.error($t('page.autobox.file.form.pickFile'));
@@ -126,36 +124,13 @@ async function doUpload(forceOverwrite: boolean) {
   const { error } = await fetchUploadFile(raw, {
     folderId: props.folderId,
     fileScene: model.value.fileScene,
-    needLogin: model.value.needLogin,
-    forceOverwrite
+    needLogin: model.value.needLogin
   });
   submitting.value = false;
   if (error) return;
   window.$message?.success($t('common.addSuccess'));
   visible.value = false;
   emit('submitted');
-}
-
-async function handleSubmit() {
-  await validate();
-  const raw = fileList.value[0]?.file;
-  if (!raw) {
-    window.$message?.error($t('page.autobox.file.form.pickFile'));
-    return;
-  }
-  const { data: unique, error } = await fetchCheckFileNameUnique(props.folderId, raw.name);
-  if (error) return;
-  if (unique === false) {
-    window.$dialog?.warning({
-      title: $t('common.tip'),
-      content: $t('page.autobox.file.overwriteConfirm'),
-      positiveText: $t('common.confirm'),
-      negativeText: $t('common.cancel'),
-      onPositiveClick: () => doUpload(true)
-    });
-    return;
-  }
-  await doUpload(false);
 }
 
 watch(visible, async val => {

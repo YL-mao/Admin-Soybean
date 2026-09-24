@@ -13,10 +13,12 @@ declare namespace Api {
       roles: string[];
     }
 
-    /** getUserInfo：角色码 + 按钮权限码（sys_menu.menu_type=2） */
+    /** getUserInfo：角色码 + 按钮权限码（sys_menu.menu_type=2）+ 头像 */
     interface UserInfo {
       userId: string;
       userName: string;
+      /** 头像访问路径，可空；顶栏与个人中心共用 */
+      userAvatar: string;
       roles: string[];
       buttons: string[];
     }

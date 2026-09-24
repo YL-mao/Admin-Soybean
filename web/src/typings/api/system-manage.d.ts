@@ -488,7 +488,6 @@ declare namespace Api {
       folderId?: string | null;
       fileScene: string;
       needLogin?: 0 | 1 | null;
-      forceOverwrite?: boolean | null;
     };
 
     type FileUpdate = {
@@ -679,5 +678,44 @@ declare namespace Api {
         loginIp: string;
       } & CommonSearchParams
     >;
+
+    /** 对齐 UserInfoVo.ProfileDetailVo */
+    type UserProfileDetail = {
+      userAccount: string;
+      userName: string;
+      userSex: string | null;
+      userEmail: string | null;
+      userPhone: string | null;
+      userAvatar: string | null;
+      deptName: string | null;
+      postName: string | null;
+      roleNames: string[];
+      isEnabled: number | null;
+      createTime: string | null;
+      lastLoginTime: string | null;
+    };
+
+    /** 对齐 UserInfoDto.ProfileSave */
+    type UserProfileSave = {
+      userName: string;
+      userSex: string;
+      userEmail?: string | null;
+      userPhone?: string | null;
+    };
+
+    /** 对齐 UserInfoDto.UpdatePwd（个人改密） */
+    type UserOwnPasswordUpdate = {
+      oldPassword: string;
+      newPassword: string;
+    };
+
+    /** 对齐 UserInfoVo.LoginLogVo */
+    type UserOwnLoginLog = {
+      loginTime: string | null;
+      loginIp: string | null;
+      browser: string | null;
+      systemOs: string | null;
+      current: boolean;
+    };
   }
 }

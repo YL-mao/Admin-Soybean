@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.ylmao.admin.common.FileNameSafeUtils;
 import com.ylmao.admin.common.UploadConfigCodes;
 import com.ylmao.admin.config.exception.BusinessException;
+import com.ylmao.admin.config.saToken.SaTokenUtil;
 import com.ylmao.admin.dto.FileResourceDto;
 import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.entity.FileResource;
@@ -111,19 +112,7 @@ public class FileResourceService {
             throw new BusinessException("参数不合法");
         }
 
-        FileResource existing = findActiveByFolderAndName(targetFolderId, originalName);
-        if (existing != null) {
-            if (!Boolean.TRUE.equals(fileUpload.forceOverwrite())) {
-                throw new BusinessException("同目录下文件名已存在");
-            }
-            overwriteContent(existing, file, scene, suffix);
-            existing.setNeedLogin(loginFlag);
-            existing.setFileScene(scene);
-            existing.setStorageType(storageType);
-            fileResourceMapper.updateById(existing);
-            return FileResourceVo.FileListVo.from(existing, uploadConfigService.buildAccessUrl(existing.getFileId()));
-        }
-
+        // 上传永远新建：展示名可同名并存；覆盖请走 overwrite。
         String fileId = IdWorker.getIdStr();
         String storageKey = buildStorageKey(fileId, suffix);
         Path diskPath = resolveDiskPath(storageKey);
@@ -159,7 +148,7 @@ public class FileResourceService {
         return FileResourceVo.FileListVo.from(entity, uploadConfigService.buildAccessUrl(fileId));
     }
 
-    /** 覆盖重传：保持同一 fileId，校验场景后缀。 */
+    /** 覆盖重传：保持同一 fileId，校验场景后缀；展示名可随新文件更新且允许同名并存。 */
     public FileResourceVo.FileListVo overwrite(String fileId, MultipartFile file) {
         uploadConfigService.assertUploadEnabled();
         uploadConfigService.requireLocalStorage();
@@ -167,6 +156,7 @@ public class FileResourceService {
         if (existing == null || !Integer.valueOf(0).equals(existing.getIsDel())) {
             throw new BusinessException("文件不存在");
         }
+        assertCanOverwrite(existing);
         if (file == null || file.isEmpty()) {
             throw new BusinessException("请选择要上传的文件");
         }
@@ -184,19 +174,16 @@ public class FileResourceService {
             throw new BusinessException("文件类型不被允许，仅支持：" + String.join("、", allowed));
         }
         overwriteContent(existing, file, existing.getFileScene(), suffix);
-        // 覆盖后原始名可随新文件变化，但仍需同目录唯一。
-        if (!Objects.equals(existing.getOriginalName(), originalName)) {
-            FileResource conflict = findActiveByFolderAndName(existing.getFolderId(), originalName);
-            if (conflict != null && !conflict.getFileId().equals(existing.getFileId())) {
-                throw new BusinessException("同目录下文件名已存在");
-            }
-            existing.setOriginalName(originalName);
+        existing.setOriginalName(originalName);
+        // 当前用户头像文件强制可直链，否则 <img> 无 saToken 会 401
+        if (isCurrentUserAvatarFile(existing.getFileId())) {
+            existing.setNeedLogin(0);
         }
         fileResourceMapper.updateById(existing);
         return FileResourceVo.FileListVo.from(existing, uploadConfigService.buildAccessUrl(existing.getFileId()));
     }
 
-    /** 修改文件名、需登录；folderId 变化即移动到目标虚拟目录（物理路径不变）。 */
+    /** 修改文件名、需登录；folderId 变化即移动到目标虚拟目录（物理路径不变）。同名允许并存。 */
     @Transactional
     public void updateMetadata(FileResourceDto.FileUpdate fileUpdate) {
         FileResource existing = fileResourceMapper.selectById(fileUpdate.fileId());
@@ -206,10 +193,6 @@ public class FileResourceService {
         String targetFolderId = resolveUploadFolderId(fileUpdate.folderId());
         folderService.requireActiveFolder(targetFolderId);
         String originalName = FileNameSafeUtils.normalizeOriginalName(fileUpdate.originalName());
-        FileResource sameName = findActiveByFolderAndName(targetFolderId, originalName);
-        if (sameName != null && !sameName.getFileId().equals(fileUpdate.fileId())) {
-            throw new BusinessException("同目录下文件名已存在");
-        }
         existing.setFolderId(targetFolderId);
         existing.setOriginalName(originalName);
         existing.setNeedLogin(fileUpdate.needLogin());
@@ -217,12 +200,6 @@ public class FileResourceService {
         if (rows <= 0) {
             throw new BusinessException("文件不存在或修改失败");
         }
-    }
-
-    public FileResource checkOriginalNameUnique(String folderId, String originalName) {
-        // 与上传一致：空/根目录落到未分类后再查重。
-        return findActiveByFolderAndName(resolveUploadFolderId(folderId),
-                FileNameSafeUtils.normalizeOriginalName(originalName));
     }
 
     public FileResourceVo.CheckRefResult checkRef(String ids) {
@@ -374,15 +351,39 @@ public class FileResourceService {
         existing.setStorageType(uploadConfigService.currentStorageType());
     }
 
-    private FileResource findActiveByFolderAndName(String folderId, String originalName) {
-        if (StrUtil.isBlank(folderId) || StrUtil.isBlank(originalName)) {
-            return null;
+    /**
+     * 覆盖鉴权：文件修改权 / 本人创建 / 当前用户头像引用该 fileId。
+     * 避免登录用户凭 fileId 覆盖他人文件。
+     */
+    private void assertCanOverwrite(FileResource existing) {
+        if (StpUtil.hasPermission("system:file:update")) {
+            return;
         }
-        return fileResourceMapper.selectOne(new LambdaQueryWrapper<FileResource>()
-                .eq(FileResource::getIsDel, 0)
-                .eq(FileResource::getFolderId, folderId)
-                .eq(FileResource::getOriginalName, originalName)
-                .last("limit 1"));
+        String userId = SaTokenUtil.getUserId();
+        if (StrUtil.isBlank(userId)) {
+            throw new BusinessException("用户未登录");
+        }
+        if (Objects.equals(existing.getCreateBy(), userId)) {
+            return;
+        }
+        if (isCurrentUserAvatarFile(existing.getFileId())) {
+            return;
+        }
+        throw new BusinessException("无权覆盖该文件");
+    }
+
+    /** 当前登录用户的 user_avatar 是否指向该 fileId */
+    private boolean isCurrentUserAvatarFile(String fileId) {
+        if (StrUtil.isBlank(fileId)) {
+            return false;
+        }
+        String userId = SaTokenUtil.getUserId();
+        if (StrUtil.isBlank(userId)) {
+            return false;
+        }
+        User user = userMapper.selectById(userId);
+        return user != null && StrUtil.isNotBlank(user.getUserAvatar())
+                && user.getUserAvatar().contains(fileId);
     }
 
     private String resolveUploadFolderId(String folderId) {

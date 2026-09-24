@@ -1,9 +1,11 @@
 package com.ylmao.admin.controller.admin.account;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ylmao.admin.common.R;
 import com.ylmao.admin.config.base.BaseController;
 import com.ylmao.admin.config.log.Log;
+import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.dto.UserInfoDto;
 import com.ylmao.admin.service.UserInfoService;
 import com.ylmao.admin.vo.UserInfoVo;
@@ -17,8 +19,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @Tag(name = "个人中心", description = "当前用户资料与密码")
 @RestController
@@ -41,9 +41,9 @@ public class UserInfoController extends BaseController {
     @Log(title = "个人最近登录", businessType = "QUERY")
     @SaCheckPermission("user:info:view")
     @GetMapping("/loginLog")
-    public R<?> userInfoLoginLog() {
-        List<UserInfoVo.LoginLogVo> loginLogs = userInfoService.getCurrentLoginLogs();
-        return R.ok(loginLogs);
+    public R<?> userInfoLoginLog(@Valid PageQuery pageQuery) {
+        IPage<UserInfoVo.LoginLogVo> page = userInfoService.getCurrentLoginLogs(pageQuery);
+        return pageData(page.getRecords(), page.getTotal());
     }
 
     @Operation(summary = "保存个人资料")

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { VNode } from 'vue';
 import { useAuthStore } from '@/store/modules/auth';
 import { useRouterPush } from '@/hooks/common/router';
@@ -18,7 +18,7 @@ function loginOrRegister() {
   toLogin();
 }
 
-type DropdownKey = 'logout';
+type DropdownKey = 'account_info' | 'logout';
 
 type DropdownOption =
   | {
@@ -32,7 +32,17 @@ type DropdownOption =
     };
 
 const options = computed(() => {
+  // 个人菜单默认不进侧栏，入口挂在头像下拉
   const opts: DropdownOption[] = [
+    {
+      label: $t('common.userCenter'),
+      key: 'account_info',
+      icon: SvgIconVNode({ icon: 'ph:user-circle', fontSize: 18 })
+    },
+    {
+      type: 'divider',
+      key: 'divider'
+    },
     {
       label: $t('common.logout'),
       key: 'logout',
@@ -42,6 +52,28 @@ const options = computed(() => {
 
   return opts;
 });
+
+/** 与个人中心一致：相对路径走 /upload，覆盖后靠 stamp 破缓存 */
+const headerAvatarSrc = computed(() => {
+  const raw = (authStore.userInfo.userAvatar ?? '').trim();
+  if (!raw) return '';
+  if (/^(https?:)?\/\//i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) {
+    return raw;
+  }
+  const path = raw.startsWith('/') ? raw : `/${raw}`;
+  return `${path}?_t=${authStore.avatarStamp}`;
+});
+
+/** 无地址或加载失败时不渲染头像，只留昵称 */
+const avatarOk = ref(Boolean(headerAvatarSrc.value));
+
+watch(headerAvatarSrc, src => {
+  avatarOk.value = Boolean(src);
+});
+
+function onAvatarError() {
+  avatarOk.value = false;
+}
 
 function logout() {
   window.$dialog?.info({
@@ -60,7 +92,6 @@ function handleDropdown(key: DropdownKey) {
   if (key === 'logout') {
     logout();
   } else {
-    // If your other options are jumps from other routes, they will be directly supported here
     routerPushByKey(key);
   }
 }
@@ -73,7 +104,15 @@ function handleDropdown(key: DropdownKey) {
   <NDropdown v-else placement="bottom" trigger="click" :options="options" @select="handleDropdown">
     <div>
       <ButtonIcon>
-        <SvgIcon icon="ph:user-circle" class="text-icon-large" />
+        <NAvatar
+          v-if="avatarOk && headerAvatarSrc"
+          :key="headerAvatarSrc"
+          round
+          :size="28"
+          object-fit="cover"
+          :src="headerAvatarSrc"
+          @error="onAvatarError"
+        />
         <span class="text-16px font-medium">{{ authStore.userInfo.userName }}</span>
       </ButtonIcon>
     </div>

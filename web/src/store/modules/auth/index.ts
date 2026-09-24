@@ -24,9 +24,13 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   const userInfo: Api.Auth.UserInfo = reactive({
     userId: '',
     userName: '',
+    userAvatar: '',
     roles: [],
     buttons: []
   });
+
+  /** 头像覆盖后路径不变时用来bust缓存；顶栏与个人中心共用 */
+  const avatarStamp = ref(Date.now());
 
   /** is super role in static route */
   const isStaticSuper = computed(() => {
@@ -168,16 +172,36 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     Object.assign(userInfo, {
       userId: info.userId,
       userName: info.userName,
+      userAvatar: info.userAvatar || '',
       roles: info.roles || [],
       buttons: info.buttons || []
     });
     localStg.set('userInfo', {
       userId: userInfo.userId,
       userName: userInfo.userName,
+      userAvatar: userInfo.userAvatar,
       roles: userInfo.roles,
       buttons: userInfo.buttons
     });
     return true;
+  }
+
+  /** 个人中心改昵称/头像后立刻同步顶栏，不必整页重登 */
+  function syncProfile(partial: { userName?: string; userAvatar?: string | null }) {
+    if (partial.userName !== undefined) {
+      userInfo.userName = partial.userName;
+    }
+    if (partial.userAvatar !== undefined) {
+      userInfo.userAvatar = partial.userAvatar || '';
+      avatarStamp.value = Date.now();
+    }
+    localStg.set('userInfo', {
+      userId: userInfo.userId,
+      userName: userInfo.userName,
+      userAvatar: userInfo.userAvatar,
+      roles: userInfo.roles,
+      buttons: userInfo.buttons
+    });
   }
 
   /** 对外：角色授权变更后刷新 roles/buttons */
@@ -211,12 +235,14 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   return {
     token,
     userInfo,
+    avatarStamp,
     isStaticSuper,
     isLogin,
     loginLoading,
     resetStore,
     login,
     initUserInfo,
-    refreshUserInfo
+    refreshUserInfo,
+    syncProfile
   };
 });

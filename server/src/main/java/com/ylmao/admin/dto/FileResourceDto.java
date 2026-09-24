@@ -16,14 +16,13 @@ public class FileResourceDto {
     ) {
     }
 
-    /** 上传接口非文件字段；MultipartFile 仍由 Controller 单独接收。 */
+    /** 上传接口非文件字段；MultipartFile 仍由 Controller 单独接收。上传永远新建，同名可并存。 */
     public record FileUpload(
             @Size(max = 64, message = "目录参数不合法") String folderId,
             @NotBlank(message = "上传场景不能为空") @Size(max = 32, message = "上传场景参数不合法") String fileScene,
             @Min(value = 0, message = "是否需登录参数不合法")
             @Max(value = 1, message = "是否需登录参数不合法")
-            Integer needLogin,
-            Boolean forceOverwrite
+            Integer needLogin
     ) {
     }
 

@@ -20,10 +20,11 @@ public class AdminAuthVo {
     ) {
     }
 
-    /** 当前登录用户：角色码 + 按钮权限码（sys_menu.menu_type=2）。 */
+    /** 当前登录用户：角色码 + 按钮权限码（sys_menu.menu_type=2）+ 头像（顶栏同步）。 */
     public record UserInfoResult(
             String userId,
             String userName,
+            String userAvatar,
             List<String> roles,
             List<String> buttons
     ) {

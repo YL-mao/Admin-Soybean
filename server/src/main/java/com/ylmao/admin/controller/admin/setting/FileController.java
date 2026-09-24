@@ -51,9 +51,13 @@ public class FileController extends BaseController {
         return okData(fileResourceService.uploadRules());
     }
 
+    /**
+     * 公共覆盖：仅校验登录；Service 内限制为持有 system:file:update、本人创建，或当前用户头像引用。
+     * 文件管理详情与个人中心换头像共用。
+     */
     @Operation(summary = "覆盖上传文件")
     @Log(title = "覆盖上传文件", businessType = "UPDATE", isSaveResponseData = true)
-    @SaCheckPermission("system:file:update")
+    @SaCheckLogin
     @PostMapping("/overwrite")
     public R<?> fileOverwrite(@RequestParam("fileId") String fileId,
                               @RequestParam("file") MultipartFile file) {
@@ -76,14 +80,6 @@ public class FileController extends BaseController {
     public R<?> fileDelete(String ids) {
         fileResourceService.softDeleteFiles(ids);
         return success();
-    }
-
-    @Operation(summary = "文件名是否唯一")
-    @Log(title = "查询文件名是否唯一", businessType = "QUERY")
-    @SaCheckLogin
-    @GetMapping("/checkName")
-    public R<Boolean> checkFileNameUnique(String folderId, String originalName) {
-        return R.ok(fileResourceService.checkOriginalNameUnique(folderId, originalName) == null);
     }
 
     @Operation(summary = "查询文件引用")

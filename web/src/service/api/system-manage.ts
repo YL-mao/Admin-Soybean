@@ -873,15 +873,7 @@ export function fetchGetFileUploadRules() {
 }
 
 /** 同目录文件名是否可用 */
-export function fetchCheckFileNameUnique(folderId: string, originalName: string) {
-  return request<boolean>({
-    url: '/file/checkName',
-    method: 'get',
-    params: { folderId, originalName }
-  });
-}
-
-/** 上传文件（multipart） */
+/** 上传文件（multipart）；永远新建，同名可并存 */
 export function fetchUploadFile(file: File, data: Api.SystemManage.FileUploadParams) {
   const formData = new FormData();
   formData.append('file', file);
@@ -891,10 +883,6 @@ export function fetchUploadFile(file: File, data: Api.SystemManage.FileUploadPar
   formData.append('fileScene', data.fileScene);
   if (data.needLogin != null) {
     formData.append('needLogin', String(data.needLogin));
-  }
-  if (data.forceOverwrite != null) {
-    // 与 Layui 一致传 1/0，兼容 Spring Boolean 绑定
-    formData.append('forceOverwrite', data.forceOverwrite ? '1' : '0');
   }
   return request<Api.SystemManage.FileResource>({
     url: '/file/upload',
@@ -939,5 +927,53 @@ export function fetchCheckFileRef(ids: string) {
     url: '/file/checkRef',
     method: 'get',
     params: { ids }
+  });
+}
+
+/** 当前用户个人资料详情 */
+export function fetchGetUserProfileDetail() {
+  return request<Api.SystemManage.UserProfileDetail>({
+    url: '/user/info/detail',
+    method: 'get'
+  });
+}
+
+/** 保存当前用户可改资料 */
+export function fetchUpdateUserProfile(data: Api.SystemManage.UserProfileSave) {
+  return request<null>({
+    url: '/user/info/update',
+    method: 'put',
+    data
+  });
+}
+
+/** 当前用户修改自己的密码（成功后后端强制注销） */
+export function fetchUpdateOwnPassword(data: Api.SystemManage.UserOwnPasswordUpdate) {
+  return request<null>({
+    url: '/user/info/updatePwd',
+    method: 'patch',
+    data
+  });
+}
+
+/** 更新当前用户头像地址（上传接口返回的 accessUrl） */
+export function fetchUpdateOwnAvatar(userAvatar: string) {
+  return request<null>({
+    url: '/user/info/updateAvatar',
+    method: 'patch',
+    data: { userAvatar }
+  });
+}
+
+/** 当前用户最近登录记录（分页：page/limit，倒序） */
+export function fetchGetOwnLoginLogs(params?: Api.SystemManage.CommonSearchParams) {
+  const { current, size } = params || {};
+  return request<Api.SystemManage.UserOwnLoginLog[]>({
+    url: '/user/info/loginLog',
+    method: 'get',
+    params: {
+      page: current ?? 1,
+      limit: size ?? 10
+    }
   });
 }

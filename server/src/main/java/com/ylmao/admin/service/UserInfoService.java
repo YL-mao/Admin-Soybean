@@ -4,9 +4,12 @@ import cn.hutool.core.util.StrUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ylmao.admin.config.exception.BusinessException;
 import com.ylmao.admin.config.saToken.SaTokenUtil;
 import com.ylmao.admin.constant.DictTypeCode;
+import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.dto.UserInfoDto;
 import com.ylmao.admin.entity.Dept;
 import com.ylmao.admin.entity.OperateLog;
@@ -23,13 +26,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserInfoService {
-
-    private static final int LOGIN_LOG_LIMIT = 10;
 
     private final UserMapper userMapper;
     private final DictRuntimeService dictRuntimeService;
@@ -48,7 +50,8 @@ public class UserInfoService {
         return UserInfoVo.ProfileDetailVo.from(user, deptName, postName, roles, getLatestLoginTime(user.getUserId()));
     }
 
-    public List<UserInfoVo.LoginLogVo> getCurrentLoginLogs() {
+    /** 当前用户成功登录记录：按时间倒序分页；全局最新一条标记 current。 */
+    public IPage<UserInfoVo.LoginLogVo> getCurrentLoginLogs(PageQuery pageQuery) {
         String userId = SaTokenUtil.getUserId();
         if (StrUtil.isBlank(userId)) {
             throw new BusinessException("用户未登录");
@@ -59,11 +62,17 @@ public class UserInfoService {
                 .eq(OperateLog::getBusinessType, "LOGIN")
                 .eq(OperateLog::getIsSuccess, 1)
                 .orderByDesc(OperateLog::getOperateTime)
-                .last("limit " + LOGIN_LOG_LIMIT);
-        List<OperateLog> logs = operateLogMapper.selectList(wrapper);
-        return java.util.stream.IntStream.range(0, logs.size())
-                .mapToObj(index -> UserInfoVo.LoginLogVo.from(logs.get(index), index == 0))
-                .toList();
+                .orderByDesc(OperateLog::getOperateId);
+        IPage<OperateLog> page = operateLogMapper.selectPage(pageQuery.toMpPage(), wrapper);
+        long offset = (page.getCurrent() - 1) * page.getSize();
+        List<OperateLog> records = page.getRecords();
+        List<UserInfoVo.LoginLogVo> vos = new ArrayList<>(records.size());
+        for (int i = 0; i < records.size(); i++) {
+            vos.add(UserInfoVo.LoginLogVo.from(records.get(i), offset + i == 0));
+        }
+        Page<UserInfoVo.LoginLogVo> result = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        result.setRecords(vos);
+        return result;
     }
 
     @Transactional
