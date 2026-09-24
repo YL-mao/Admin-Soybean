@@ -726,7 +726,6 @@ const local: App.I18n.Schema = {
         title: 'API Docs',
         desc: 'Swagger UI is embedded here in development; OpenAPI fetch and Try it out send saToken.',
         openDoc: 'Open Swagger UI',
-        group: 'Doc group',
         devOnly: 'API docs are available in development only; springdoc is disabled in production.'
       },
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { SwaggerUIBundle } from 'swagger-ui-dist';
 import type { SwaggerRequest } from 'swagger-ui-dist';
 import 'swagger-ui-dist/swagger-ui.css';
@@ -16,13 +16,6 @@ const hostRef = ref<HTMLElement | null>(null);
 
 const isHttpProxy = import.meta.env.DEV && import.meta.env.VITE_HTTP_PROXY === 'Y';
 const { baseURL: serviceBaseURL } = getServiceBaseURL(import.meta.env, isHttpProxy);
-
-/** 与 OpenApiConfig 分组 id 对齐 */
-const docGroups = [
-  { label: '后台框架', value: 'admin' },
-  { label: '登录与其它', value: 'root' }
-];
-const docGroup = ref('admin');
 
 /** 同源且未走代理时补前缀，避免 Try it out 打到 Vite */
 function rewriteToService(url: string) {
@@ -54,9 +47,10 @@ function mountSwagger() {
   if (!el || !isDev) return;
 
   el.innerHTML = '';
+  // 仅保留 admin 分组（含认证与业务接口）
   SwaggerUIBundle({
     domNode: el,
-    url: resolveBackendAssetUrl(`/v3/api-docs/${docGroup.value}`),
+    url: resolveBackendAssetUrl('/v3/api-docs/admin'),
     deepLinking: false,
     docExpansion: 'list',
     defaultModelsExpandDepth: 0,
@@ -69,10 +63,6 @@ function mountSwagger() {
 onMounted(async () => {
   if (!isDev) return;
   await nextTick();
-  mountSwagger();
-});
-
-watch(docGroup, () => {
   mountSwagger();
 });
 
@@ -91,16 +81,7 @@ onBeforeUnmount(() => {
       content-style="flex: 1; display: flex; flex-direction: column; min-height: 0;"
     >
       <template v-if="isDev">
-        <div class="mb-12px flex flex-wrap items-center gap-12px">
-          <p class="text-gray-600">{{ $t('page.autobox.apidoc.desc') }}</p>
-          <NSelect
-            v-model:value="docGroup"
-            class="w-180px"
-            size="small"
-            :options="docGroups"
-            :placeholder="$t('page.autobox.apidoc.group')"
-          />
-        </div>
+        <p class="mb-12px text-gray-600">{{ $t('page.autobox.apidoc.desc') }}</p>
         <!-- 本页 Swagger UI：已登录请求头拉 OpenAPI / 试调 -->
         <div ref="hostRef" class="w-full flex-1 overflow-auto rounded-8px bg-white" style="min-height: 70vh" />
       </template>

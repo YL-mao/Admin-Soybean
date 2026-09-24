@@ -53,17 +53,6 @@ public class OpenApiConfig {
                 .build();
     }
 
-    @Bean
-    public GroupedOpenApi rootApi() {
-        return GroupedOpenApi.builder()
-                .group("root")
-                .displayName("登录与其它")
-                .packagesToScan("com.ylmao.admin.controller")
-                .pathsToMatch("/login", "/captcha/**", "/home/**", "/upload/**")
-                .addOpenApiMethodFilter(jsonApiOnly())
-                .build();
-    }
-
     private static OpenApiMethodFilter jsonApiOnly() {
         return method -> AnnotatedElementUtils.hasAnnotation(method, ResponseBody.class)
                 || AnnotatedElementUtils.hasAnnotation(method.getDeclaringClass(), RestController.class)
