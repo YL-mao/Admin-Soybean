@@ -46,7 +46,13 @@ watch(
 );
 
 async function refreshHeader() {
-  if (!visible.value) {
+  if (!authStore.isLogin) {
+    noticeStore.clear();
+    return;
+  }
+  // 动态路由未就绪时不 clear，避免首页/铃铛互相冲掉未读
+  if (!routeStore.isInitAuthRoute) return;
+  if (!router.getRoutes().some(item => item.name === 'account_notice')) {
     noticeStore.clear();
     return;
   }

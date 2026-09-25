@@ -1,46 +1,121 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { fetchGetUserProfileDetail } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
-import HeaderBanner from './modules/header-banner.vue';
-import CardData from './modules/card-data.vue';
-import LineChart from './modules/line-chart.vue';
-import PieChart from './modules/pie-chart.vue';
-import ProjectNews from './modules/project-news.vue';
-import CreativityBanner from './modules/creativity-banner.vue';
+import { useAuthStore } from '@/store/modules/auth';
+import { useRouteStore } from '@/store/modules/route';
+import WorkspaceGreeting from './modules/workspace-greeting.vue';
+import WorkspaceNotices from './modules/workspace-notices.vue';
+import WorkspaceShortcuts from './modules/workspace-shortcuts.vue';
+import WorkspaceLoginLogs from './modules/workspace-login-logs.vue';
+import WorkspaceProfileSummary from './modules/workspace-profile-summary.vue';
 
+defineOptions({ name: 'HomePage' });
+
+const router = useRouter();
 const appStore = useAppStore();
+const authStore = useAuthStore();
+const routeStore = useRouteStore();
 
 const gap = computed(() => (appStore.isMobile ? 0 : 16));
+
+/** 问候条与账号摘要共用：有个人中心路由才拉一次详情 */
+const canLoadProfile = computed(() => {
+  if (!authStore.isLogin || !routeStore.isInitAuthRoute) return false;
+  return router.getRoutes().some(item => item.name === 'account_info');
+});
+
+const profile = ref<Api.SystemManage.UserProfileDetail | null>(null);
+const profileLoading = ref(false);
+/** 防并发回写乱序 */
+let profileLoadSeq = 0;
+
+async function loadProfile() {
+  const seq = ++profileLoadSeq;
+  if (!canLoadProfile.value) {
+    profile.value = null;
+    profileLoading.value = false;
+    return;
+  }
+  profileLoading.value = true;
+  const { data, error } = await fetchGetUserProfileDetail();
+  if (seq !== profileLoadSeq) return;
+  profileLoading.value = false;
+  if (error || !data) {
+    profile.value = null;
+    return;
+  }
+  profile.value = data;
+}
+
+watch(canLoadProfile, () => {
+  loadProfile();
+});
+
+onMounted(() => {
+  loadProfile();
+});
 </script>
 
 <template>
-  <NSpace vertical :size="16">
-    <NAlert :title="$t('common.tip')" type="warning">
-      {{ $t('page.home.branchDesc') }}
-    </NAlert>
-    <HeaderBanner />
-    <CardData />
-    <NGrid :x-gap="gap" :y-gap="16" responsive="screen" item-responsive>
-      <NGi span="24 s:24 m:14">
-        <NCard :bordered="false" class="card-wrapper">
-          <LineChart />
-        </NCard>
+  <!-- 上下两行独立栅格：避免同行等高/层叠把迎宾区盖住 -->
+  <div class="workspace-page min-h-500px flex-col gap-16px">
+    <WorkspaceGreeting class="workspace-greeting" :profile="profile" />
+    <NGrid class="workspace-grid" :x-gap="gap" :y-gap="16" responsive="screen" item-responsive>
+      <NGi span="24 s:24 m:10" class="row-cell flex">
+        <WorkspaceShortcuts class="w-full" />
       </NGi>
-      <NGi span="24 s:24 m:10">
-        <NCard :bordered="false" class="card-wrapper">
-          <PieChart />
-        </NCard>
+      <NGi span="24 s:24 m:14" class="row-cell flex">
+        <WorkspaceNotices class="w-full" />
       </NGi>
     </NGrid>
-    <NGrid :x-gap="gap" :y-gap="16" responsive="screen" item-responsive>
-      <NGi span="24 s:24 m:14">
-        <ProjectNews />
+    <NGrid class="workspace-grid" :x-gap="gap" :y-gap="16" responsive="screen" item-responsive>
+      <NGi span="24 s:24 m:10" class="row-cell flex">
+        <WorkspaceProfileSummary
+          class="w-full"
+          :profile="profile"
+          :loading="profileLoading"
+          :can-view="canLoadProfile"
+        />
       </NGi>
-      <NGi span="24 s:24 m:10">
-        <CreativityBanner />
+      <NGi span="24 s:24 m:14" class="row-cell flex">
+        <WorkspaceLoginLogs class="w-full" />
       </NGi>
     </NGrid>
-  </NSpace>
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.workspace-page {
+  position: relative;
+  padding-bottom: 8px;
+}
+
+/* 迎宾始终压在下方卡片之上，防止 transform/层叠把样式盖住 */
+.workspace-greeting {
+  position: relative;
+  z-index: 2;
+}
+
+/* NGrid 根即本节点；同行格子默认 stretch，子卡片用 flex 吃满高度 */
+.workspace-grid {
+  position: relative;
+  z-index: 1;
+  align-items: stretch;
+}
+
+.row-cell {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+}
+
+/* 百分比高度在 grid 拉伸项上不可靠，改为 flex:1 吃满格子 */
+.row-cell > * {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+}
+</style>

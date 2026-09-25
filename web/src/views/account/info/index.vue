@@ -1,5 +1,6 @@
 <script setup lang="tsx">
-import { computed, onMounted, reactive, ref, toRef } from 'vue';
+import { computed, onMounted, reactive, ref, toRef, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { NTag } from 'naive-ui';
 import { userSexOptions } from '@/constants/business';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
@@ -18,6 +19,7 @@ import { $t } from '@/locales';
 
 defineOptions({ name: 'AccountInfo' });
 
+const route = useRoute();
 const authStore = useAuthStore();
 const activeTab = ref<'profile' | 'password' | 'loginLog'>('profile');
 const loadingDetail = ref(false);
@@ -193,6 +195,28 @@ async function loadDetail() {
   });
 }
 
+type AccountTab = 'profile' | 'password' | 'loginLog';
+
+/** 首页快捷入口等：解析 ?tab=，兼容 string[] */
+function resolveTabFromQuery(raw: unknown): AccountTab | null {
+  const tab = Array.isArray(raw) ? raw[0] : raw;
+  if (tab === 'password' || tab === 'loginLog' || tab === 'profile') return tab;
+  return null;
+}
+
+async function applyTabFromQuery() {
+  const tab = resolveTabFromQuery(route.query.tab);
+  // 无有效 ?tab= 时回到资料（keepAlive 下从改密入口再进个人中心）
+  if (!tab) {
+    activeTab.value = 'profile';
+    return;
+  }
+  activeTab.value = tab;
+  if (tab === 'loginLog') {
+    await getLoginLogsByPage(1);
+  }
+}
+
 async function handleTabUpdate(name: string) {
   activeTab.value = name as typeof activeTab.value;
   if (name === 'loginLog') {
@@ -270,8 +294,17 @@ async function handleAvatarFileChange(event: Event) {
   await loadDetail();
 }
 
-onMounted(() => {
-  loadDetail();
+// keepAlive / 仅 query 变化时也要切 Tab（对齐我的公告 noticeId）
+watch(
+  () => route.query.tab,
+  () => {
+    applyTabFromQuery();
+  }
+);
+
+onMounted(async () => {
+  await applyTabFromQuery();
+  await loadDetail();
 });
 </script>
 
