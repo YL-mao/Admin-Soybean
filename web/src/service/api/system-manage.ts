@@ -977,3 +977,42 @@ export function fetchGetOwnLoginLogs(params?: Api.SystemManage.CommonSearchParam
     }
   });
 }
+
+/** 顶栏公告短列表（按类型分 Tab，每类未读最多 8 条） */
+export function fetchGetUserNoticeHeader() {
+  return request<Api.SystemManage.UserNoticeHeaderTab[]>({
+    url: '/user/notice/header',
+    method: 'get'
+  });
+}
+
+/** 我的公告收件箱分页 */
+export function fetchGetUserInboxNoticeList(params?: Api.SystemManage.UserInboxNoticeSearchParams) {
+  const { current, size, ...rest } = params || {};
+  return request<Api.SystemManage.UserInboxNotice[]>({
+    url: '/user/notice/list',
+    method: 'get',
+    params: {
+      ...rest,
+      page: current ?? 1,
+      limit: size ?? 10
+    }
+  });
+}
+
+/** 单条标记已读 */
+export function fetchUpdateUserNoticeRead(noticeId: string) {
+  return request<null>({
+    url: '/user/notice/updateRead',
+    method: 'patch',
+    data: { noticeId }
+  });
+}
+
+/** 全部标记已读 */
+export function fetchReadAllUserNotices() {
+  return request<null>({
+    url: '/user/notice/readAll',
+    method: 'patch'
+  });
+}

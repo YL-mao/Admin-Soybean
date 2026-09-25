@@ -2,7 +2,6 @@ import type { FlatResponseData } from '@sa/axios';
 import {
   mockDeptTree,
   mockFiles,
-  mockNotices,
   mockPosts
 } from '@/mock/autobox/data';
 import { createStaticListApi, matchLike } from '@/mock/autobox/list-api';
@@ -36,36 +35,6 @@ export async function fetchDeptTreeList(
     error: null,
     response: {} as any
   };
-}
-
-/** 我的公告仍用本地假数据；管理端列表已改走 /notice/list */
-export function fetchNoticeList(params?: {
-  current?: number | null;
-  size?: number | null;
-  noticeTitle?: string | null;
-  status?: Api.Common.EnableStatus | null;
-  isSend?: number | null;
-}) {
-  const api = createStaticListApi<Api.AutoboxScaffold.Notice & Record<string, unknown>>(
-    () =>
-      mockNotices.map(n => ({
-        id: stableId(n.noticeId),
-        noticeId: n.noticeId,
-        noticeTitle: n.noticeTitle,
-        noticeTypeName: n.noticeTypeName,
-        orderNum: n.orderNum,
-        isSend: n.isSend,
-        sendTime: n.sendTime,
-        expireTime: n.expireTime,
-        status: n.isSend === 1 ? '1' : '2'
-      })) as (Api.AutoboxScaffold.Notice & Record<string, unknown>)[],
-    (row, q) =>
-      matchLike(row.noticeTitle, q.noticeTitle) &&
-      (q.isSend === null || q.isSend === undefined || q.isSend === ''
-        ? statusMatch(row.status, q.status)
-        : Number(row.isSend) === Number(q.isSend))
-  );
-  return api(params ?? {});
 }
 
 export function fetchFileList(params?: Api.AutoboxScaffold.FileSearchParams) {

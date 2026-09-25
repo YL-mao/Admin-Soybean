@@ -761,8 +761,20 @@ const local: App.I18n.Schema = {
           userPhone: '请输入手机号',
           oldPassword: '请输入原密码',
           newPassword: '请输入新密码',
-          confirmPassword: '请再次输入新密码'
-        }
+          confirmPassword: '请再次输入新密码',
+          noticeReadState: '请选择阅读状态'
+        },
+        noticeReadState: '阅读状态',
+        noticeUnread: '未读',
+        noticeRead: '已读',
+        noticeReadTime: '阅读时间',
+        noticeView: '查看',
+        noticeDetail: '公告详情',
+        noticeReadAll: '全部已读',
+        noticeReadAllSuccess: '已全部标为已读',
+        noticeViewAll: '查看全部',
+        noticeEmptyUnread: '暂无未读公告',
+        noticeNotFound: '公告不存在或已过期'
       }
     },
     login: {

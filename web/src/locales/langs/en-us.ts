@@ -765,8 +765,20 @@ const local: App.I18n.Schema = {
           userPhone: 'Please enter phone',
           oldPassword: 'Please enter current password',
           newPassword: 'Please enter new password',
-          confirmPassword: 'Please confirm new password'
-        }
+          confirmPassword: 'Please confirm new password',
+          noticeReadState: 'Please select read status'
+        },
+        noticeReadState: 'Read status',
+        noticeUnread: 'Unread',
+        noticeRead: 'Read',
+        noticeReadTime: 'Read at',
+        noticeView: 'View',
+        noticeDetail: 'Notice detail',
+        noticeReadAll: 'Mark all read',
+        noticeReadAllSuccess: 'All notices marked as read',
+        noticeViewAll: 'View all',
+        noticeEmptyUnread: 'No unread notices',
+        noticeNotFound: 'Notice not found or expired'
       }
     },
     login: {

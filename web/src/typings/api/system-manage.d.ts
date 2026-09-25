@@ -717,5 +717,44 @@ declare namespace Api {
       systemOs: string | null;
       current: boolean;
     };
+
+    /** 对齐 NoticeVo.UserInboxVo（我的公告收件箱） */
+    type UserInboxNotice = {
+      noticeId: string;
+      noticeTitle: string;
+      noticeContent: string;
+      noticeType: number | null;
+      noticeTypeName: string | null;
+      sendTime: string | null;
+      readState: 0 | 1;
+      readTime: string | null;
+    };
+
+    /** 我的公告列表查询（对齐 NoticeDto.UserNoticeList + 分页） */
+    type UserInboxNoticeSearchParams = CommonType.RecordNullable<
+      {
+        noticeTitle: string;
+        noticeType: number;
+        readState: 0 | 1;
+      } & CommonSearchParams
+    >;
+
+    /** 对齐 NoticeVo.HeaderMessageItemVo（顶栏短列表项；title 已是纯文本） */
+    type UserNoticeHeaderItem = {
+      id: string;
+      icon?: string | null;
+      noticeType?: number | null;
+      title: string;
+      context?: string | null;
+      form?: string | null;
+      time?: string | null;
+    };
+
+    /** 对齐 NoticeVo.HeaderMessageTabVo（按公告类型分 Tab） */
+    type UserNoticeHeaderTab = {
+      id: number;
+      title: string;
+      children: UserNoticeHeaderItem[];
+    };
   }
 }
