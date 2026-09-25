@@ -528,7 +528,8 @@ const local: App.I18n.Schema = {
           noticeDesc: 'Please enter description',
           orderNum: 'Please enter order',
           expireTime: 'Please select expire time',
-          isSend: 'Please select publish status'
+          isSend: 'Please select publish status',
+          consoleReadState: 'Please select read status'
         },
         receiverType: 'Audience',
         noticeContent: 'Content',
@@ -537,7 +538,25 @@ const local: App.I18n.Schema = {
         draft: 'Draft',
         published: 'Published',
         publishedLocked: 'Published notices cannot be edited',
-        detailTitle: 'Notice Detail'
+        detailTitle: 'Notice Detail',
+        console: 'Console',
+        consoleStatsTab: 'Read Stats',
+        consoleReceiversTab: 'Receivers',
+        consoleTotal: 'Total',
+        consoleReadCount: 'Read',
+        consoleUnreadCount: 'Unread',
+        consoleReadRate: 'Read Rate',
+        consoleTargets: 'Targets',
+        consoleUserAccount: 'Account',
+        consoleUserName: 'Name',
+        consoleDeptName: 'Dept',
+        consoleReadState: 'Read Status',
+        consoleReadTime: 'Read Time',
+        consoleRead: 'Read',
+        consoleUnread: 'Unread',
+        consoleDirectVisitTip: 'Open the console from the notice list',
+        consoleUnpublishedTip: 'Only published notices have a console',
+        consoleOpenFailedTip: 'Cannot open console: notice missing or unpublished'
       },
       operateLog: {
         title: 'Operation Logs',

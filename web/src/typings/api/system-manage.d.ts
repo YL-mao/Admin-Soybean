@@ -428,6 +428,41 @@ declare namespace Api {
       noticeId: string;
     };
 
+    /** 对齐 NoticeVo.ConsoleStatsVo */
+    type NoticeConsoleStats = {
+      noticeId: string;
+      noticeTitle: string;
+      noticeType: number | null;
+      noticeTypeName: string | null;
+      receiverType: number | null;
+      receiverTypeName: string | null;
+      receiverTargets: string[];
+      sendTime: string | null;
+      expireTime: string | null;
+      totalCount: number;
+      readCount: number;
+      unreadCount: number;
+      readRate: string;
+    };
+
+    /** 对齐 NoticeVo.ConsoleReceiverVo */
+    type NoticeConsoleReceiver = {
+      userId: string;
+      userAccount: string;
+      userName: string;
+      deptName: string | null;
+      readState: 0 | 1;
+      readTime: string | null;
+    };
+
+    /** 控制台接收人查询（对齐 NoticeDto.ConsoleReceiverList + 分页） */
+    type NoticeConsoleReceiverSearchParams = CommonType.RecordNullable<
+      {
+        noticeId: string;
+        readState: 0 | 1;
+      } & CommonSearchParams
+    >;
+
     type DictOption = {
       dictDataLabel: string;
       dictDataValue: string;

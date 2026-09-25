@@ -797,6 +797,29 @@ export function fetchUpdateNoticeEnabled(data: { noticeId: string; isSend: 0 | 1
   });
 }
 
+/** 公告控制台：阅读统计（仅已发布） */
+export function fetchGetNoticeConsoleStats(noticeId: string) {
+  return request<Api.SystemManage.NoticeConsoleStats>({
+    url: '/notice/consoleStats',
+    method: 'get',
+    params: { noticeId }
+  });
+}
+
+/** 公告控制台：接收人分页 */
+export function fetchGetNoticeConsoleReceivers(params: Api.SystemManage.NoticeConsoleReceiverSearchParams) {
+  const { current, size, ...rest } = params || {};
+  return request<Api.SystemManage.NoticeConsoleReceiver[]>({
+    url: '/notice/receiverList',
+    method: 'get',
+    params: {
+      ...rest,
+      page: current ?? 1,
+      limit: size ?? 10
+    }
+  });
+}
+
 /** 公告接收人检索（指定个人） */
 export function fetchSearchNoticeUser(keyword: string) {
   return request<Api.SystemManage.UserOption[]>({

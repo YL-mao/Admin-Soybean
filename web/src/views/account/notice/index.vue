@@ -33,54 +33,57 @@ const searchParams = ref<Api.SystemManage.UserInboxNoticeSearchParams>({
   readState: null
 });
 
-const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination } = useNaivePaginatedTable({
-  api: () => fetchGetUserInboxNoticeList(searchParams.value),
-  transform: response =>
-    backendPageTransform(response, searchParams.value.current || 1, searchParams.value.size || 10),
-  onPaginationParamsChange: params => {
-    searchParams.value.current = params.page || 1;
-    searchParams.value.size = params.pageSize || 10;
-  },
-  columns: () => [
-    {
-      key: 'noticeTitle',
-      title: $t('page.autobox.notice.noticeTitle'),
-      align: 'center',
-      minWidth: 180,
-      render: row => (
-        <span class="notice-title" innerHTML={row.noticeTitle} onClick={() => openDetail(row)} />
-      )
+const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination, scrollX } =
+  useNaivePaginatedTable({
+    api: () => fetchGetUserInboxNoticeList(searchParams.value),
+    transform: response =>
+      backendPageTransform(response, searchParams.value.current || 1, searchParams.value.size || 10),
+    onPaginationParamsChange: params => {
+      searchParams.value.current = params.page || 1;
+      searchParams.value.size = params.pageSize || 10;
     },
-    { key: 'noticeTypeName', title: $t('page.autobox.notice.noticeType'), align: 'center', width: 100 },
-    {
-      key: 'readState',
-      title: $t('page.autobox.account.noticeReadState'),
-      align: 'center',
-      width: 90,
-      render: row =>
-        row.readState === 1 ? (
-          <NTag size="small">{$t('page.autobox.account.noticeRead')}</NTag>
-        ) : (
-          <NTag type="warning" size="small">
-            {$t('page.autobox.account.noticeUnread')}
-          </NTag>
+    columns: () => [
+      {
+        key: 'noticeTitle',
+        title: $t('page.autobox.notice.noticeTitle'),
+        align: 'center',
+        // 各列只设 minWidth、不设 width：fixed 布局下剩余宽度均分，不会出现标题列独宽
+        minWidth: 160,
+        render: row => (
+          // 标题已在服务端按白名单清洗，列表里直接渲染样式
+          <span class="notice-title" innerHTML={row.noticeTitle} onClick={() => openDetail(row)} />
         )
-    },
-    { key: 'sendTime', title: $t('page.autobox.notice.sendTime'), align: 'center', width: 170 },
-    { key: 'readTime', title: $t('page.autobox.account.noticeReadTime'), align: 'center', width: 170 },
-    {
-      key: 'operate',
-      title: $t('common.operate'),
-      align: 'center',
-      width: 100,
-      render: row => (
-        <NButton type="primary" ghost size="small" onClick={() => openDetail(row)}>
-          {$t('page.autobox.account.noticeView')}
-        </NButton>
-      )
-    }
-  ]
-});
+      },
+      { key: 'noticeTypeName', title: $t('page.autobox.notice.noticeType'), align: 'center', minWidth: 110 },
+      {
+        key: 'readState',
+        title: $t('page.autobox.account.noticeReadState'),
+        align: 'center',
+        minWidth: 100,
+        render: row =>
+          row.readState === 1 ? (
+            <NTag size="small">{$t('page.autobox.account.noticeRead')}</NTag>
+          ) : (
+            <NTag type="warning" size="small">
+              {$t('page.autobox.account.noticeUnread')}
+            </NTag>
+          )
+      },
+      { key: 'sendTime', title: $t('page.autobox.notice.sendTime'), align: 'center', minWidth: 170 },
+      { key: 'readTime', title: $t('page.autobox.account.noticeReadTime'), align: 'center', minWidth: 170 },
+      {
+        key: 'operate',
+        title: $t('common.operate'),
+        align: 'center',
+        minWidth: 100,
+        render: row => (
+          <NButton type="primary" ghost size="small" onClick={() => openDetail(row)}>
+            {$t('page.autobox.account.noticeView')}
+          </NButton>
+        )
+      }
+    ]
+  });
 
 /** 打开详情即已读；同步顶栏未读 */
 async function openDetail(row: Api.SystemManage.UserInboxNotice) {
@@ -177,6 +180,7 @@ watch(
         :data="data"
         size="small"
         :flex-height="!appStore.isMobile"
+        :scroll-x="scrollX"
         :loading="loading"
         remote
         paginate-single-page
@@ -200,6 +204,7 @@ watch(
               <span>{{ detailRow?.sendTime || '-' }}</span>
             </div>
             <NDivider />
+            <!-- 正文已在服务端按标签和样式白名单清洗 -->
             <!-- eslint-disable-next-line vue/no-v-html -->
             <div class="notice-html" v-html="detailRow?.noticeContent || ''"></div>
           </NSpin>
@@ -245,6 +250,16 @@ watch(
 
 .notice-html :deep(h3) {
   font-size: 1.17em;
+  font-weight: bold;
+}
+
+.notice-html :deep(h4) {
+  font-size: 1em;
+  font-weight: bold;
+}
+
+.notice-html :deep(h5) {
+  font-size: 0.83em;
   font-weight: bold;
 }
 

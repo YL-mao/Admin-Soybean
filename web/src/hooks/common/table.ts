@@ -135,6 +135,13 @@ export function useNaivePaginatedTable<ResponseData, ApiData>(
     }
   });
 
+  // 按可见列宽汇总，供 NDataTable scroll-x；容器更宽时 minWidth 列会吃掉剩余空间
+  const scrollX = computed(() => {
+    return result.columns.value.reduce((acc, column) => {
+      return acc + Number(column.width ?? column.minWidth ?? 120);
+    }, 0);
+  });
+
   async function getDataByPage(page: number = 1) {
     if (page !== pagination.page) {
       pagination.page = page;
@@ -167,6 +174,7 @@ export function useNaivePaginatedTable<ResponseData, ApiData>(
   return {
     ...result,
     getDataByPage,
+    scrollX,
     pagination,
     mobilePagination
   };

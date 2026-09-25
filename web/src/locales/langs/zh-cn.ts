@@ -524,7 +524,8 @@ const local: App.I18n.Schema = {
           noticeDesc: '请输入说明',
           orderNum: '请输入排序',
           expireTime: '请选择过期时间',
-          isSend: '请选择发布状态'
+          isSend: '请选择发布状态',
+          consoleReadState: '请选择阅读状态'
         },
         receiverType: '接收范围',
         noticeContent: '公告内容',
@@ -533,7 +534,25 @@ const local: App.I18n.Schema = {
         draft: '草稿',
         published: '已发布',
         publishedLocked: '已发布公告不能修改',
-        detailTitle: '公告详情'
+        detailTitle: '公告详情',
+        console: '控制台',
+        consoleStatsTab: '阅读统计',
+        consoleReceiversTab: '接收人明细',
+        consoleTotal: '应读人数',
+        consoleReadCount: '已读',
+        consoleUnreadCount: '未读',
+        consoleReadRate: '阅读率',
+        consoleTargets: '接收对象',
+        consoleUserAccount: '账号',
+        consoleUserName: '姓名',
+        consoleDeptName: '部门',
+        consoleReadState: '阅读状态',
+        consoleReadTime: '阅读时间',
+        consoleRead: '已读',
+        consoleUnread: '未读',
+        consoleDirectVisitTip: '请从公告管理列表进入控制台',
+        consoleUnpublishedTip: '仅已发布公告可查看控制台',
+        consoleOpenFailedTip: '无法打开控制台，公告不存在或未发布'
       },
       operateLog: {
         title: '行为日志',
