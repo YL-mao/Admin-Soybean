@@ -74,7 +74,7 @@ public class UserController extends BaseController {
         // 角色变更后清理该用户 Session 中的角色与权限码缓存。
         SaSession userSession = StpUtil.getSessionByLoginId(userUpdate.userId(),false);
         if (userSession != null) {
-            userSession.delete("Role_List");
+            userSession.delete(StpInterfaceImpl.ROLE_LIST);
             userSession.delete(StpInterfaceImpl.PERM_LIST);
         }
         return success();
@@ -132,7 +132,7 @@ public class UserController extends BaseController {
     @SaCheckPermission("system:user:delete")
     @DeleteMapping("/delete")
     public R<?> userDelete(String ids) {
-        userService.deleteRoleUser(ids);
+        userService.deleteUsers(ids);
         return success();
     }
 

@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ylmao.admin.common.FilterCodes;
+import com.ylmao.admin.common.FingerprintKeys;
 import com.ylmao.admin.common.OnlineSessionKeys;
 import com.ylmao.admin.common.SecurityConfigCodes;
 import com.ylmao.admin.config.exception.BusinessException;
@@ -74,13 +75,12 @@ public class FilterService {
     @Transactional
     public void insert(FilterDto.FilterInsert dto) {
         validateTypeValueMode(dto.filterType(), dto.filterValue(), dto.policyMode());
-        if (findActiveByTypeAndValue(dto.filterType(), dto.filterValue()) != null) {
+        // 过期行仍占唯一键时先软删，避免无法重加同 IP/用户
+        purgeExpiredByTypeAndValue(dto.filterType(), dto.filterValue());
+        if (findByTypeAndValue(dto.filterType(), dto.filterValue()) != null) {
             throw new BusinessException("该访问控制记录已存在");
         }
         Filter row = new Filter(dto);
-        if (row.getExpireTime() == null) {
-            row.setExpireTime(FilterCodes.PERMANENT_EXPIRE);
-        }
         int rows = filterMapper.insert(row);
         if (rows <= 0) {
             throw new BusinessException("新增访问控制失败");
@@ -101,7 +101,8 @@ public class FilterService {
         if (old == null) {
             throw new BusinessException("访问控制不存在");
         }
-        Filter conflict = findActiveByTypeAndValue(dto.filterType(), dto.filterValue());
+        purgeExpiredByTypeAndValue(dto.filterType(), dto.filterValue());
+        Filter conflict = findByTypeAndValue(dto.filterType(), dto.filterValue());
         if (conflict != null && !conflict.getFilterId().equals(dto.filterId())) {
             throw new BusinessException("该访问控制记录已存在");
         }
@@ -192,7 +193,8 @@ public class FilterService {
         }
         String filterDesc = buildIpAutoBanReason(ipFailCount, ipLimit, failScene, false);
         LocalDateTime now = LocalDateTime.now();
-        Filter existing = findActiveByTypeAndValue(FilterCodes.TYPE_IP, ip);
+        purgeExpiredByTypeAndValue(FilterCodes.TYPE_IP, ip);
+        Filter existing = findByTypeAndValue(FilterCodes.TYPE_IP, ip);
         if (existing != null) {
             // 生效白名单已在上方 isIpWhitelisted 短路；此处若仍是 WHITE，必为禁用/已过期，可覆盖为自动黑名单
             if (FilterCodes.MODE_WHITE.equals(existing.getPolicyMode())) {
@@ -286,7 +288,11 @@ public class FilterService {
                 continue;
             }
             SaSession tokenSession = StpUtil.getStpLogic().getTokenSessionByToken(tokenValue, false);
+            // 优先 Online 登录 IP；缺失时回退指纹 IP（登录时同步写入）
             String loginIp = tokenSession != null ? tokenSession.getString(OnlineSessionKeys.IP) : null;
+            if (StrUtil.isBlank(loginIp) && tokenSession != null) {
+                loginIp = tokenSession.getString(FingerprintKeys.Admin.IP);
+            }
             if (!ip.equals(loginIp)) {
                 continue;
             }
@@ -362,13 +368,25 @@ public class FilterService {
         return filterMapper.selectOne(wrapper) != null;
     }
 
-    private Filter findActiveByTypeAndValue(String type, String value) {
+    /** 同 type+value 的未删行（含未过期与已过期占位）。 */
+    private Filter findByTypeAndValue(String type, String value) {
         LambdaQueryWrapper<Filter> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Filter::getFilterType, type)
                 .eq(Filter::getFilterValue, value)
                 .orderByDesc(Filter::getCreateTime)
                 .last("limit 1");
         return filterMapper.selectOne(wrapper);
+    }
+
+    /** 软删已过期的同 type+value 行，释放唯一索引占位。 */
+    private void purgeExpiredByTypeAndValue(String type, String value) {
+        if (StrUtil.isBlank(type) || StrUtil.isBlank(value)) {
+            return;
+        }
+        filterMapper.delete(new LambdaQueryWrapper<Filter>()
+                .eq(Filter::getFilterType, type)
+                .eq(Filter::getFilterValue, value)
+                .le(Filter::getExpireTime, LocalDateTime.now()));
     }
 
     private void validateTypeValueMode(String type, String value, String policyMode) {

@@ -30,6 +30,7 @@ public class RoleService {
     private final RoleMapper roleMapper;
     private final RoleUserMapper roleUserMapper;
     private final MenuRoleMapper menuRoleMapper;
+    private final MenuService menuService;
 
     public List<RoleVo.RoleOptionVo> listOptions() {
         LambdaQueryWrapper<Role> roleQueryWrapper = new LambdaQueryWrapper<>();
@@ -144,6 +145,8 @@ public class RoleService {
         if (rows <= 0) {
             throw new BusinessException("修改角色状态失败");
         }
+        // 启停后让在线用户下次鉴权重新加载角色列表（queryRoleByUserId 只返回启用角色）。
+        menuService.clearAuthCacheByRole(updateEnabled.roleId());
     }
 
     public Role checkRoleNameUnique(String roleName){

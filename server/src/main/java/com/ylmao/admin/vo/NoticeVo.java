@@ -249,11 +249,11 @@ public class NoticeVo {
     }
 
     /**
-     * Pear 头部消息组件：单条未读公告。
+     * 顶栏/首页短列表：单条未读公告。
      */
     public record HeaderMessageItemVo(
             String id,
-            /** Layui 图标类名，如 layui-icon-notice。 */
+            /** 类型图标标识（历史字段名 icon，前端可按需映射）。 */
             @JsonInclude(JsonInclude.Include.NON_NULL)
             String icon,
             /** 公告类型，用于图标底色样式。 */
@@ -267,7 +267,7 @@ public class NoticeVo {
     }
 
     /**
-     * Pear 头部消息组件：Tab 分组（按公告类型）。
+     * 顶栏短列表：按公告类型分 Tab。
      */
     public record HeaderMessageTabVo(
             Integer id,
@@ -527,7 +527,7 @@ public class NoticeVo {
     }
 
     /**
-     * 公告类型对应 Layui 图标。
+     * 公告类型对应图标标识（兼容历史 layui-icon-* 字符串）。
      */
     private static final Map<Integer, String> NOTICE_TYPE_ICONS = Map.of(
             1, "layui-icon-notice",

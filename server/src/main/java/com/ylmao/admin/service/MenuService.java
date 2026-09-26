@@ -119,8 +119,8 @@ public class MenuService {
                 throw new BusinessException("授权角色菜单失败");
             }
         }
-        // 授权保存后让在线用户下次鉴权重新加载权限码。
-        clearPermCacheByRole(roleId);
+        // 授权保存后让在线用户下次鉴权重新加载角色与权限码。
+        clearAuthCacheByRole(roleId);
     }
 
     /** 根据已选菜单的 menu_path 补全祖先目录/菜单 ID。 */
@@ -143,15 +143,31 @@ public class MenuService {
         return result;
     }
 
-    /** 角色授权变更后，清理持有该角色用户的权限码缓存。 */
-    private void clearPermCacheByRole(String roleId) {
+    /** 角色授权/启停变更后，清理持有该角色用户的角色与权限码缓存。 */
+    public void clearAuthCacheByRole(String roleId) {
         List<RoleUser> roleUsers = roleUserMapper.selectList(
                 new LambdaQueryWrapper<RoleUser>().eq(RoleUser::getRoleId, roleId));
         for (RoleUser roleUser : roleUsers) {
             SaSession session = StpUtil.getSessionByLoginId(roleUser.getUserId(), false);
             if (session != null) {
+                session.delete(StpInterfaceImpl.ROLE_LIST);
                 session.delete(StpInterfaceImpl.PERM_LIST);
             }
+        }
+    }
+
+    /** 菜单启停后，清理绑定该菜单的所有角色对应用户的权限码缓存。 */
+    private void clearAuthCacheByMenu(String menuId) {
+        List<MenuRole> menuRoles = menuRoleMapper.selectList(
+                new LambdaQueryWrapper<MenuRole>().eq(MenuRole::getMenuId, menuId));
+        Set<String> roleIds = new LinkedHashSet<>();
+        for (MenuRole menuRole : menuRoles) {
+            if (StrUtil.isNotBlank(menuRole.getRoleId())) {
+                roleIds.add(menuRole.getRoleId());
+            }
+        }
+        for (String roleId : roleIds) {
+            clearAuthCacheByRole(roleId);
         }
     }
 
@@ -277,6 +293,8 @@ public class MenuService {
         if (rows <= 0) {
             throw new BusinessException("修改菜单状态失败");
         }
+        // 启停后失效在线用户已缓存的权限码（selectMenusByRoleIds 只返回启用菜单）。
+        clearAuthCacheByMenu(updateEnabled.menuId());
     }
 
     private void checkMenuUnique(String parentId, String menuName, String permCode, String excludeMenuId) {

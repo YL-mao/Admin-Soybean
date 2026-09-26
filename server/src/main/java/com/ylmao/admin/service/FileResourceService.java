@@ -17,6 +17,7 @@ import com.ylmao.admin.entity.User;
 import com.ylmao.admin.mapper.FileResourceMapper;
 import com.ylmao.admin.mapper.FolderMapper;
 import com.ylmao.admin.mapper.UserMapper;
+import com.ylmao.admin.utils.ServletUtils;
 import com.ylmao.admin.vo.FileResourceVo;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -57,6 +58,7 @@ public class FileResourceService {
     private final UserMapper userMapper;
     private final UploadConfigService uploadConfigService;
     private final FolderService folderService;
+    private final FingerprintService fingerprintService;
 
     public IPage<FileResourceVo.FileListVo> selectPage(PageQuery pageQuery, FileResourceDto.FileList fileList) {
         LambdaQueryWrapper<FileResource> wrapper = new LambdaQueryWrapper<>();
@@ -236,13 +238,13 @@ public class FileResourceService {
             }
             files.add(file);
         }
-        // 磁盘立即物理删除；库表逻辑删除保留痕迹。
-        for (FileResource file : files) {
-            deleteQuietly(resolveDiskPath(file.getStorageKey()));
-        }
+        // 先逻辑删入库；成功后再删磁盘，避免事务回滚后文件已丢。
         int rows = fileResourceMapper.softDeleteByIds(idList, LocalDateTime.now());
         if (rows <= 0) {
             throw new BusinessException("文件不存在或删除失败");
+        }
+        for (FileResource file : files) {
+            deleteQuietly(resolveDiskPath(file.getStorageKey()));
         }
     }
 
@@ -272,16 +274,17 @@ public class FileResourceService {
         List<FileResource> files = fileResourceMapper.selectList(new LambdaQueryWrapper<FileResource>()
                 .eq(FileResource::getIsDel, 0)
                 .in(FileResource::getFolderId, folderIdsToDelete));
-        for (FileResource file : files) {
-            deleteQuietly(resolveDiskPath(file.getStorageKey()));
-        }
         LocalDateTime now = LocalDateTime.now();
+        // 先逻辑删库，再删磁盘，避免回滚后盘文件已丢。
         if (!files.isEmpty()) {
             fileResourceMapper.softDeleteByIds(files.stream().map(FileResource::getFileId).toList(), now);
         }
         int rows = folderMapper.softDeleteByIds(folderIdsToDelete, now);
         if (rows <= 0) {
             throw new BusinessException("目录不存在或删除失败");
+        }
+        for (FileResource file : files) {
+            deleteQuietly(resolveDiskPath(file.getStorageKey()));
         }
     }
 
@@ -298,9 +301,10 @@ public class FileResourceService {
         if (file == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        // /upload/** 已从全局登录拦截排除，此处按单文件 needLogin 校验。
+        // /upload/** 已从全局登录拦截排除；needLogin=1 时补登录 + 管理端指纹校验。
         if (Integer.valueOf(1).equals(file.getNeedLogin())) {
             StpUtil.checkLogin();
+            fingerprintService.checkOrKickAsNotLogin(ServletUtils.getRequest());
         }
         boolean deleted = file.getIsDel() != null && file.getIsDel() == 1;
         Path diskPath = resolveDiskPath(file.getStorageKey());

@@ -161,7 +161,8 @@ public class AdminAuthService {
             return new ArrayList<>(byId.values());
         }
         for (Menu parent : menuMapper.selectByIds(missingIds)) {
-            if (parent != null) {
+            // 停用祖先不补入路由树，避免侧栏出现已禁用目录壳。
+            if (parent != null && parent.getIsEnabled() != null && parent.getIsEnabled() == 1) {
                 byId.putIfAbsent(parent.getMenuId(), parent);
             }
         }

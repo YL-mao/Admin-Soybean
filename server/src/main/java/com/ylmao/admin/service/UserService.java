@@ -282,11 +282,15 @@ public class UserService {
 
 
     @Transactional
-    public void deleteRoleUser(String ids) {
+    public void deleteUsers(String ids) {
         if (StrUtil.isBlank(ids)) {
             throw new BusinessException("请选择要删除的用户");
         }
         List<String> idList = StrUtil.splitTrim(ids, ',');
+        String currentUserId = SaTokenUtil.getUserId();
+        if (StrUtil.isNotBlank(currentUserId) && idList.contains(currentUserId)) {
+            throw new BusinessException("不能删除当前登录用户");
+        }
         int rows = userMapper.deleteByIds(idList);
         if (rows <= 0) {
             throw new BusinessException("用户不存在或删除失败");
@@ -329,8 +333,16 @@ public class UserService {
             return;
         }
         for (String roleId : StrUtil.splitTrim(roleIds, ',')) {
-            if (StrUtil.isBlank(roleId) || roleMapper.selectById(roleId) == null) {
+            if (StrUtil.isBlank(roleId)) {
                 throw new BusinessException("角色不存在");
+            }
+            Role role = roleMapper.selectById(roleId);
+            if (role == null) {
+                throw new BusinessException("角色不存在");
+            }
+            // 与鉴权 queryRoleByUserId 一致：停用角色不可再分配
+            if (role.getIsEnabled() == null || role.getIsEnabled() != 1) {
+                throw new BusinessException("角色已停用，不能分配");
             }
         }
     }

@@ -23,6 +23,9 @@ public class StpInterfaceImpl implements StpInterface {
     /** 用户 Session 中缓存的权限码列表 */
     public static final String PERM_LIST = "Perm_List";
 
+    /** 用户 Session 中缓存的角色 ID 列表 */
+    public static final String ROLE_LIST = "Role_List";
+
     private final RoleMapper roleMapper;
     private final MenuMapper menuMapper;
 
@@ -40,7 +43,7 @@ public class StpInterfaceImpl implements StpInterface {
     @Override
     public List<String> getRoleList(Object loginId, String loginType) {
         SaSession session = StpUtil.getSessionByLoginId(loginId);
-        return session.get("Role_List", () -> roleMapper.queryRoleByUserId(String.valueOf(loginId)));
+        return session.get(ROLE_LIST, () -> roleMapper.queryRoleByUserId(String.valueOf(loginId)));
     }
 
     /** 从合并查询结果提取去重后的 perm_code，目录节点空串不入库到鉴权列表。 */

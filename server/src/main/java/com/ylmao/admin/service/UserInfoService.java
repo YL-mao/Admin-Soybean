@@ -12,11 +12,13 @@ import com.ylmao.admin.constant.DictTypeCode;
 import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.dto.UserInfoDto;
 import com.ylmao.admin.entity.Dept;
+import com.ylmao.admin.entity.FileResource;
 import com.ylmao.admin.entity.OperateLog;
 import com.ylmao.admin.entity.Post;
 import com.ylmao.admin.entity.Role;
 import com.ylmao.admin.entity.User;
 import com.ylmao.admin.mapper.DeptMapper;
+import com.ylmao.admin.mapper.FileResourceMapper;
 import com.ylmao.admin.mapper.OperateLogMapper;
 import com.ylmao.admin.mapper.PostMapper;
 import com.ylmao.admin.mapper.UserMapper;
@@ -38,6 +40,7 @@ public class UserInfoService {
     private final DeptMapper deptMapper;
     private final PostMapper postMapper;
     private final OperateLogMapper operateLogMapper;
+    private final FileResourceMapper fileResourceMapper;
     private final RoleService roleService;
     private final PasswordService passwordService;
     private final PasswordPolicyService passwordPolicyService;
@@ -119,8 +122,8 @@ public class UserInfoService {
         if (rows <= 0) {
             throw new BusinessException("密码修改失败");
         }
-        // 改密后强制重新登录。
-        StpUtil.logout();
+        // 改密后踢掉该账号全部会话，与管理员重置密码一致（logout-range=TOKEN 时 logout() 只清当前端）。
+        StpUtil.logout(userId);
     }
 
     /** 更新当前用户头像地址；请求体不含 userId。 */
@@ -131,14 +134,35 @@ public class UserInfoService {
         if (StrUtil.isBlank(avatar)) {
             throw new BusinessException("头像地址不能为空");
         }
+        // 仅允许本系统 /upload/{fileId}，且文件须存在、未删、属当前用户创建。
+        String accessPath = stripQuery(avatar);
+        if (!accessPath.startsWith("/upload/")) {
+            throw new BusinessException("头像地址不合法");
+        }
+        String fileId = accessPath.substring("/upload/".length());
+        if (StrUtil.isBlank(fileId) || fileId.contains("/")) {
+            throw new BusinessException("头像地址不合法");
+        }
+        FileResource file = fileResourceMapper.selectById(fileId);
+        if (file == null || !Integer.valueOf(0).equals(file.getIsDel())) {
+            throw new BusinessException("头像文件不存在");
+        }
+        if (!StrUtil.equals(userId, file.getCreateBy())) {
+            throw new BusinessException("只能使用本人上传的头像文件");
+        }
         LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(User::getUserId, userId).set(User::getUserAvatar, avatar);
+        updateWrapper.eq(User::getUserId, userId).set(User::getUserAvatar, accessPath);
         int rows = userMapper.update(null, updateWrapper);
         if (rows <= 0) {
             throw new BusinessException("头像更新失败");
         }
         User refreshed = userMapper.selectById(userId);
         SaTokenUtil.setUser(refreshed);
+    }
+
+    private static String stripQuery(String url) {
+        int q = url.indexOf('?');
+        return q >= 0 ? url.substring(0, q) : url;
     }
 
     /** 仅返回当前登录用户 ID，写操作一律以此为准，忽略请求体中的任何用户标识。 */

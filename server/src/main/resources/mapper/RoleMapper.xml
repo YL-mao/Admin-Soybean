@@ -4,9 +4,10 @@
 
 <select id="queryRoleByUserId" parameterType="String" resultType="String">
     SELECT r.role_id FROM sys_role r
-    LEFT JOIN sys_role_user ru
-    ON r.role_id=ru.role_id
-    WHERE ru.user_id=#{userid}
+    INNER JOIN sys_role_user ru ON r.role_id = ru.role_id
+    WHERE ru.user_id = #{userid}
+      AND r.is_enabled = 1
+      AND r.is_del = 0
 </select>
 
 

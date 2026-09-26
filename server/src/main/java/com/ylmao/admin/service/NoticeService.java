@@ -82,24 +82,6 @@ public class NoticeService {
         return voPage;
     }
 
-    public List<Notice> getUserNoticeNotRead(int state) {
-        String userId = currentUserIdOrNull();
-        if (userId == null) {
-            return new ArrayList<>();
-        }
-        List<String> ids = getUserNoticeIds(userId, state);
-        if (ids.isEmpty()) {
-            return new ArrayList<>();
-        }
-        LambdaQueryWrapper<Notice> noticeQueryWrapper = new LambdaQueryWrapper<>();
-        noticeQueryWrapper.in(Notice::getNoticeId, ids)
-                .eq(Notice::getIsSend, 1)
-                .and(w -> w.isNull(Notice::getExpireTime).or().gt(Notice::getExpireTime, LocalDateTime.now()))
-                .orderByAsc(Notice::getOrderNum)
-                .orderByDesc(Notice::getSendTime);
-        return noticeMapper.selectList(noticeQueryWrapper);
-    }
-
     /** 个人管理收件箱分页：仅当前登录用户、已发布且未过期公告。 */
     public IPage<NoticeVo.UserInboxVo> selectUserInboxPageList(PageQuery pageQuery, NoticeDto.UserNoticeList userNoticeList) {
         String userId = currentUserIdOrNull();
@@ -207,16 +189,6 @@ public class NoticeService {
         }
         notice.setNoticeContent(content);
         notice.setNoticeDesc(TextSafeUtils.normalizePlainText(notice.getNoticeDesc()));
-    }
-
-    /** 获取最新 8 条已发布公告，供后台工作台展示。 */
-    public List<Notice> getNEW() {
-        LambdaQueryWrapper<Notice> noticeQueryWrapper = new LambdaQueryWrapper<>();
-        noticeQueryWrapper.eq(Notice::getIsSend, 1)
-                .and(w -> w.isNull(Notice::getExpireTime).or().gt(Notice::getExpireTime, LocalDateTime.now()))
-                .orderByDesc(Notice::getSendTime)
-                .last("limit 8");
-        return noticeMapper.selectList(noticeQueryWrapper);
     }
 
     @Transactional
@@ -554,18 +526,6 @@ public class NoticeService {
                 throw new BusinessException("公告已投递用户，不允许改为草稿");
             }
         }
-    }
-
-    private List<String> getUserNoticeIds(String userId, Integer readState) {
-        LambdaQueryWrapper<NoticeUser> noticeUserQueryWrapper = new LambdaQueryWrapper<>();
-        noticeUserQueryWrapper.eq(NoticeUser::getUserId, userId)
-                .orderByDesc(NoticeUser::getCreateTime);
-        if (readState != null) {
-            noticeUserQueryWrapper.eq(NoticeUser::getReadState, readState);
-        }
-        return noticeUserMapper.selectList(noticeUserQueryWrapper).stream()
-                .map(NoticeUser::getNoticeId)
-                .toList();
     }
 
     /** 收件箱查询用：未登录返回 null；写操作请用 NoticeUserService.requireCurrentUserId 模式抛错。 */
