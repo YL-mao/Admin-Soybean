@@ -264,6 +264,8 @@ public class MenuService {
         if (rows <= 0) {
             throw new BusinessException("修改菜单失败");
         }
+        // 权限码等变更后失效在线用户缓存，避免仍用旧 permCode 过鉴权。
+        clearAuthCacheByMenu(menuUpdate.menuId());
     }
 
     public Menu checkMenuNameUnique(String parentId, String menuName) {

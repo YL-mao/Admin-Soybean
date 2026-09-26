@@ -37,7 +37,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -106,36 +105,27 @@ public class NoticeService {
     /** 顶部铃铛：真实未读总数 + 按公告类型分 Tab（每类最多 limitPerTab 条）。 */
     public NoticeVo.HeaderMessageVo buildUserNoticeHeader(int limitPerTab) {
         List<DictVo.DictOptionVo> noticeTypeOptions = dictRuntimeService.getOptions(DictTypeCode.SYS_NOTICE_TYPE);
-        int typeCount = Math.max(noticeTypeOptions.size(), 1);
 
-        PageQuery pageQuery = new PageQuery();
-        pageQuery.setPage(1);
-        // 一次拉取足够未读，再按类型分组截断；分页 total 仍是全量未读数。
-        pageQuery.setLimit(Math.max(limitPerTab * typeCount, limitPerTab));
-        NoticeDto.UserNoticeList userNoticeList = new NoticeDto.UserNoticeList(null, null, 0);
-        IPage<NoticeVo.UserInboxVo> inboxPage = selectUserInboxPageList(pageQuery, userNoticeList);
+        // 先取全量未读 total；短列表按类型分别拉，避免某一类型占满窗口导致其它 Tab 为空。
+        PageQuery countQuery = new PageQuery();
+        countQuery.setPage(1);
+        countQuery.setLimit(1);
+        long unreadCount = selectUserInboxPageList(countQuery, new NoticeDto.UserNoticeList(null, null, 0)).getTotal();
 
-        Map<Integer, List<NoticeVo.HeaderMessageItemVo>> grouped = new LinkedHashMap<>();
+        List<NoticeVo.HeaderMessageTabVo> tabs = new ArrayList<>();
         for (DictVo.DictOptionVo option : noticeTypeOptions) {
-            grouped.put(Integer.valueOf(option.dictDataValue()), new ArrayList<>());
+            Integer noticeType = Integer.valueOf(option.dictDataValue());
+            PageQuery typeQuery = new PageQuery();
+            typeQuery.setPage(1);
+            typeQuery.setLimit(Math.max(limitPerTab, 1));
+            IPage<NoticeVo.UserInboxVo> typePage = selectUserInboxPageList(
+                    typeQuery, new NoticeDto.UserNoticeList(null, noticeType, 0));
+            List<NoticeVo.HeaderMessageItemVo> children = typePage.getRecords().stream()
+                    .map(this::toHeaderMessageItem)
+                    .toList();
+            tabs.add(new NoticeVo.HeaderMessageTabVo(noticeType, option.dictDataLabel(), children));
         }
-        for (NoticeVo.UserInboxVo inbox : inboxPage.getRecords()) {
-            if (inbox.noticeType() == null) {
-                continue;
-            }
-            List<NoticeVo.HeaderMessageItemVo> typeItems = grouped.get(inbox.noticeType());
-            if (typeItems != null && typeItems.size() < limitPerTab) {
-                typeItems.add(toHeaderMessageItem(inbox));
-            }
-        }
-
-        List<NoticeVo.HeaderMessageTabVo> tabs = noticeTypeOptions.stream()
-                .map(option -> new NoticeVo.HeaderMessageTabVo(
-                        Integer.valueOf(option.dictDataValue()),
-                        option.dictDataLabel(),
-                        grouped.getOrDefault(Integer.valueOf(option.dictDataValue()), List.of())))
-                .toList();
-        return new NoticeVo.HeaderMessageVo(inboxPage.getTotal(), tabs);
+        return new NoticeVo.HeaderMessageVo(unreadCount, tabs);
     }
 
     /** 无权限时返回空 Tab，未读数为 0。 */

@@ -387,7 +387,12 @@ public class FileResourceService {
         }
         User user = userMapper.selectById(userId);
         return user != null && StrUtil.isNotBlank(user.getUserAvatar())
-                && user.getUserAvatar().contains(fileId);
+                && stripUploadQuery(user.getUserAvatar()).endsWith("/upload/" + fileId);
+    }
+
+    private static String stripUploadQuery(String url) {
+        int q = url.indexOf('?');
+        return q >= 0 ? url.substring(0, q) : url;
     }
 
     private String resolveUploadFolderId(String folderId) {

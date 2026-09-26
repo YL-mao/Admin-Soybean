@@ -24,12 +24,18 @@ export const useNoticeStore = defineStore(SetupStoreId.Notice, () => {
       return;
     }
     loading.value = true;
-    const { data, error } = await fetchGetUserNoticeHeader();
-    if (seq !== fetchSeq) return;
-    loading.value = false;
-    if (error) return;
-    tabs.value = data?.tabs ?? [];
-    unreadCount.value = data?.unreadCount ?? 0;
+    try {
+      const { data, error } = await fetchGetUserNoticeHeader();
+      if (seq !== fetchSeq) return;
+      if (error) return;
+      tabs.value = data?.tabs ?? [];
+      unreadCount.value = data?.unreadCount ?? 0;
+    } finally {
+      // 过期请求不改 loading，避免冲掉在途新请求的转圈状态
+      if (seq === fetchSeq) {
+        loading.value = false;
+      }
+    }
   }
 
   async function readAll() {
