@@ -6,9 +6,10 @@ import {
   fetchGetDeptOptions,
   fetchGetDictOptions,
   fetchGetRoleOptions,
-  fetchSearchNoticeUser,
+  fetchSearchUser,
   fetchUpdateNotice
 } from '@/service/api';
+import { useAuth } from '@/hooks/business/auth';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
 import WangEditor from '@/components/custom/wang-editor.vue';
@@ -30,6 +31,7 @@ const emit = defineEmits<Emits>();
 
 const visible = defineModel<boolean>('visible', { default: false });
 
+const { hasAuth } = useAuth();
 const { formRef, validate, restoreValidation } = useNaiveForm();
 const { defaultRequiredRule } = useFormRules();
 
@@ -154,7 +156,11 @@ async function searchUser(keyword: string) {
     userOptions.value = [];
     return;
   }
-  const { data, error } = await fetchSearchNoticeUser(keyword);
+  if (!hasAuth('system:user:search')) {
+    userOptions.value = [];
+    return;
+  }
+  const { data, error } = await fetchSearchUser(keyword);
   if (error || !data) return;
   userOptions.value = data.map(item => ({
     label: item.label || `${item.userName}(${item.userAccount})`,

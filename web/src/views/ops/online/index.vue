@@ -16,8 +16,7 @@ const { hasAuth } = useAuth();
 const searchParams = ref<Api.SystemManage.OnlineSearchParams>({
   current: 1,
   size: 10,
-  userAccount: null,
-  loginIp: null
+  userId: null
 });
 
 const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination } = useNaivePaginatedTable({

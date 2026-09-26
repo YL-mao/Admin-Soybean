@@ -48,6 +48,14 @@ public class UserController extends BaseController {
         userService.exportUserList(userDto, response);
     }
 
+    @Operation(summary = "用户远程检索")
+    @Log(title = "用户远程检索", businessType = "QUERY")
+    @SaCheckPermission("system:user:search")
+    @GetMapping("/search")
+    public R<?> userSearch(String keyword) {
+        return R.ok(userService.searchUsers(keyword));
+    }
+
     @Operation(summary = "账户是否唯一")
     @Log(title = "查询账户是否唯一", businessType = "QUERY")
     @SaCheckPermission(value = {"system:user:insert", "system:user:update"}, mode = SaMode.OR)

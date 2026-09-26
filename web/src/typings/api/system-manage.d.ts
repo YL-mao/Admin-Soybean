@@ -708,9 +708,8 @@ declare namespace Api {
 
     type OnlineSearchParams = CommonType.RecordNullable<
       {
-        /** 后端同时模糊匹配账号与姓名 */
-        userAccount: string;
-        loginIp: string;
+        /** 选中用户后按 userId 查该用户会话；空则分页扫全部 Token 键 */
+        userId: string;
       } & CommonSearchParams
     >;
 

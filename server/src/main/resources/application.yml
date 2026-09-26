@@ -27,15 +27,15 @@ sa-token:
   active-timeout: 7200
   # 是否启用动态 active-timeout；一般不需要动态设置时关闭，减少缓存访问。
   dynamic-active-timeout: false
-  # 是否允许同一账号多端同时登录；false 表示新登录会挤掉旧登录。
-  is-concurrent: true
+  # 是否允许同一账号多端同时登录；false 表示同设备类型下新登录会挤掉旧登录。
+  is-concurrent: false
   # 多端登录时是否共用同一个 token；当前项目每次登录生成独立 token。
   is-share: false
   # is-concurrent=false 时，新旧设备谁放弃会话；OLD_DEVICE 表示旧设备下线。
   replaced-login-exit-mode: OLD_DEVICE
-  # is-concurrent=false 时，顶人下线范围；CURR_DEVICE_TYPE 表示当前设备类型。
+  # is-concurrent=false 时，顶人下线范围；CURR_DEVICE_TYPE 表示只顶当前设备类型（管理端为 admin）。
   replaced-range: CURR_DEVICE_TYPE
-  # 同一账号最大登录数量；仅在 is-concurrent=true 且 is-share=false 时生效。
+  # 同一账号最大登录数量；仅在 is-concurrent=true 且 is-share=false 时生效（单登录下不生效）。
   max-login-count: 12
   # 超出最大登录数量后的处理方式；LOGOUT 表示注销最早登录的会话。
   overflow-logout-mode: LOGOUT

@@ -820,10 +820,10 @@ export function fetchGetNoticeConsoleReceivers(params: Api.SystemManage.NoticeCo
   });
 }
 
-/** 公告接收人检索（指定个人） */
-export function fetchSearchNoticeUser(keyword: string) {
+/** 用户远程检索（公告指定人、在线筛选等共用） */
+export function fetchSearchUser(keyword: string) {
   return request<Api.SystemManage.UserOption[]>({
-    url: '/notice/searchUser',
+    url: '/user/search',
     method: 'get',
     params: { keyword }
   });

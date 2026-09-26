@@ -3,6 +3,7 @@ import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.ylmao.admin.common.FilterCodes;
+import com.ylmao.admin.common.FingerprintKeys;
 import com.ylmao.admin.common.OnlineSessionKeys;
 import com.ylmao.admin.config.exception.BusinessException;
 import com.ylmao.admin.config.saToken.SaTokenUtil;
@@ -113,11 +114,11 @@ public class LoginService {
         loginFailService.clearAccountFail(dbUser.getUserAccount());
         loginFailService.clearIpFail(clientIp);
         // rememberMe 仅前端记账号密码，与 token 存活无关；统一按全局 timeout / active-timeout。
-        // 账密通过后：已有会话则先注销再建。
+        // 账密通过后：已有会话则先注销再建；login 带 admin 设备类型，配合 is-concurrent=false 只顶同类型。
         if (StpUtil.isLogin()) {
             StpUtil.logout();
         }
-        StpUtil.login(dbUser.getUserId());
+        StpUtil.login(dbUser.getUserId(), FingerprintKeys.Admin.DEVICE_TYPE);
         SaTokenUtil.setUser(dbUser);
         // Token-Session 写入在线列表所需元数据（与 OnlineSessionKeys 对齐）。
         String userAgent = request.getHeader("User-Agent");

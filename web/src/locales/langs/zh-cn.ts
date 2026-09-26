@@ -677,7 +677,7 @@ const local: App.I18n.Schema = {
       },
       online: {
         title: '在线用户',
-        accountOrName: '账号/姓名',
+        user: '用户',
         userAccount: '登录账号',
         userName: '用户名称',
         loginIp: '登录地址',
@@ -691,8 +691,7 @@ const local: App.I18n.Schema = {
         forceLogoutConfirm: '确认强退该会话？',
         forceLogoutSuccess: '已强退该会话',
         form: {
-          accountOrName: '请输入账号或姓名',
-          loginIp: '请输入登录地址'
+          user: '请输入账号或姓名搜索'
         }
       },
       file: {

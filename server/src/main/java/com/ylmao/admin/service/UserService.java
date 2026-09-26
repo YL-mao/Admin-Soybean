@@ -124,7 +124,7 @@ public class UserService {
         Map<String, String> roleMap = roleIds.isEmpty() ? Map.of()
                 : roleMapper.selectList(new LambdaQueryWrapper<Role>().in(Role::getRoleId, roleIds)).stream()
                 .collect(Collectors.toMap(Role::getRoleId, Role::getRoleName, (a, b) -> a));
-        Set<String> onlineUserIds = onlineService.listOnlineUserIds();
+        Set<String> onlineUserIds = onlineService.listOnlineAmong(userIds);
         return userList.stream()
                 .map(user -> UserVo.UserListVo.from(user, deptMap, postMap, roleMap, userRoleIdsMap,
                         dictRuntimeService.getLabel(DictTypeCode.SYS_USER_SEX, user.getUserSex()),
@@ -310,8 +310,8 @@ public class UserService {
         }
     }
 
-    /** 公告指定用户检索：支持用户 ID、账号、姓名模糊匹配。 */
-    public List<UserVo.UserOptionVo> searchForNotice(String keyword) {
+    /** 用户远程检索：支持用户 ID、账号、姓名模糊匹配（公告指定人、在线筛选等共用）。 */
+    public List<UserVo.UserOptionVo> searchUsers(String keyword) {
         if (StrUtil.isBlank(keyword)) {
             return List.of();
         }

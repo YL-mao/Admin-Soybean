@@ -8,8 +8,7 @@ import lombok.Data;
 public class OnlineDto {
 
     public record OnlineList(
-            @Size(max = 64, message = "账号参数不合法") String userAccount,
-            @Size(max = 64, message = "IP参数不合法") String loginIp
+            @Size(max = 64, message = "用户ID参数不合法") String userId
     ) {
     }
 

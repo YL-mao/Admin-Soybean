@@ -15,8 +15,10 @@ import com.ylmao.admin.mapper.UserMapper;
 import com.ylmao.admin.vo.OnlineVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,32 +36,74 @@ public class OnlineService {
     private final UserMapper userMapper;
 
     /**
-     * 以 Sa-Token 有效 Token 为主集：先扫会话再补用户信息，再按账号/IP 过滤后分页。
-     * 会话存 Redis，多实例下在线列表与强退全局可见。
+     * 在线会话分页：以 Redis Token 键为主集；无 userId 时键分页再补当前页 Session，
+     * 有 userId 时全键扫后按 loginId 过滤再分页。顺序跟 Sa-Token 返回序。
      */
     public IPage<OnlineVo.OnlineListVo> selectPage(PageQuery pageQuery, OnlineDto.OnlineList query) {
-        String accountFilter = query != null ? StrUtil.trim(query.userAccount()) : null;
-        String ipFilter = query != null ? StrUtil.trim(query.loginIp()) : null;
+        String userId = query != null ? StrUtil.trim(query.userId()) : null;
+        int page = pageQuery.getPage() == null ? 1 : pageQuery.getPage();
+        int limit = pageQuery.getLimit() == null ? 10 : pageQuery.getLimit();
+        int from = Math.max((page - 1) * limit, 0);
         String currentToken = StpUtil.getTokenValue();
-        List<TokenRow> rows = listTokenRows(ipFilter);
 
+        List<String> tokenValues;
+        long total;
+        if (StrUtil.isNotBlank(userId)) {
+            if (userMapper.selectById(userId) == null) {
+                Page<OnlineVo.OnlineListVo> empty = new Page<>(page, limit, 0);
+                empty.setRecords(List.of());
+                return empty;
+            }
+            // 与空条件同源：按 Token 键扫再滤 loginId。
+            // 不用 getTokenValueListByLoginId：Account-Session 登记可能少于 Redis 中仍有效的 Token，会漏会话。
+            List<String> tokenKeys = StpUtil.searchTokenValue("", 0, -1, false);
+            List<String> matched = new ArrayList<>();
+            if (tokenKeys != null) {
+                for (String tokenKey : tokenKeys) {
+                    String tokenValue = toTokenValue(tokenKey);
+                    if (StrUtil.isBlank(tokenValue)) {
+                        continue;
+                    }
+                    Object loginIdObj = StpUtil.getLoginIdByToken(tokenValue);
+                    if (loginIdObj != null && userId.equals(String.valueOf(loginIdObj))) {
+                        matched.add(tokenValue);
+                    }
+                }
+            }
+            total = matched.size();
+            int to = Math.min(from + limit, matched.size());
+            tokenValues = from >= matched.size() ? List.of() : matched.subList(from, to);
+        } else {
+            // 先取键再切页，只给当前页补 Session，避免全量 hydrate。
+            List<String> tokenKeys = StpUtil.searchTokenValue("", 0, -1, false);
+            if (tokenKeys == null || tokenKeys.isEmpty()) {
+                Page<OnlineVo.OnlineListVo> empty = new Page<>(page, limit, 0);
+                empty.setRecords(List.of());
+                return empty;
+            }
+            total = tokenKeys.size();
+            int to = Math.min(from + limit, tokenKeys.size());
+            List<String> pageKeys = from >= tokenKeys.size() ? List.of() : tokenKeys.subList(from, to);
+            tokenValues = new ArrayList<>(pageKeys.size());
+            for (String tokenKey : pageKeys) {
+                String tokenValue = toTokenValue(tokenKey);
+                if (StrUtil.isNotBlank(tokenValue)) {
+                    tokenValues.add(tokenValue);
+                }
+            }
+        }
+
+        List<TokenRow> rows = hydrateTokenRows(tokenValues);
         Map<String, User> userById = loadUsers(rows.stream().map(TokenRow::userId).distinct().toList());
-        List<OnlineVo.OnlineListVo> all = new ArrayList<>();
+        List<OnlineVo.OnlineListVo> records = new ArrayList<>(rows.size());
         for (TokenRow row : rows) {
             User user = userById.get(row.userId());
-            String userAccount = user != null ? user.getUserAccount() : "";
-            String userName = user != null ? user.getUserName() : "";
-            if (StrUtil.isNotBlank(accountFilter)
-                    && !StrUtil.containsIgnoreCase(userAccount, accountFilter)
-                    && !StrUtil.containsIgnoreCase(StrUtil.blankToDefault(userName, ""), accountFilter)) {
-                continue;
-            }
-            all.add(new OnlineVo.OnlineListVo(
+            records.add(new OnlineVo.OnlineListVo(
                     row.tokenValue(),
                     truncateToken(row.tokenValue()),
                     row.userId(),
-                    userAccount,
-                    userName,
+                    user != null ? user.getUserAccount() : "",
+                    user != null ? StrUtil.blankToDefault(user.getUserName(), "") : "",
                     StrUtil.blankToDefault(row.loginIp(), ""),
                     StrUtil.blankToDefault(row.loginTime(), ""),
                     StrUtil.blankToDefault(row.browser(), ""),
@@ -70,20 +114,13 @@ public class OnlineService {
             ));
         }
 
-        int page = pageQuery.getPage() == null ? 1 : pageQuery.getPage();
-        int limit = pageQuery.getLimit() == null ? 10 : pageQuery.getLimit();
-        int from = Math.max((page - 1) * limit, 0);
-        int to = Math.min(from + limit, all.size());
-        List<OnlineVo.OnlineListVo> pageRecords = from >= all.size() ? List.of() : all.subList(from, to);
-
-        Page<OnlineVo.OnlineListVo> voPage = new Page<>(page, limit, all.size());
-        voPage.setRecords(pageRecords);
+        Page<OnlineVo.OnlineListVo> voPage = new Page<>(page, limit, total);
+        voPage.setRecords(records);
         return voPage;
     }
 
     /** 按 Token 强退；禁止踢当前会话。 */
     public void kickByToken(OnlineDto.OnlineKick kick) {
-        // DTO 已 @NotBlank；此处再 trim，避免首尾空白绕过强退目标。
         String tokenValue = StrUtil.trim(kick.tokenValue());
         String currentToken = StpUtil.getTokenValue();
         if (StrUtil.equals(tokenValue, currentToken)) {
@@ -105,19 +142,52 @@ public class OnlineService {
         if (StrUtil.equals(userId, SaTokenUtil.getUserId())) {
             throw new BusinessException("不能踢出当前登录用户的全部会话");
         }
-        if (!listOnlineUserIds().contains(userId)) {
+        if (!StpUtil.isLogin(userId)) {
             throw new BusinessException("用户已离线");
         }
         StpUtil.logout(userId);
     }
 
-    /** 用户列表按开关展示在线状态时，只需要用户维度是否存在有效会话。 */
-    public Set<String> listOnlineUserIds() {
-        List<TokenRow> rows = listTokenRows(null);
-        if (rows.isEmpty()) {
-            return Set.of();
+    /** 仅判断给定用户里谁在线，避免全站扫 Token。 */
+    public Set<String> listOnlineAmong(Collection<String> userIds) {
+        Set<String> online = new HashSet<>();
+        if (CollectionUtils.isEmpty(userIds)) {
+            return online;
         }
-        return rows.stream().map(TokenRow::userId).collect(java.util.stream.Collectors.toSet());
+        for (String userId : userIds) {
+            if (StrUtil.isNotBlank(userId) && StpUtil.isLogin(userId)) {
+                online.add(userId);
+            }
+        }
+        return online;
+    }
+
+    private List<TokenRow> hydrateTokenRows(List<String> tokenValues) {
+        if (CollectionUtils.isEmpty(tokenValues)) {
+            return List.of();
+        }
+        List<TokenRow> rows = new ArrayList<>(tokenValues.size());
+        for (String tokenValue : tokenValues) {
+            if (StrUtil.isBlank(tokenValue)) {
+                continue;
+            }
+            Object loginIdObj = StpUtil.getLoginIdByToken(tokenValue);
+            if (loginIdObj == null) {
+                continue;
+            }
+            String userId = String.valueOf(loginIdObj);
+            SaSession tokenSession = StpUtil.getStpLogic().getTokenSessionByToken(tokenValue, false);
+            rows.add(new TokenRow(
+                    tokenValue,
+                    userId,
+                    tokenSession != null ? tokenSession.getString(OnlineSessionKeys.IP) : null,
+                    tokenSession != null ? tokenSession.getString(OnlineSessionKeys.LOGIN_TIME) : null,
+                    tokenSession != null ? tokenSession.getString(OnlineSessionKeys.BROWSER) : null,
+                    tokenSession != null ? tokenSession.getString(OnlineSessionKeys.OS) : null,
+                    StpUtil.getTokenTimeout(tokenValue)
+            ));
+        }
+        return rows;
     }
 
     private Map<String, User> loadUsers(List<String> userIds) {
@@ -149,41 +219,6 @@ public class OnlineService {
         return idx >= 0 ? tokenKey.substring(idx + 1) : tokenKey;
     }
 
-    private List<TokenRow> listTokenRows(String ipFilter) {
-        List<String> tokenKeys = StpUtil.searchTokenValue("", 0, -1, false);
-        if (tokenKeys == null || tokenKeys.isEmpty()) {
-            return List.of();
-        }
-        List<TokenRow> rows = new ArrayList<>();
-        for (String tokenKey : tokenKeys) {
-            String tokenValue = toTokenValue(tokenKey);
-            if (StrUtil.isBlank(tokenValue)) {
-                continue;
-            }
-            Object loginIdObj = StpUtil.getLoginIdByToken(tokenValue);
-            if (loginIdObj == null) {
-                continue;
-            }
-            String userId = String.valueOf(loginIdObj);
-            // isCreate=false：列表查询不得顺带创建空 Token-Session。
-            SaSession tokenSession = StpUtil.getStpLogic().getTokenSessionByToken(tokenValue, false);
-            String loginIp = tokenSession != null ? tokenSession.getString(OnlineSessionKeys.IP) : null;
-            if (StrUtil.isNotBlank(ipFilter) && !StrUtil.containsIgnoreCase(StrUtil.blankToDefault(loginIp, ""), ipFilter)) {
-                continue;
-            }
-            rows.add(new TokenRow(
-                    tokenValue,
-                    userId,
-                    loginIp,
-                    tokenSession != null ? tokenSession.getString(OnlineSessionKeys.LOGIN_TIME) : null,
-                    tokenSession != null ? tokenSession.getString(OnlineSessionKeys.BROWSER) : null,
-                    tokenSession != null ? tokenSession.getString(OnlineSessionKeys.OS) : null,
-                    StpUtil.getTokenTimeout(tokenValue)
-            ));
-        }
-        return rows;
-    }
-
     private static String truncateToken(String tokenValue) {
         if (StrUtil.isBlank(tokenValue)) {
             return "";
@@ -207,10 +242,10 @@ public class OnlineService {
         long hour = (seconds % 86400) / 3600;
         long minute = (seconds % 3600) / 60;
         if (day > 0) {
-            return day + "天" + (hour > 0 ? hour + "小时" : "");
+            return day + "天" + hour + "时";
         }
         if (hour > 0) {
-            return hour + "小时" + (minute > 0 ? minute + "分" : "");
+            return hour + "时" + minute + "分";
         }
         if (minute > 0) {
             return minute + "分";

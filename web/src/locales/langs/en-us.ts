@@ -681,7 +681,7 @@ const local: App.I18n.Schema = {
       },
       online: {
         title: 'Online Users',
-        accountOrName: 'Account / Name',
+        user: 'User',
         userAccount: 'Account',
         userName: 'Name',
         loginIp: 'IP',
@@ -695,8 +695,7 @@ const local: App.I18n.Schema = {
         forceLogoutConfirm: 'Force logout this session?',
         forceLogoutSuccess: 'Session logged out',
         form: {
-          accountOrName: 'Please enter account or name',
-          loginIp: 'Please enter IP'
+          user: 'Search by account or name'
         }
       },
       file: {

@@ -1,7 +1,6 @@
 package com.ylmao.admin.controller.admin.setting;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
-import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ylmao.admin.common.R;
 import com.ylmao.admin.config.base.BaseController;
@@ -9,16 +8,12 @@ import com.ylmao.admin.config.log.Log;
 import com.ylmao.admin.dto.NoticeDto;
 import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.service.NoticeService;
-import com.ylmao.admin.service.UserService;
 import com.ylmao.admin.vo.NoticeVo;
-import com.ylmao.admin.vo.UserVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "公告", description = "通知公告与控制台")
 @RestController
@@ -27,7 +22,6 @@ import java.util.List;
 public class NoticeController extends BaseController {
 
     private final NoticeService noticeService;
-    private final UserService userService;
 
     @Operation(summary = "公告分页列表")
     @Log(title = "公告分页查询", businessType = "QUERY")
@@ -36,15 +30,6 @@ public class NoticeController extends BaseController {
     public R<?> noticeList(@Valid PageQuery pageQuery, @Valid NoticeDto.NoticeList noticeList) {
         IPage<NoticeVo.NoticeListVo> noticePage = noticeService.selectPageList(pageQuery, noticeList);
         return pageData(noticePage.getRecords(), noticePage.getTotal());
-    }
-
-    @Operation(summary = "公告用户检索")
-    @Log(title = "公告用户检索", businessType = "QUERY")
-    @SaCheckPermission(value = {"system:notice:insert", "system:notice:update"}, mode = SaMode.OR)
-    @GetMapping("/searchUser")
-    public R<?> noticeSearchUser(String keyword) {
-        List<UserVo.UserOptionVo> users = userService.searchForNotice(keyword);
-        return R.ok(users);
     }
 
     @Operation(summary = "新增公告")

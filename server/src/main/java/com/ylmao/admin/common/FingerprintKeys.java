@@ -14,6 +14,12 @@ public final class FingerprintKeys {
         /** 前端每次请求携带的设备标识 Header。 */
         public static final String DEVICE_ID_HEADER = "X-Device-Id";
 
+        /**
+         * Sa-Token 登录设备类型（{@code StpUtil.login(id, device)}）。
+         * 与指纹 Header {@link #DEVICE_ID_HEADER} 无关；单登录时只顶同类型会话。
+         */
+        public static final String DEVICE_TYPE = "admin";
+
         public static final String IP = "fpIp";
         public static final String UA = "fpUa";
         public static final String DEVICE_ID = "fpDeviceId";
