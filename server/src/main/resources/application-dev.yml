@@ -11,7 +11,8 @@ spring:
     # 应用和历史 datetime 数据按中国本地时间处理；serverTimezone 与 app.timezone 对齐。
     url: jdbc:mysql://127.0.0.1:3306/admin_soybean?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=${app.timezone}
     username: admin_soybean
-    password: AiRBzmF7i6fhBk2X
+    # 请改成本地 MySQL 密码；勿把真实生产密码提交到公开仓库。
+    password: change-me
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       pool-name: HikariCP
@@ -38,7 +39,7 @@ spring:
       port: 6379
       database: 0
       # Redis 无密码可留空；有密码请填写。
-      password: 123456
+      password:
       connect-timeout: 3s
       timeout: 3s
       lettuce:
