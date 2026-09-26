@@ -119,19 +119,25 @@ public class PermRouteQualityChecker implements ApplicationListener<ApplicationR
         }
     }
 
+    /** 仅同父下重复才报警；跨菜单复用同一码是允许的。 */
     private void checkDuplicatePermCodes(List<Menu> menus) {
-        Map<String, List<String>> codeToIds = new HashMap<>();
+        Map<String, List<String>> parentCodeToIds = new HashMap<>();
         for (Menu menu : menus) {
             if (StrUtil.isBlank(menu.getPermCode())) {
                 continue;
             }
+            String parentId = StrUtil.blankToDefault(menu.getParentId(), "0");
             String code = menu.getPermCode().trim();
-            codeToIds.computeIfAbsent(code, key -> new ArrayList<>()).add(menu.getMenuId());
+            String key = parentId + '\0' + code;
+            parentCodeToIds.computeIfAbsent(key, k -> new ArrayList<>()).add(menu.getMenuId());
         }
-        for (Map.Entry<String, List<String>> entry : codeToIds.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : parentCodeToIds.entrySet()) {
             if (entry.getValue().size() > 1) {
-                log.warn("[权限路由质检] 权限码重复: permCode={}, menuIds={}",
-                        entry.getKey(), entry.getValue());
+                int sep = entry.getKey().indexOf('\0');
+                String parentId = entry.getKey().substring(0, sep);
+                String code = entry.getKey().substring(sep + 1);
+                log.warn("[权限路由质检] 同父权限码重复: parentId={}, permCode={}, menuIds={}",
+                        parentId, code, entry.getValue());
             }
         }
     }

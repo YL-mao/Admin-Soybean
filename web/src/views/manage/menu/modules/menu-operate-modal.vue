@@ -377,9 +377,19 @@ async function handleSubmit() {
   }
 
   if (model.value.menuType === 2 && model.value.permCode) {
-    const { data: codeOk, error: codeErr } = await fetchCheckMenuCodeUnique({ permCode: model.value.permCode });
+    const { data: codeOk, error: codeErr } = await fetchCheckMenuCodeUnique({
+      parentId: model.value.parentId || '0',
+      permCode: model.value.permCode
+    });
     if (codeErr) return;
-    if (codeOk === false && !(props.operateType === 'edit' && props.rowData?.permCode === model.value.permCode)) {
+    if (
+      codeOk === false &&
+      !(
+        props.operateType === 'edit' &&
+        props.rowData?.permCode === model.value.permCode &&
+        props.rowData.parentId === model.value.parentId
+      )
+    ) {
       window.$message?.error($t('page.manage.menu.form.permCode'));
       return;
     }

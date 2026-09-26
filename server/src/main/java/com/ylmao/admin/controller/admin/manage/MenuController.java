@@ -85,12 +85,12 @@ public class MenuController extends BaseController {
         return R.ok(menuService.checkMenuNameUnique(parentId, menuName) == null);
     }
 
-    @Operation(summary = "权限标识是否唯一")
-    @Log(title = "查询权限标识是否唯一", businessType = "QUERY")
+    @Operation(summary = "同父权限标识是否唯一")
+    @Log(title = "查询同父权限标识是否唯一", businessType = "QUERY")
     @SaCheckPermission(value = {"system:menu:insert", "system:menu:update"}, mode = SaMode.OR)
     @GetMapping("/checkCode")
-    public R<Boolean> checkMenuCodeUnique(String permCode) {
-        return R.ok(menuService.checkMenuCodeUnique(permCode) == null);
+    public R<Boolean> checkMenuCodeUnique(String parentId, String permCode) {
+        return R.ok(menuService.checkMenuCodeUnique(parentId, permCode) == null);
     }
 
     @Operation(summary = "修改菜单启停状态")

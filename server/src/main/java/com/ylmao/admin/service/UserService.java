@@ -11,7 +11,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ylmao.admin.config.exception.BusinessException;
 import com.ylmao.admin.config.saToken.SaTokenUtil;
 import com.ylmao.admin.constant.DictTypeCode;
-import com.ylmao.admin.dto.OnlineDto;
 import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.dto.UserDto;
 import com.ylmao.admin.vo.UserVo;
@@ -242,18 +241,6 @@ public class UserService {
         }
         // 锁定或解锁后强制重新登录，避免旧会话继续有效。
         StpUtil.logout(updateLock.userId());
-    }
-
-    /** 用户列表在线开关仅用于会话治理：在线时确认后按用户 ID 踢全部会话。 */
-    public void kickUserSessions(String userId) {
-        User oldUser = userMapper.selectById(userId);
-        if (oldUser == null) {
-            throw new BusinessException("用户不存在");
-        }
-        if (StrUtil.equals(userId, SaTokenUtil.getUserId())) {
-            throw new BusinessException("不能踢出当前登录用户的全部会话");
-        }
-        onlineService.kickByUserId(new OnlineDto.OnlineKickUser(userId));
     }
 
 

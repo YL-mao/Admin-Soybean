@@ -109,15 +109,6 @@ public class UserController extends BaseController {
         return success();
     }
 
-    @Operation(summary = "按用户强退全部会话")
-    @Log(title = "按用户强退全部会话", businessType = "OTHER", isSaveResponseData = true)
-    @SaCheckPermission("system:online:kick")
-    @PatchMapping("/kickSessions")
-    public R<?> kickUserSessions(@Valid @RequestBody UserDto.KickSessions kickSessions) {
-        userService.kickUserSessions(kickSessions.userId());
-        return success();
-    }
-
     @Operation(summary = "删除用户")
     @Log(title = "删除用户数据", businessType = "DELETE", isSaveResponseData = true)
     @SaCheckPermission("system:user:delete")

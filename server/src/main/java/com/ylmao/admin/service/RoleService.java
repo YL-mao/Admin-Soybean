@@ -7,9 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ylmao.admin.config.exception.BusinessException;
 import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.dto.RoleDto;
-import com.ylmao.admin.entity.MenuRole;
 import com.ylmao.admin.entity.Role;
-import com.ylmao.admin.mapper.MenuRoleMapper;
 import com.ylmao.admin.mapper.RoleMapper;
 import com.ylmao.admin.vo.RoleVo;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +25,7 @@ public class RoleService {
 
     private final RoleMapper roleMapper;
     private final RoleUserService roleUserService;
-    private final MenuRoleMapper menuRoleMapper;
+    private final MenuRoleService menuRoleService;
     private final MenuService menuService;
 
     public List<RoleVo.RoleOptionVo> listOptions() {
@@ -117,7 +115,7 @@ public class RoleService {
             throw new BusinessException("角色已分配给用户，不能删除");
         }
         // 角色菜单属于角色自身配置，删除角色时同步清理授权关系。
-        menuRoleMapper.delete(new LambdaQueryWrapper<MenuRole>().in(MenuRole::getRoleId, idList));
+        menuRoleService.deleteByRoleIds(idList);
         LambdaQueryWrapper<Role> roleQueryWrapper = new LambdaQueryWrapper<>();
         roleQueryWrapper.in(Role::getRoleId,idList);
         int rows = roleMapper.delete(roleQueryWrapper);

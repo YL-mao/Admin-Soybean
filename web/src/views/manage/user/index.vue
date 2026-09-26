@@ -7,7 +7,7 @@ import {
   fetchDeleteUser,
   fetchExportUserList,
   fetchGetUserList,
-  fetchKickUserSessions,
+  fetchKickOnlineUser,
   fetchUpdateUserEnabled,
   fetchUpdateUserLock
 } from '@/service/api';
@@ -280,7 +280,7 @@ function confirmKickSessions(row: Api.SystemManage.User) {
     positiveText: $t('common.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
-      const { error } = await fetchKickUserSessions({ userId: row.userId });
+      const { error } = await fetchKickOnlineUser({ userId: row.userId });
       if (error) return;
       window.$message?.success($t('common.updateSuccess'));
       await getData();

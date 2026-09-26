@@ -8,9 +8,7 @@ import com.ylmao.admin.config.exception.BusinessException;
 import com.ylmao.admin.config.saToken.StpInterfaceImpl;
 import com.ylmao.admin.dto.MenuDto;
 import com.ylmao.admin.entity.Menu;
-import com.ylmao.admin.entity.MenuRole;
 import com.ylmao.admin.mapper.MenuMapper;
-import com.ylmao.admin.mapper.MenuRoleMapper;
 import com.ylmao.admin.vo.MenuVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +25,7 @@ import java.util.Set;
 public class MenuService {
 
     private final MenuMapper menuMapper;
-    private final MenuRoleMapper menuRoleMapper;
+    private final MenuRoleService menuRoleService;
     private final RoleUserService roleUserService;
 
     /** 按用户角色并集组装侧栏菜单树（model.Menu）。 */
@@ -87,30 +85,11 @@ public class MenuService {
 
     @Transactional
     public void updateRoleMenu(String roleId, String menuIds) {
-        LambdaQueryWrapper<MenuRole> menuRoleQueryWrapper = new LambdaQueryWrapper<>();
-        menuRoleQueryWrapper.eq(MenuRole::getRoleId, roleId);
-        menuRoleMapper.delete(menuRoleQueryWrapper);
-        int rows = 0;
-        // 清空授权时 menuIds 为空，删除关联后即可视为保存成功。
-        if (!StrUtil.isBlank(menuIds)) {
-            // cascade 半选父节点不会出现在 checked-keys，保存前按 menu_path 补全祖先，避免子菜单丢目录壳。
-            Set<String> menuIdSet = expandMenuIdsWithAncestors(new LinkedHashSet<>(StrUtil.splitTrim(menuIds, ',')));
-            int validMenuCount = 0;
-
-            for (String menuId : menuIdSet) {
-                if (StrUtil.isBlank(menuId)) {
-                    continue;
-                }
-                validMenuCount++;
-                MenuRole menuRole = new MenuRole();
-                menuRole.setRoleId(roleId);
-                menuRole.setMenuId(menuId);
-                rows = rows + menuRoleMapper.insert(menuRole);
-            }
-            if (validMenuCount > 0 && rows <= 0) {
-                throw new BusinessException("授权角色菜单失败");
-            }
-        }
+        // 清空授权时 menuIds 为空；半选父节点按 menu_path 补全祖先后再落库。
+        Set<String> menuIdSet = StrUtil.isBlank(menuIds)
+                ? Set.of()
+                : expandMenuIdsWithAncestors(new LinkedHashSet<>(StrUtil.splitTrim(menuIds, ',')));
+        menuRoleService.replaceRoleMenus(roleId, menuIdSet);
         // 授权保存后让在线用户下次鉴权重新加载角色与权限码。
         clearAuthCacheByRole(roleId);
     }
@@ -148,15 +127,7 @@ public class MenuService {
 
     /** 菜单启停后，清理绑定该菜单的所有角色对应用户的权限码缓存。 */
     private void clearAuthCacheByMenu(String menuId) {
-        List<MenuRole> menuRoles = menuRoleMapper.selectList(
-                new LambdaQueryWrapper<MenuRole>().eq(MenuRole::getMenuId, menuId));
-        Set<String> roleIds = new LinkedHashSet<>();
-        for (MenuRole menuRole : menuRoles) {
-            if (StrUtil.isNotBlank(menuRole.getRoleId())) {
-                roleIds.add(menuRole.getRoleId());
-            }
-        }
-        for (String roleId : roleIds) {
+        for (String roleId : menuRoleService.listRoleIdsByMenuId(menuId)) {
             clearAuthCacheByRole(roleId);
         }
     }
@@ -194,8 +165,7 @@ public class MenuService {
             throw new BusinessException("请选择要删除的菜单");
         }
         List<String> idList = StrUtil.splitTrim(ids, ',');
-        Long roleCount = menuRoleMapper.selectCount(new LambdaQueryWrapper<MenuRole>().in(MenuRole::getMenuId, idList));
-        if (roleCount != null && roleCount > 0) {
+        if (menuRoleService.countByMenuIds(idList) > 0) {
             throw new BusinessException("菜单已分配给角色，不能删除");
         }
         Long childCount = menuMapper.selectCount(new LambdaQueryWrapper<Menu>().in(Menu::getParentId, idList));
@@ -267,12 +237,14 @@ public class MenuService {
         return menuMapper.selectOne(wrapper);
     }
 
-    public Menu checkMenuCodeUnique(String permCode) {
+    /** 同父下权限码是否已被占用（跨菜单允许复用同一码）。 */
+    public Menu checkMenuCodeUnique(String parentId, String permCode) {
         if (StrUtil.isBlank(permCode)) {
             return null;
         }
         LambdaQueryWrapper<Menu> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Menu::getPermCode, permCode);
+        wrapper.eq(Menu::getParentId, normalizeParentId(parentId));
+        wrapper.eq(Menu::getPermCode, permCode.trim());
         return menuMapper.selectOne(wrapper);
     }
 
@@ -296,9 +268,9 @@ public class MenuService {
         if (oldNameMenu != null && (excludeMenuId == null || !oldNameMenu.getMenuId().equals(excludeMenuId))) {
             throw new BusinessException("同级菜单名称已存在");
         }
-        Menu oldCodeMenu = checkMenuCodeUnique(permCode);
+        Menu oldCodeMenu = checkMenuCodeUnique(parentId, permCode);
         if (oldCodeMenu != null && (excludeMenuId == null || !oldCodeMenu.getMenuId().equals(excludeMenuId))) {
-            throw new BusinessException("权限标识已存在");
+            throw new BusinessException("同级权限标识已存在");
         }
     }
 

@@ -342,10 +342,10 @@ export function fetchUpdateUserPwd(data: Api.SystemManage.UserUpdatePwd) {
   });
 }
 
-/** 按用户强退全部会话 */
-export function fetchKickUserSessions(data: { userId: string }) {
+/** 按用户强退全部会话（在线用户与用户列表共用） */
+export function fetchKickOnlineUser(data: { userId: string }) {
   return request<null>({
-    url: '/user/kickSessions',
+    url: '/online/kickUser',
     method: 'patch',
     data
   });
@@ -422,8 +422,8 @@ export function fetchCheckMenuNameUnique(params: { parentId: string; menuName: s
   });
 }
 
-/** 权限标识是否可用 */
-export function fetchCheckMenuCodeUnique(params: { permCode: string }) {
+/** 同父下权限标识是否可用（跨菜单允许复用同一码） */
+export function fetchCheckMenuCodeUnique(params: { parentId: string; permCode: string }) {
   return request<boolean>({
     url: '/menu/checkCode',
     method: 'get',
