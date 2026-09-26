@@ -872,7 +872,7 @@ export function fetchGetFileList(params?: Api.SystemManage.FileSearchParams) {
     page: current,
     limit: size
   };
-  // 虚拟根「0」不传 folderId，与 Layui 一致查全部
+  // 虚拟根「0」不传 folderId，后端按全部文件查询
   if (!query.folderId || query.folderId === '0') {
     delete query.folderId;
   }

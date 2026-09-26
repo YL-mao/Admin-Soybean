@@ -362,7 +362,7 @@ onMounted(() => {
                 class="h-280px flex-center"
                 :description="$t('common.noData')"
               />
-              <!-- 多列紧凑墙：对齐 Layui col-md2 密度 -->
+              <!-- 多列紧凑墙：小屏 2 列，大屏逐步加密 -->
               <NGrid
                 v-else
                 cols="2 s:3 m:4 l:5 xl:6 2xl:8"

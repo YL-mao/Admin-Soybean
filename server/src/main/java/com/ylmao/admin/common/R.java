@@ -27,7 +27,7 @@ public record R<T>(int code, String msg, T data, Long count) {
         return new R<>(SUCCESS, msg, data, null);
     }
 
-    /** Layui 表格分页：顶层 {@code count} + {@code data}。 */
+    /** 分页列表：顶层 {@code count}（总条数）+ {@code data}（当前页）。 */
     public static <T> R<T> page(T data, long count) {
         return new R<>(SUCCESS, "请求成功", data, count);
     }

@@ -70,7 +70,7 @@ public class SaTokenConfigure implements WebMvcConfigurer {
         };
     }
 
-    // 开放权限的 url（Layui 入口已删除，仅保留管理端认证与上传白名单）
+    // 开放权限的 url（管理端认证与上传白名单）
     private final String[] excludePaths = {
             "/favicon.ico", "/ico/favicon.ico", "/static/**",
             "/api/admin/auth/login",
@@ -104,7 +104,7 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                         fingerprintService.checkOrKickAsNotLogin(request);
                     });
                 })
-                // 异常处理函数：统一 JSON（已无 Layui 页面转发）
+                // 异常处理函数：统一 JSON
                 .setError(e -> {
                     try {
                         R<Void> result = toAuthErrorR(e);

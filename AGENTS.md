@@ -82,14 +82,14 @@
 
 ## 前端风格（Soybean / `web`）
 
-- 页面与 UI **严格按 Soybean 官方文档与代码规范实现**，禁止凭记忆拼 Layui/Pear/Element 等其它后台套路。
+- 页面与 UI **严格按 Soybean 官方文档与代码规范实现**，禁止凭记忆拼其它后台 UI 框架套路。
 - 文档优先级：
-  1. [Soybean 文档](https://docs.soybeanjs.cn)（指南、路由、请求、目录约定等）
-  2. [SoybeanJS 代码规范](https://docs.soybeanjs.cn/zh/standard)
-  3. 官方示例/预览与本仓库 `web/` 中符合上述文档的用法（仅作风格辅助，不作「已对接业务模块」样板）
+ 1. [Soybean 文档](https://docs.soybeanjs.cn)（指南、路由、请求、目录约定等）
+ 2. [SoybeanJS 代码规范](https://docs.soybeanjs.cn/zh/standard)
+ 3. 官方示例/预览与本仓库 `web/` 中符合上述文档的用法（仅作风格辅助，不作「已对接业务模块」样板）
 - UI 组件以 **Naive UI** 为准；样式与原子类跟项目 **UnoCSS** 约定；状态用 Pinia；请求走项目既有 `service`/`hooks` 封装，不要另起一套调用方式。
 - 路由遵循 Elegant Router / 项目文件路由约定；新增页面按文档与生成流程处理，不手写破坏自动路由约定的结构。
-- 列表/表单等交互优先采用 Soybean + Naive UI 文档中的常规写法及项目已提供的 hooks/组件；不要为了「像旧 Layui 页」而自造交互。
+- 列表/表单等交互优先采用 Soybean + Naive UI 文档中的常规写法及项目已提供的 hooks/组件；不要为了「像其它后台页」而自造交互。
 - 文案与菜单名优先走 i18n（`$t`），与 Soybean 项目惯例一致。
 - API 调用集中在 `web/src/service/api`（或项目既定位置）；对接真实后端时，类型与请求方法与后端约定一致（POST/PUT/PATCH/DELETE），JSON 提交。
 - 错误提示展示后端业务错误信息，跟现有请求封装/消息组件用法一致，不要静默吞错。

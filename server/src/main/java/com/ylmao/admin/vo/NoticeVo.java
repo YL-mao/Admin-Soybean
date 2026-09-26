@@ -112,7 +112,7 @@ public class NoticeVo {
      */
     public record HeaderMessageItemVo(
             String id,
-            /* 类型图标标识（历史字段名 icon，前端可按需映射）。 */
+            /* 类型 Iconify 图标名，前端 SvgIcon 可直接用。 */
             @JsonInclude(JsonInclude.Include.NON_NULL)
             String icon,
             /* 公告类型，用于图标底色样式。 */
@@ -215,14 +215,12 @@ public class NoticeVo {
         private Long unreadCount;
     }
 
-    /**
-     * 公告类型对应图标标识（兼容历史 layui-icon-* 字符串）。
-     */
+    /** 公告类型 → Iconify 图标名（与前端 SvgIcon 约定一致）。 */
     private static final Map<Integer, String> NOTICE_TYPE_ICONS = Map.of(
-            1, "layui-icon-notice",
-            2, "layui-icon-fire",
-            3, "layui-icon-speaker",
-            4, "layui-icon-email"
+            1, "mdi:bullhorn-outline",
+            2, "mdi:fire",
+            3, "mdi:volume-high",
+            4, "mdi:email-outline"
     );
 
     public static String noticeTypeIcon(Integer noticeType) {

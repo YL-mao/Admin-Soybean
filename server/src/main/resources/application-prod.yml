@@ -9,8 +9,8 @@ spring:
       enabled: false
   datasource:
     # 应用和历史 datetime 数据按中国本地时间处理；serverTimezone 与 app.timezone 对齐。
-    url: jdbc:mysql://127.0.0.1:3306/admin_layui?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=${app.timezone}
-    username: admin_layui
+    url: jdbc:mysql://127.0.0.1:3306/admin_soybean?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=${app.timezone}
+    username: admin_soybean
     password: xxxxxxx
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
