@@ -100,15 +100,6 @@ public class UserController extends BaseController {
         return success();
     }
 
-    @Operation(summary = "解锁用户")
-    @Log(title = "解锁用户", businessType = "UPDATE", isSaveResponseData = true)
-    @SaCheckPermission("system:user:unlock")
-    @PatchMapping("/unlock")
-    public R<?> unlockUser(@Valid @RequestBody UserDto.Unlock unlock) {
-        userService.unlockUser(unlock.userId());
-        return success();
-    }
-
     @Operation(summary = "修改用户锁定状态")
     @Log(title = "修改用户锁定状态", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:user:unlock")

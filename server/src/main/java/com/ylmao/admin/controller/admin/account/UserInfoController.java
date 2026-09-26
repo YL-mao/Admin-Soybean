@@ -30,7 +30,7 @@ public class UserInfoController extends BaseController {
 
     @Operation(summary = "个人资料详情")
     @Log(title = "个人资料详情", businessType = "QUERY")
-    @SaCheckPermission("user:info:view")
+    @SaCheckPermission("user:info:select")
     @GetMapping("/detail")
     public R<?> userInfoDetail() {
         UserInfoVo.ProfileDetailVo profileDetail = userInfoService.getCurrentProfileDetail();
@@ -39,7 +39,7 @@ public class UserInfoController extends BaseController {
 
     @Operation(summary = "个人最近登录")
     @Log(title = "个人最近登录", businessType = "QUERY")
-    @SaCheckPermission("user:info:view")
+    @SaCheckPermission("user:info:select")
     @GetMapping("/loginLog")
     public R<?> userInfoLoginLog(@Valid PageQuery pageQuery) {
         IPage<UserInfoVo.LoginLogVo> page = userInfoService.getCurrentLoginLogs(pageQuery);
@@ -48,7 +48,7 @@ public class UserInfoController extends BaseController {
 
     @Operation(summary = "保存个人资料")
     @Log(title = "保存个人资料", businessType = "UPDATE", isSaveResponseData = true)
-    @SaCheckPermission("user:info:view")
+    @SaCheckPermission("user:info:select")
     @PutMapping("/update")
     public R<?> userInfoUpdate(@Valid @RequestBody UserInfoDto.ProfileSave profileSave) {
         // 请求体不含 userId，Service 仅更新当前登录用户允许自助修改的字段。
@@ -58,7 +58,7 @@ public class UserInfoController extends BaseController {
 
     @Operation(summary = "修改个人密码")
     @Log(title = "修改个人密码", businessType = "UPDATE", isSaveResponseData = true)
-    @SaCheckPermission("user:info:view")
+    @SaCheckPermission("user:info:select")
     @PatchMapping("/updatePwd")
     public R<?> updateUserInfoPwd(@Valid @RequestBody UserInfoDto.UpdatePwd updatePwd) {
         // 请求体不含 userId，Service 仅修改当前登录用户密码。
@@ -68,7 +68,7 @@ public class UserInfoController extends BaseController {
 
     @Operation(summary = "修改个人头像")
     @Log(title = "修改个人头像", businessType = "UPDATE", isSaveResponseData = true)
-    @SaCheckPermission("user:info:view")
+    @SaCheckPermission("user:info:select")
     @PatchMapping("/updateAvatar")
     public R<?> updateUserInfoAvatar(@Valid @RequestBody UserInfoDto.UpdateAvatar updateAvatar) {
         userInfoService.updateCurrentAvatar(updateAvatar);

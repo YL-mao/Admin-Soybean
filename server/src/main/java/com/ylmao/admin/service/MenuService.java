@@ -210,10 +210,11 @@ public class MenuService {
 
     @Transactional
     public void insert(MenuDto.MenuInsert menuInsert) {
-        // 菜单/按钮必须有权限标识；目录允许空标识。
-        validatePermCodeByType(menuInsert.menuType(), menuInsert.permCode());
+        // 仅按钮校验非空码；目录/页面码在 PO 构造时强制清空。
+        String permCode = effectivePermCode(menuInsert.menuType(), menuInsert.permCode());
+        validatePermCodeByType(menuInsert.menuType(), permCode);
         // 同级菜单名称与权限标识不能重复。
-        checkMenuUnique(menuInsert.parentId(), menuInsert.menuName(), menuInsert.permCode(), null);
+        checkMenuUnique(menuInsert.parentId(), menuInsert.menuName(), permCode, null);
         Menu menu = new Menu(menuInsert);
         String parentId = normalizeParentId(menu.getParentId());
         menu.setParentId(parentId);
@@ -245,8 +246,9 @@ public class MenuService {
         if (menuUpdate.parentId().equals(menuUpdate.menuId()) || isChildMenu(menuUpdate.menuId(), menuUpdate.parentId())) {
             throw new BusinessException("上级菜单不能选择自己或下级菜单");
         }
-        validatePermCodeByType(menuUpdate.menuType(), menuUpdate.permCode());
-        checkMenuUnique(menuUpdate.parentId(), menuUpdate.menuName(), menuUpdate.permCode(), menuUpdate.menuId());
+        String permCode = effectivePermCode(menuUpdate.menuType(), menuUpdate.permCode());
+        validatePermCodeByType(menuUpdate.menuType(), permCode);
+        checkMenuUnique(menuUpdate.parentId(), menuUpdate.menuName(), permCode, menuUpdate.menuId());
         Menu menu = new Menu(menuUpdate);
         menu.setIsBlank(normalizeIsBlank(menu.getIsBlank()));
         fillMenuPath(menu);
@@ -300,10 +302,18 @@ public class MenuService {
         }
     }
 
-    /** 目录可空码；菜单与按钮必须有非空权限标识。 */
+    /** 仅按钮保留权限码；目录/页面提交的码在落库前视为空。 */
+    private static String effectivePermCode(Integer menuType, String permCode) {
+        if (menuType == null || menuType != 2) {
+            return null;
+        }
+        return StrUtil.isBlank(permCode) ? null : permCode.trim();
+    }
+
+    /** 仅按钮必须非空权限标识；目录/页面强制无码。 */
     private void validatePermCodeByType(Integer menuType, String permCode) {
-        if (menuType != null && menuType != 0 && StrUtil.isBlank(permCode)) {
-            throw new BusinessException("菜单或按钮权限标识不能为空");
+        if (menuType != null && menuType == 2 && StrUtil.isBlank(permCode)) {
+            throw new BusinessException("按钮权限标识不能为空");
         }
     }
 

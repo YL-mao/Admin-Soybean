@@ -239,6 +239,8 @@ const iconifyOptions = computed<SelectOption[]>(() => {
 const showLayout = computed(() => model.value.menuType === 0);
 const showPage = computed(() => model.value.menuType === 1);
 const showRouteFields = computed(() => model.value.menuType !== 2);
+/** 仅按钮可填权限码；目录/页面禁用并由提交时清空 */
+const permCodeDisabled = computed(() => model.value.menuType !== 2);
 
 const parentOptions = ref<TreeSelectOption[]>([]);
 
@@ -300,6 +302,10 @@ function handleInitModel() {
       layout,
       page
     });
+    // 目录/页面不展示也不保留权限码
+    if (model.value.menuType !== 2) {
+      model.value.permCode = '';
+    }
   }
 }
 
@@ -340,7 +346,8 @@ function buildSubmitBody(): Api.SystemManage.MenuInsert {
     routeQuery: model.value.routeQuery || null,
     menuHref: model.value.menuHref || null,
     isBlank: model.value.isBlank,
-    permCode: model.value.permCode || null,
+    // 非按钮不提交权限码，避免脏值落库
+    permCode: model.value.menuType === 2 ? model.value.permCode || null : null,
     menuIcon: model.value.menuIcon || null,
     iconType: model.value.menuIcon ? model.value.iconType : null,
     i18nKey: model.value.i18nKey || null,
@@ -369,7 +376,7 @@ async function handleSubmit() {
     return;
   }
 
-  if (model.value.permCode) {
+  if (model.value.menuType === 2 && model.value.permCode) {
     const { data: codeOk, error: codeErr } = await fetchCheckMenuCodeUnique({ permCode: model.value.permCode });
     if (codeErr) return;
     if (codeOk === false && !(props.operateType === 'edit' && props.rowData?.permCode === model.value.permCode)) {
@@ -401,6 +408,17 @@ watch(visible, async () => {
     await Promise.all([loadParentOptions(), preloadIconify(collectIconifyNames())]);
   }
 });
+
+/** 切到目录/页面时清空权限码，避免禁用框残留旧值 */
+watch(
+  () => model.value.menuType,
+  type => {
+    if (!visible.value) return;
+    if (type !== 2) {
+      model.value.permCode = '';
+    }
+  }
+);
 
 // 手输新 Iconify 名时补拉一次，保证选中态也能画出图标
 watch(
@@ -448,7 +466,11 @@ watch(
             <NInput v-model:value="model.menuDesc" :placeholder="$t('page.manage.menu.form.menuDesc')" />
           </NFormItemGi>
           <NFormItemGi span="24 m:12" :label="$t('page.manage.menu.permCode')" path="permCode">
-            <NInput v-model:value="model.permCode" :placeholder="$t('page.manage.menu.form.permCode')" />
+            <NInput
+              v-model:value="model.permCode"
+              :disabled="permCodeDisabled"
+              :placeholder="$t('page.manage.menu.form.permCode')"
+            />
           </NFormItemGi>
           <template v-if="showRouteFields">
             <NFormItemGi span="24 m:12" :label="$t('page.manage.menu.routeName')" path="routeName">

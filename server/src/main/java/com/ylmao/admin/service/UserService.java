@@ -221,12 +221,6 @@ public class UserService {
         }
     }
 
-    /** 管理端解锁：清 is_lock、清单机失败计数，并踢掉该用户全部登录会话。 */
-    @Transactional
-    public void unlockUser(String userId) {
-        updateUserLock(new UserDto.UpdateLock(userId, 0));
-    }
-
     /** 管理端改锁定状态：解锁走清失败计数；锁定/解锁后都踢会话。 */
     @Transactional
     public void updateUserLock(UserDto.UpdateLock updateLock) {

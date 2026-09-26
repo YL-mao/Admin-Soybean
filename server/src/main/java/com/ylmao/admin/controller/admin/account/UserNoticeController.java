@@ -35,7 +35,7 @@ public class UserNoticeController extends BaseController {
     @GetMapping("/header")
     public R<NoticeVo.HeaderMessageVo> userNoticeHeader() {
         // 无权限时仍返回空结构，顶部铃铛显示为空。
-        if (!StpUtil.hasPermission("user:notice:view")) {
+        if (!StpUtil.hasPermission("user:notice:select")) {
             return okData(noticeService.buildEmptyNoticeHeader());
         }
         return okData(noticeService.buildUserNoticeHeader(8));
@@ -43,7 +43,7 @@ public class UserNoticeController extends BaseController {
 
     @Operation(summary = "我的公告分页列表")
     @Log(title = "用户公告分页查询", businessType = "QUERY")
-    @SaCheckPermission("user:notice:view")
+    @SaCheckPermission("user:notice:select")
     @GetMapping("/list")
     public R<?> userNoticeList(@Valid PageQuery pageQuery, @Valid NoticeDto.UserNoticeList userNoticeList) {
         // 查询条件不含 userId，Service 仅返回当前登录用户收件箱。
@@ -53,7 +53,7 @@ public class UserNoticeController extends BaseController {
 
     @Operation(summary = "标记公告已读")
     @Log(title = "用户公告标记已读", businessType = "UPDATE", isSaveResponseData = true)
-    @SaCheckPermission("user:notice:view")
+    @SaCheckPermission("user:notice:select")
     @PatchMapping("/updateRead")
     public R<?> updateUserNoticeRead(@Valid @RequestBody NoticeDto.UpdateRead updateRead) {
         // 仅 noticeId，实际 userId 由 Service 从 Session 取，只能改当前登录用户收件箱。
@@ -63,7 +63,7 @@ public class UserNoticeController extends BaseController {
 
     @Operation(summary = "全部标记已读")
     @Log(title = "用户公告全部已读", businessType = "UPDATE", isSaveResponseData = true)
-    @SaCheckPermission("user:notice:view")
+    @SaCheckPermission("user:notice:select")
     @PatchMapping("/readAll")
     public R<?> readAllUserNotices() {
         // 无请求体，Service 仅处理当前登录用户可见未读公告。

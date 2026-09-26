@@ -61,6 +61,11 @@ logging:
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: error
     com.ylmao.admin.mapper: info
 
+# 生产关闭 Mapper statement 调试校验。
+app:
+  mybatis:
+    verify: false
+
 # 生产关闭在线接口文档，避免文档入口裸奔。
 springdoc:
   api-docs:

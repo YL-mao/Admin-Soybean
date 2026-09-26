@@ -64,6 +64,11 @@ logging:
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: error
     com.ylmao.admin.mapper: info
 
+# 开发环境：启动后校验指定 Mapper statement 是否已注册（MappedStatementVerifier）。
+app:
+  mybatis:
+    verify: true
+
 # 开发环境开启在线接口文档（springdoc）；生产见 application-prod.yml。
 springdoc:
   api-docs:

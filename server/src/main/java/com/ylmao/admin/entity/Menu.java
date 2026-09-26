@@ -71,7 +71,7 @@ public final class Menu {
         this.routeQuery = menuInsert.routeQuery();
         this.menuHref = menuInsert.menuHref();
         this.isBlank = menuInsert.isBlank();
-        this.permCode = normalizePermCode(menuInsert.permCode());
+        this.permCode = normalizePermCodeByType(menuInsert.menuType(), menuInsert.permCode());
         this.menuIcon = menuInsert.menuIcon();
         this.iconType = menuInsert.iconType();
         this.i18nKey = menuInsert.i18nKey();
@@ -95,7 +95,7 @@ public final class Menu {
         this.routeQuery = menuUpdate.routeQuery();
         this.menuHref = menuUpdate.menuHref();
         this.isBlank = menuUpdate.isBlank();
-        this.permCode = normalizePermCode(menuUpdate.permCode());
+        this.permCode = normalizePermCodeByType(menuUpdate.menuType(), menuUpdate.permCode());
         this.menuIcon = menuUpdate.menuIcon();
         this.iconType = menuUpdate.iconType();
         this.i18nKey = menuUpdate.i18nKey();
@@ -106,8 +106,14 @@ public final class Menu {
         this.isEnabled = menuUpdate.isEnabled();
     }
 
-    /** 空白权限标识统一为 NULL，避免空串撞唯一索引。 */
-    private static String normalizePermCode(String permCode) {
+    /**
+     * 仅按钮保留权限码；目录/页面一律 NULL（进路由靠角色勾选菜单）。
+     * 空白统一为 NULL，避免空串撞唯一索引。
+     */
+    private static String normalizePermCodeByType(Integer menuType, String permCode) {
+        if (menuType == null || menuType != 2) {
+            return null;
+        }
         return StrUtil.isBlank(permCode) ? null : permCode.trim();
     }
 }

@@ -218,9 +218,10 @@ public class FileResourceService {
         if (StrUtil.isBlank(fileId)) {
             return false;
         }
-        // 仅检测 user_avatar 是否包含该 fileId（相对地址或纯 ID 均可命中）。
+        // 与覆盖鉴权一致：去 query 后须以 /upload/{fileId} 结尾，避免 LIKE 子串误判。
+        String suffix = "/upload/" + fileId;
         Long count = userMapper.selectCount(new LambdaQueryWrapper<User>()
-                .like(User::getUserAvatar, fileId));
+                .apply("SUBSTRING_INDEX(IFNULL(user_avatar,''), '?', 1) LIKE CONCAT('%', {0})", suffix));
         return count != null && count > 0;
     }
 
@@ -274,6 +275,12 @@ public class FileResourceService {
         List<FileResource> files = fileResourceMapper.selectList(new LambdaQueryWrapper<FileResource>()
                 .eq(FileResource::getIsDel, 0)
                 .in(FileResource::getFolderId, folderIdsToDelete));
+        // 单文件删除走 checkRef 确认；目录级联删无该步骤，有头像引用时直接拒绝。
+        for (FileResource file : files) {
+            if (isReferencedByAvatar(file.getFileId())) {
+                throw new BusinessException("目录下存在仍被用户头像引用的文件，请先在文件列表中处理后再删除目录");
+            }
+        }
         LocalDateTime now = LocalDateTime.now();
         // 先逻辑删库，再删磁盘，避免回滚后盘文件已丢。
         if (!files.isEmpty()) {

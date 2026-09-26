@@ -89,11 +89,12 @@ public class PermRouteQualityChecker implements ApplicationListener<ApplicationR
         }
     }
 
-    /** 仅报警：注解有权限码，库中无对应非空 perm_code。 */
+    /** 仅报警：注解有权限码，库中按钮行无对应非空 perm_code。 */
     private void checkAnnotationPermCodes(List<Menu> menus) {
         Set<String> dbCodes = new HashSet<>();
         for (Menu menu : menus) {
-            if (StrUtil.isNotBlank(menu.getPermCode())) {
+            // 权限码只认按钮；目录/页面上的码视为脏数据，不计入「已存在」。
+            if (menu.getMenuType() != null && menu.getMenuType() == 2 && StrUtil.isNotBlank(menu.getPermCode())) {
                 dbCodes.add(menu.getPermCode().trim());
             }
         }
@@ -135,16 +136,25 @@ public class PermRouteQualityChecker implements ApplicationListener<ApplicationR
         }
     }
 
-    /** 菜单/按钮不可空码；目录可空。 */
+    /** 目录/页面必须空码；按钮必须非空。页面非空或按钮空码均 WARN。 */
     private void checkBlankPermCodes(List<Menu> menus) {
         for (Menu menu : menus) {
             Integer type = menu.getMenuType();
-            if (type == null || type == 0) {
+            if (type == null) {
                 continue;
             }
-            if (StrUtil.isBlank(menu.getPermCode())) {
-                log.warn("[权限路由质检] 菜单/按钮权限码为空: menuId={}, menuName={}, menuType={}",
-                        menu.getMenuId(), menu.getMenuName(), type);
+            boolean blank = StrUtil.isBlank(menu.getPermCode());
+            if (type == 2) {
+                if (blank) {
+                    log.warn("[权限路由质检] 按钮权限码为空: menuId={}, menuName={}",
+                            menu.getMenuId(), menu.getMenuName());
+                }
+                continue;
+            }
+            // 目录(0)、页面(1)：权限码应为空，进路由靠角色勾选菜单。
+            if (!blank) {
+                log.warn("[权限路由质检] 目录/页面不应配置权限码: menuId={}, menuName={}, menuType={}, permCode={}",
+                        menu.getMenuId(), menu.getMenuName(), type, menu.getPermCode());
             }
         }
     }

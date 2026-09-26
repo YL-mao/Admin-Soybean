@@ -19,8 +19,7 @@ const showPopover = ref(false);
 const activeTab = ref<number | string | undefined>(undefined);
 
 /**
- * user:notice:view 挂在菜单（非按钮），hasAuth 看不到。
- * 以鉴权后是否存在「我的公告」路由为准。
+ * user:notice:select 挂在按钮上；铃铛是否展示以鉴权后是否存在「我的公告」路由为准（页面无权限码）。
  */
 const visible = computed(() => {
   if (!authStore.isLogin || !routeStore.isInitAuthRoute) return false;
