@@ -52,8 +52,8 @@ const {
     if (!visible.value || !props.noticeId || !hasAuth('system:notice:console')) {
       return Promise.resolve(emptyAuthListResponse<Api.SystemManage.NoticeConsoleReceiver>());
     }
-    // 用 loadSeq 对齐当前打开轮次；过期则按新 id 再拉，禁止回写空结果冲掉已展示数据
-    for (;;) {
+    // 切公告后对齐当前 id 再拉；上限防止快速连点打成无限请求
+    for (let attempt = 0; attempt < 8; attempt += 1) {
       const seq = loadSeq;
       const reqNoticeId = props.noticeId;
       const result = await fetchGetNoticeConsoleReceivers({
@@ -67,6 +67,7 @@ const {
         return result;
       }
     }
+    return emptyAuthListResponse<Api.SystemManage.NoticeConsoleReceiver>();
   },
   transform: response =>
     backendPageTransform(response, receiverSearch.value.current || 1, receiverSearch.value.size || 10),

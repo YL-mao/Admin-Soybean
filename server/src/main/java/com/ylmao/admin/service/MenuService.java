@@ -9,10 +9,8 @@ import com.ylmao.admin.config.saToken.StpInterfaceImpl;
 import com.ylmao.admin.dto.MenuDto;
 import com.ylmao.admin.entity.Menu;
 import com.ylmao.admin.entity.MenuRole;
-import com.ylmao.admin.entity.RoleUser;
 import com.ylmao.admin.mapper.MenuMapper;
 import com.ylmao.admin.mapper.MenuRoleMapper;
-import com.ylmao.admin.mapper.RoleUserMapper;
 import com.ylmao.admin.vo.MenuVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,17 +28,11 @@ public class MenuService {
 
     private final MenuMapper menuMapper;
     private final MenuRoleMapper menuRoleMapper;
-    private final RoleUserMapper roleUserMapper;
+    private final RoleUserService roleUserService;
 
     /** 按用户角色并集组装侧栏菜单树（model.Menu）。 */
     public List<com.ylmao.admin.model.Menu> getUserMenuTree(String userId) {
-        LambdaQueryWrapper<RoleUser> roleUserQueryWrapper = new LambdaQueryWrapper<>();
-        roleUserQueryWrapper.eq(RoleUser::getUserId, userId);
-        List<RoleUser> roleUserList = roleUserMapper.selectList(roleUserQueryWrapper);
-        List<String> roleIds = new ArrayList<>();
-        for (RoleUser item : roleUserList) {
-            roleIds.add(item.getRoleId());
-        }
+        List<String> roleIds = roleUserService.listRoleIdsByUserId(userId);
         List<Menu> menuList = getMenuByRole(roleIds);
         return buildModelMenuList(menuList, "0");
     }
@@ -145,10 +137,8 @@ public class MenuService {
 
     /** 角色授权/启停变更后，清理持有该角色用户的角色与权限码缓存。 */
     public void clearAuthCacheByRole(String roleId) {
-        List<RoleUser> roleUsers = roleUserMapper.selectList(
-                new LambdaQueryWrapper<RoleUser>().eq(RoleUser::getRoleId, roleId));
-        for (RoleUser roleUser : roleUsers) {
-            SaSession session = StpUtil.getSessionByLoginId(roleUser.getUserId(), false);
+        for (String userId : roleUserService.listUserIdsByRoleId(roleId)) {
+            SaSession session = StpUtil.getSessionByLoginId(userId, false);
             if (session != null) {
                 session.delete(StpInterfaceImpl.ROLE_LIST);
                 session.delete(StpInterfaceImpl.PERM_LIST);

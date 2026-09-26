@@ -33,14 +33,19 @@ async function loadLogs() {
     return;
   }
   loading.value = true;
-  const { data, error } = await fetchGetOwnLoginLogs({ current: 1, size: 5 });
-  if (seq !== loadSeq) return;
-  loading.value = false;
-  if (error) {
-    rows.value = [];
-    return;
+  try {
+    const { data, error } = await fetchGetOwnLoginLogs({ current: 1, size: 5 });
+    if (seq !== loadSeq) return;
+    if (error) {
+      rows.value = [];
+      return;
+    }
+    rows.value = data ?? [];
+  } finally {
+    if (seq === loadSeq) {
+      loading.value = false;
+    }
   }
-  rows.value = data ?? [];
 }
 
 function goMore() {

@@ -9,10 +9,8 @@ import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.dto.RoleDto;
 import com.ylmao.admin.entity.MenuRole;
 import com.ylmao.admin.entity.Role;
-import com.ylmao.admin.entity.RoleUser;
 import com.ylmao.admin.mapper.MenuRoleMapper;
 import com.ylmao.admin.mapper.RoleMapper;
-import com.ylmao.admin.mapper.RoleUserMapper;
 import com.ylmao.admin.vo.RoleVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +26,7 @@ import java.util.stream.Collectors;
 public class RoleService {
 
     private final RoleMapper roleMapper;
-    private final RoleUserMapper roleUserMapper;
+    private final RoleUserService roleUserService;
     private final MenuRoleMapper menuRoleMapper;
     private final MenuService menuService;
 
@@ -45,12 +43,7 @@ public class RoleService {
      */
     public List<Role> getUserIsRole(String userid) {
         // 查询当前用户已绑定的角色 ID，用于回显勾选
-        Set<String> myRoleIds = roleUserMapper.selectList(
-                        new LambdaQueryWrapper<RoleUser>().eq(RoleUser::getUserId, userid))
-                .stream()
-                .map(RoleUser::getRoleId)
-                .filter(StrUtil::isNotBlank)
-                .collect(Collectors.toCollection(HashSet::new));
+        Set<String> myRoleIds = new HashSet<>(roleUserService.listRoleIdsByUserId(userid));
 
         List<Role> roleList = roleMapper.selectList(new LambdaQueryWrapper<>());
         for (Role item : roleList) {
@@ -120,8 +113,7 @@ public class RoleService {
             throw new BusinessException("请选择要删除的角色");
         }
         List<String> idList= StrUtil.splitTrim(roleIds, ',');
-        Long userCount = roleUserMapper.selectCount(new LambdaQueryWrapper<RoleUser>().in(RoleUser::getRoleId, idList));
-        if (userCount != null && userCount > 0) {
+        if (roleUserService.countByRoleIds(idList) > 0) {
             throw new BusinessException("角色已分配给用户，不能删除");
         }
         // 角色菜单属于角色自身配置，删除角色时同步清理授权关系。

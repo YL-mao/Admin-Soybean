@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserMapper userMapper;
-    private final RoleUserMapper roleUserMapper;
+    private final RoleUserService roleUserService;
     private final DeptMapper deptMapper;
     private final RoleMapper roleMapper;
     private final PostMapper postMapper;
@@ -100,8 +100,7 @@ public class UserService {
         Map<String, String> userRoleIdsMap = new HashMap<>();
         Set<String> roleIds = new HashSet<>();
         if (!userIds.isEmpty()) {
-            List<RoleUser> roleUserList = roleUserMapper.selectList(
-                    new LambdaQueryWrapper<RoleUser>().in(RoleUser::getUserId, userIds));
+            List<RoleUser> roleUserList = roleUserService.listByUserIds(userIds);
             for (RoleUser roleUser : roleUserList) {
                 userRoleIdsMap.merge(roleUser.getUserId(), roleUser.getRoleId(), (existing, added) -> existing + "," + added);
                 if (StrUtil.isNotBlank(roleUser.getRoleId())) {
@@ -173,24 +172,7 @@ public class UserService {
 
     private void syncUserRoles(String userId, String roleIds) {
         // 角色中间表以本次提交的角色集合为准，先清空再重建。
-        roleUserMapper.delete(new LambdaQueryWrapper<RoleUser>().eq(RoleUser::getUserId, userId));
-        if (StrUtil.isBlank(roleIds)) {
-            return;
-        }
-        // 关系表唯一键约束用户和角色只绑定一次，入库前保序去重。
-        Set<String> uniqueRoleIds = new LinkedHashSet<>(StrUtil.splitTrim(roleIds, ','));
-        for (String roleId : uniqueRoleIds) {
-            if (StrUtil.isBlank(roleId)) {
-                continue;
-            }
-            RoleUser roleUser = new RoleUser();
-            roleUser.setUserId(userId);
-            roleUser.setRoleId(roleId);
-            int rows = roleUserMapper.insert(roleUser);
-            if (rows <= 0) {
-                throw new BusinessException("用户角色保存失败");
-            }
-        }
+        roleUserService.replaceUserRoles(userId, roleIds);
     }
 
     public User selectById(String userId) {
@@ -296,7 +278,7 @@ public class UserService {
             throw new BusinessException("用户不存在或删除失败");
         }
         // 删除用户成功后清理角色中间表，避免残留无效关系。
-        roleUserMapper.delete(new LambdaQueryWrapper<RoleUser>().in(RoleUser::getUserId, idList));
+        roleUserService.deleteByUserIds(idList);
         // 删除后踢掉会话，避免已登录 token 继续访问。
         for (String userId : idList) {
             if (StrUtil.isNotBlank(userId)) {

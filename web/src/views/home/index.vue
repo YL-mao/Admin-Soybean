@@ -39,14 +39,19 @@ async function loadProfile() {
     return;
   }
   profileLoading.value = true;
-  const { data, error } = await fetchGetUserProfileDetail();
-  if (seq !== profileLoadSeq) return;
-  profileLoading.value = false;
-  if (error || !data) {
-    profile.value = null;
-    return;
+  try {
+    const { data, error } = await fetchGetUserProfileDetail();
+    if (seq !== profileLoadSeq) return;
+    if (error || !data) {
+      profile.value = null;
+      return;
+    }
+    profile.value = data;
+  } finally {
+    if (seq === profileLoadSeq) {
+      profileLoading.value = false;
+    }
   }
-  profile.value = data;
 }
 
 watch(canLoadProfile, () => {

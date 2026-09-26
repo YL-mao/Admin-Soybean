@@ -16,13 +16,11 @@ import com.ylmao.admin.entity.Notice;
 import com.ylmao.admin.entity.NoticeUser;
 import com.ylmao.admin.entity.Dept;
 import com.ylmao.admin.entity.Role;
-import com.ylmao.admin.entity.RoleUser;
 import com.ylmao.admin.entity.User;
 import com.ylmao.admin.mapper.NoticeMapper;
 import com.ylmao.admin.mapper.NoticeUserMapper;
 import com.ylmao.admin.mapper.DeptMapper;
 import com.ylmao.admin.mapper.RoleMapper;
-import com.ylmao.admin.mapper.RoleUserMapper;
 import com.ylmao.admin.mapper.UserMapper;
 import com.ylmao.admin.vo.DictVo;
 import com.ylmao.admin.vo.NoticeVo;
@@ -57,7 +55,7 @@ public class NoticeService {
     private final UserMapper userMapper;
     private final DeptMapper deptMapper;
     private final RoleMapper roleMapper;
-    private final RoleUserMapper roleUserMapper;
+    private final RoleUserService roleUserService;
     private final DictRuntimeService dictRuntimeService;
     private final ConfigRuntimeService configRuntimeService;
 
@@ -428,15 +426,10 @@ public class NoticeService {
             return List.of();
         }
         if (receiverType == 2) {
-            List<RoleUser> roleUsers = roleUserMapper.selectList(new LambdaQueryWrapper<RoleUser>()
-                    .in(RoleUser::getRoleId, targetIds));
-            if (roleUsers.isEmpty()) {
+            List<String> userIds = roleUserService.listUserIdsByRoleIds(targetIds);
+            if (userIds.isEmpty()) {
                 return List.of();
             }
-            List<String> userIds = roleUsers.stream()
-                    .map(RoleUser::getUserId)
-                    .distinct()
-                    .toList();
             return listEnabledUserIds(userIds);
         }
         if (receiverType == 3) {
