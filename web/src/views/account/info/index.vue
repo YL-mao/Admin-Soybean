@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { computed, onMounted, reactive, ref, toRef, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { NTag } from 'naive-ui';
 import { userSexOptions } from '@/constants/business';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
@@ -20,6 +20,7 @@ import { $t } from '@/locales';
 defineOptions({ name: 'AccountInfo' });
 
 const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 const activeTab = ref<'profile' | 'password' | 'loginLog'>('profile');
 const loadingDetail = ref(false);
@@ -205,23 +206,37 @@ function resolveTabFromQuery(raw: unknown): AccountTab | null {
 }
 
 async function applyTabFromQuery() {
-  const tab = resolveTabFromQuery(route.query.tab);
   // 无有效 ?tab= 时回到资料（keepAlive 下从改密入口再进个人中心）
-  if (!tab) {
-    activeTab.value = 'profile';
-    return;
-  }
+  const tab = resolveTabFromQuery(route.query.tab) ?? 'profile';
+  const changed = activeTab.value !== tab;
   activeTab.value = tab;
-  if (tab === 'loginLog') {
+  if (tab === 'loginLog' && changed) {
     await getLoginLogsByPage(1);
   }
 }
 
+/** 手动切 Tab 回写 URL，刷新后与当前页签一致；资料为默认，去掉 tab */
+async function syncTabToQuery(tab: AccountTab) {
+  const current = resolveTabFromQuery(route.query.tab);
+  if (tab === 'profile') {
+    if (current == null) return;
+    const query = { ...route.query };
+    delete query.tab;
+    await router.replace({ query });
+    return;
+  }
+  if (current === tab) return;
+  await router.replace({ query: { ...route.query, tab } });
+}
+
 async function handleTabUpdate(name: string) {
-  activeTab.value = name as typeof activeTab.value;
-  if (name === 'loginLog') {
+  const tab = name as AccountTab;
+  const changed = activeTab.value !== tab;
+  activeTab.value = tab;
+  if (tab === 'loginLog' && changed) {
     await getLoginLogsByPage(1);
   }
+  await syncTabToQuery(tab);
 }
 
 async function handleSaveProfile() {

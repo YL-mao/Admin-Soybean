@@ -791,5 +791,11 @@ declare namespace Api {
       title: string;
       children: UserNoticeHeaderItem[];
     };
+
+    /** 对齐 NoticeVo.HeaderMessageVo：真实未读总数 + 短列表 Tab */
+    type UserNoticeHeader = {
+      unreadCount: number;
+      tabs: UserNoticeHeaderTab[];
+    };
   }
 }

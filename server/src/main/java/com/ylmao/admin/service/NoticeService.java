@@ -121,14 +121,14 @@ public class NoticeService {
         return voPage;
     }
 
-    /** 顶部铃铛：按公告类型分 Tab，每类最多 limitPerTab 条未读。 */
-    public List<NoticeVo.HeaderMessageTabVo> buildUserNoticeHeader(int limitPerTab) {
+    /** 顶部铃铛：真实未读总数 + 按公告类型分 Tab（每类最多 limitPerTab 条）。 */
+    public NoticeVo.HeaderMessageVo buildUserNoticeHeader(int limitPerTab) {
         List<DictVo.DictOptionVo> noticeTypeOptions = dictRuntimeService.getOptions(DictTypeCode.SYS_NOTICE_TYPE);
         int typeCount = Math.max(noticeTypeOptions.size(), 1);
 
         PageQuery pageQuery = new PageQuery();
         pageQuery.setPage(1);
-        // 一次拉取足够未读，再按类型分组截断。
+        // 一次拉取足够未读，再按类型分组截断；分页 total 仍是全量未读数。
         pageQuery.setLimit(Math.max(limitPerTab * typeCount, limitPerTab));
         NoticeDto.UserNoticeList userNoticeList = new NoticeDto.UserNoticeList(null, null, 0);
         IPage<NoticeVo.UserInboxVo> inboxPage = selectUserInboxPageList(pageQuery, userNoticeList);
@@ -147,22 +147,24 @@ public class NoticeService {
             }
         }
 
-        return noticeTypeOptions.stream()
+        List<NoticeVo.HeaderMessageTabVo> tabs = noticeTypeOptions.stream()
                 .map(option -> new NoticeVo.HeaderMessageTabVo(
                         Integer.valueOf(option.dictDataValue()),
                         option.dictDataLabel(),
                         grouped.getOrDefault(Integer.valueOf(option.dictDataValue()), List.of())))
                 .toList();
+        return new NoticeVo.HeaderMessageVo(inboxPage.getTotal(), tabs);
     }
 
-    /** 无权限时返回空的公告类型 Tab。 */
-    public List<NoticeVo.HeaderMessageTabVo> buildEmptyNoticeHeaderTabs() {
-        return dictRuntimeService.getOptions(DictTypeCode.SYS_NOTICE_TYPE).stream()
+    /** 无权限时返回空 Tab，未读数为 0。 */
+    public NoticeVo.HeaderMessageVo buildEmptyNoticeHeader() {
+        List<NoticeVo.HeaderMessageTabVo> tabs = dictRuntimeService.getOptions(DictTypeCode.SYS_NOTICE_TYPE).stream()
                 .map(option -> new NoticeVo.HeaderMessageTabVo(
                         Integer.valueOf(option.dictDataValue()),
                         option.dictDataLabel(),
                         List.of()))
                 .toList();
+        return new NoticeVo.HeaderMessageVo(0, tabs);
     }
 
     private NoticeVo.HeaderMessageItemVo toHeaderMessageItem(NoticeVo.UserInboxVo inbox) {

@@ -277,6 +277,15 @@ public class NoticeVo {
     }
 
     /**
+     * 顶部铃铛 / 首页未读：真实未读总数 + 按类型截断的短列表。
+     */
+    public record HeaderMessageVo(
+            long unreadCount,
+            List<HeaderMessageTabVo> tabs
+    ) {
+    }
+
+    /**
      * 公告控制台：阅读统计与公告摘要。
      */
     public record ConsoleStatsVo(

@@ -1001,9 +1001,9 @@ export function fetchGetOwnLoginLogs(params?: Api.SystemManage.CommonSearchParam
   });
 }
 
-/** 顶栏公告短列表（按类型分 Tab，每类未读最多 8 条） */
+/** 顶栏/首页公告头：真实未读总数 + 按类型短列表（每类最多 8 条） */
 export function fetchGetUserNoticeHeader() {
-  return request<Api.SystemManage.UserNoticeHeaderTab[]>({
+  return request<Api.SystemManage.UserNoticeHeader>({
     url: '/user/notice/header',
     method: 'get'
   });

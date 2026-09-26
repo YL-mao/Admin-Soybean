@@ -21,8 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @Tag(name = "我的公告", description = "当前用户收件箱")
 @RestController
 @RequestMapping("/user/notice")
@@ -35,10 +33,10 @@ public class UserNoticeController extends BaseController {
     @Operation(summary = "头部公告消息")
     @Log(title = "用户公告头部消息", businessType = "QUERY")
     @GetMapping("/header")
-    public R<List<NoticeVo.HeaderMessageTabVo>> userNoticeHeader() {
-        // 无权限时仍返回空列表，顶部铃铛显示为空。
+    public R<NoticeVo.HeaderMessageVo> userNoticeHeader() {
+        // 无权限时仍返回空结构，顶部铃铛显示为空。
         if (!StpUtil.hasPermission("user:notice:view")) {
-            return okData(noticeService.buildEmptyNoticeHeaderTabs());
+            return okData(noticeService.buildEmptyNoticeHeader());
         }
         return okData(noticeService.buildUserNoticeHeader(8));
     }
