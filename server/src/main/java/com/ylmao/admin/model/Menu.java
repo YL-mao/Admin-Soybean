@@ -1,8 +1,13 @@
 package com.ylmao.admin.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Setter
+@Getter
 public class Menu {
     /**
      * 菜单编号
@@ -65,75 +70,4 @@ public class Menu {
                 '}';
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
-    public Integer getIsBlank() {
-        return isBlank;
-    }
-
-    public void setIsBlank(Integer isBlank) {
-        this.isBlank = isBlank;
-    }
-
-    public String getIcon() {
-        return icon;
-    }
-
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
-
-    public String getHref() {
-        return href;
-    }
-
-    public void setHref(String href) {
-        this.href = href;
-    }
-
-    public List<Menu> getChildren() {
-        return children;
-    }
-
-    public void setChildren(List<Menu> children) {
-        this.children = children;
-    }
-
-    public String getCheckArr() {
-        return checkArr;
-    }
-
-    public void setCheckArr(String checkArr) {
-        this.checkArr = checkArr;
-    }
 }

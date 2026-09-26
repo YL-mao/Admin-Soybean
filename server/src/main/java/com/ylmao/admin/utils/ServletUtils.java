@@ -100,8 +100,7 @@ public class ServletUtils
 
     /**
      * 是否是Ajax异步请求
-     * 
-     * @param request
+     *
      */
     public static boolean isAjaxRequest(HttpServletRequest request)
     {
@@ -125,12 +124,7 @@ public class ServletUtils
         }
 
         String ajax = request.getParameter("__ajax");
-        if (StrUtil.equalsAnyIgnoreCase(ajax, "json", "xml"))
-        {
-            return true;
-        }
-
-        return false;
+        return StrUtil.equalsAnyIgnoreCase(ajax, "json", "xml");
     }
 
 

@@ -119,11 +119,11 @@ public class DictDataService {
     // 同一字典类型下，数据标签与数据值均不能重复。
     private void validateDictDataUnique(String dictTypeCode, String dictDataLabel, String dictDataValue, String dictDataId) {
         DictData labelExists = checkDictDataLabelUnique(dictTypeCode, dictDataLabel);
-        if (labelExists != null && (dictDataId == null || !labelExists.getDictDataId().equals(dictDataId))) {
+        if (labelExists != null && (!labelExists.getDictDataId().equals(dictDataId))) {
             throw new BusinessException("同一字典类型下数据标签已存在");
         }
         DictData valueExists = checkDictDataValueUnique(dictTypeCode, dictDataValue);
-        if (valueExists != null && (dictDataId == null || !valueExists.getDictDataId().equals(dictDataId))) {
+        if (valueExists != null && (!valueExists.getDictDataId().equals(dictDataId))) {
             throw new BusinessException("同一字典类型下数据值已存在");
         }
         if (dictDataId != null && dictDataMapper.selectById(dictDataId) == null) {

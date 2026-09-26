@@ -13,7 +13,7 @@ import java.util.List;
 @Mapper
 public interface NoticeUserMapper extends BaseMapper<NoticeUser> {
 
-     Integer insertBatch(@Param("noticeUserList") List<NoticeUser> noticeUserList);
+     void insertBatch(@Param("noticeUserList") List<NoticeUser> noticeUserList);
 
      /** 当前用户收件箱分页：仅已发布且未过期的公告。 */
      IPage<NoticeVo.UserInboxQueryVo> selectUserInboxPage(
@@ -24,8 +24,10 @@ public interface NoticeUserMapper extends BaseMapper<NoticeUser> {
              @Param("readState") Integer readState
      );
 
-     /** 将当前用户可见未读公告全部标为已读。 */
-     Integer readAllVisibleUnread(@Param("userId") String userId);
+     /**
+      * 将当前用户可见未读公告全部标为已读。
+      */
+     void readAllVisibleUnread(@Param("userId") String userId);
 
      /** 单条标记已读，仅更新当前用户可见收件箱记录。 */
      Integer markReadByNoticeId(@Param("userId") String userId, @Param("noticeId") String noticeId);

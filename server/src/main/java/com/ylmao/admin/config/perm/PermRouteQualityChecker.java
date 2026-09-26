@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ylmao.admin.entity.Menu;
 import com.ylmao.admin.mapper.MenuMapper;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -57,7 +58,7 @@ public class PermRouteQualityChecker implements ApplicationListener<ApplicationR
     }
 
     @Override
-    public void onApplicationEvent(ApplicationReadyEvent event) {
+    public void onApplicationEvent(@NonNull ApplicationReadyEvent event) {
         try {
             Set<String> routePaths = collectRoutePaths();
             List<Menu> menus = menuMapper.selectList(new LambdaQueryWrapper<>());

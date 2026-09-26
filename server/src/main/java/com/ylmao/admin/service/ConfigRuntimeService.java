@@ -166,16 +166,14 @@ public class ConfigRuntimeService {
     private void clearConfigCache() {
         Set<String> keysToDelete = new HashSet<>();
         keysToDelete.add(RedisKeys.CONFIG_INDEX);
-        for (String code : readCodeIndex(RedisKeys.CONFIG_INDEX)) {
+        for (String code : readCodeIndex()) {
             keysToDelete.add(RedisKeys.config(code));
         }
-        if (!keysToDelete.isEmpty()) {
-            stringRedisTemplate.delete(keysToDelete);
-        }
+        stringRedisTemplate.delete(keysToDelete);
     }
 
-    private List<String> readCodeIndex(String indexKey) {
-        String json = stringRedisTemplate.opsForValue().get(indexKey);
+    private List<String> readCodeIndex() {
+        String json = stringRedisTemplate.opsForValue().get(RedisKeys.CONFIG_INDEX);
         if (StrUtil.isBlank(json)) {
             return List.of();
         }
@@ -183,7 +181,7 @@ public class ConfigRuntimeService {
             List<String> codes = jsonMapper.readValue(json, STRING_LIST_TYPE);
             return codes == null ? List.of() : codes;
         } catch (Exception ex) {
-            log.warn("配置索引反序列化失败 key={} reason={}", indexKey, ex.getMessage());
+            log.warn("配置索引反序列化失败 key={} reason={}", RedisKeys.CONFIG_INDEX, ex.getMessage());
             return List.of();
         }
     }

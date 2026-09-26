@@ -6,6 +6,7 @@ import com.ylmao.admin.common.SecurityConfigCodes;
 import com.ylmao.admin.entity.Config;
 import com.ylmao.admin.mapper.ConfigMapper;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
@@ -24,7 +25,7 @@ public class SecurityConfigChecker implements ApplicationRunner {
     private final ConfigMapper configMapper;
 
     @Override
-    public void run(ApplicationArguments args) {
+    public void run(@NonNull ApplicationArguments args) {
         for (String code : SecurityConfigCodes.REQUIRED_CODES) {
             validate(code);
         }

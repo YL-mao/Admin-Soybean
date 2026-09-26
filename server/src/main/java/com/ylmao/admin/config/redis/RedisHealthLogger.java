@@ -1,5 +1,6 @@
 package com.ylmao.admin.config.redis;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -22,7 +23,7 @@ public class RedisHealthLogger implements ApplicationRunner {
     }
 
     @Override
-    public void run(ApplicationArguments args) {
+    public void run(@NonNull ApplicationArguments args) {
         try (var connection = redisConnectionFactory.getConnection()) {
             String pong = connection.ping();
             log.info("Redis 健康检查通过 ping={}", pong);

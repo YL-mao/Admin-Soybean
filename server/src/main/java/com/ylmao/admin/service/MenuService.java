@@ -265,11 +265,11 @@ public class MenuService {
 
     private void checkMenuUnique(String parentId, String menuName, String permCode, String excludeMenuId) {
         Menu oldNameMenu = checkMenuNameUnique(parentId, menuName);
-        if (oldNameMenu != null && (excludeMenuId == null || !oldNameMenu.getMenuId().equals(excludeMenuId))) {
+        if (oldNameMenu != null && (!oldNameMenu.getMenuId().equals(excludeMenuId))) {
             throw new BusinessException("同级菜单名称已存在");
         }
         Menu oldCodeMenu = checkMenuCodeUnique(parentId, permCode);
-        if (oldCodeMenu != null && (excludeMenuId == null || !oldCodeMenu.getMenuId().equals(excludeMenuId))) {
+        if (oldCodeMenu != null && (!oldCodeMenu.getMenuId().equals(excludeMenuId))) {
             throw new BusinessException("同级权限标识已存在");
         }
     }

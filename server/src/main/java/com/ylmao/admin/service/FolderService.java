@@ -87,7 +87,7 @@ public class FolderService {
         return folderMapper.selectOne(wrapper);
     }
 
-    public Folder requireActiveFolder(String folderId) {
+    public void requireActiveFolder(String folderId) {
         if (StrUtil.isBlank(folderId)) {
             throw new BusinessException("所属目录不能为空");
         }
@@ -95,7 +95,6 @@ public class FolderService {
         if (folder == null || !Integer.valueOf(0).equals(folder.getIsDel())) {
             throw new BusinessException("目录不存在");
         }
-        return folder;
     }
 
     public void assertNotBuiltin(Folder folder) {
