@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { fetchGetUserProfileDetail } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
+import { useAuth } from '@/hooks/business/auth';
 import { useAuthStore } from '@/store/modules/auth';
 import { useRouteStore } from '@/store/modules/route';
 import WorkspaceGreeting from './modules/workspace-greeting.vue';
@@ -17,14 +18,17 @@ const router = useRouter();
 const appStore = useAppStore();
 const authStore = useAuthStore();
 const routeStore = useRouteStore();
+const { hasAuth } = useAuth();
 
 const gap = computed(() => (appStore.isMobile ? 0 : 16));
 
-/** 问候条与账号摘要共用：有个人中心路由才拉一次详情 */
+/** 有 user:info:select 才拉资料；跳个人中心另看路由 */
 const canLoadProfile = computed(() => {
   if (!authStore.isLogin || !routeStore.isInitAuthRoute) return false;
-  return router.getRoutes().some(item => item.name === 'account_info');
+  return hasAuth('user:info:select');
 });
+
+const canOpenProfile = computed(() => router.getRoutes().some(item => item.name === 'account_info'));
 
 const profile = ref<Api.SystemManage.UserProfileDetail | null>(null);
 const profileLoading = ref(false);
@@ -86,6 +90,7 @@ onMounted(() => {
           :profile="profile"
           :loading="profileLoading"
           :can-view="canLoadProfile"
+          :can-open="canOpenProfile"
         />
       </NGi>
       <NGi span="24 s:24 m:14" class="row-cell flex">

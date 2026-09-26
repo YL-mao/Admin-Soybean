@@ -243,7 +243,7 @@ function buildRowMoreOptions(_row: Api.SystemManage.User): DropdownOption[] {
     options.push({ label: $t('page.manage.user.permDetail'), key: 'permDetail' });
   }
   if (hasAuth('system:online:kick')) {
-    options.push({ label: $t('page.manage.user.kickSessions'), key: 'kickSessions' });
+    options.push({ label: $t('page.manage.user.kickUser'), key: 'kickUser' });
   }
   return options;
 }
@@ -257,8 +257,8 @@ function handleRowMore(key: string, row: Api.SystemManage.User) {
     openPermDetail(row);
     return;
   }
-  if (key === 'kickSessions') {
-    confirmKickSessions(row);
+  if (key === 'kickUser') {
+    confirmKickUser(row);
   }
 }
 
@@ -273,10 +273,10 @@ function openPermDetail(row: Api.SystemManage.User) {
 }
 
 /** 强退该用户全部会话 */
-function confirmKickSessions(row: Api.SystemManage.User) {
+function confirmKickUser(row: Api.SystemManage.User) {
   window.$dialog?.warning({
     title: $t('common.tip'),
-    content: $t('page.manage.user.confirmKickSessions', { account: row.userAccount }),
+    content: $t('page.manage.user.confirmKickUser', { account: row.userAccount }),
     positiveText: $t('common.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
@@ -340,7 +340,7 @@ async function handleUpdateEnabled(row: Api.SystemManage.User, checked: boolean)
 
 /** 列表开关锁定：参数 locked=true 表示锁定 */
 async function handleUpdateLock(row: Api.SystemManage.User, locked: boolean) {
-  if (!guardAuth('system:user:unlock')) {
+  if (!guardAuth('system:user:updateLock')) {
     return;
   }
   const isLock: Api.SystemManage.EnabledFlag = locked ? 1 : 0;

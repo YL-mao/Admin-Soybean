@@ -395,8 +395,8 @@ const local: App.I18n.Schema = {
         permTree: 'Permission Tree',
         expandAll: 'Expand All',
         collapseAll: 'Collapse All',
-        kickSessions: 'Force Logout',
-        confirmKickSessions: 'Force logout all sessions of account "{account}"?',
+        kickUser: 'Force Logout',
+        confirmKickUser: 'Force logout all sessions of account "{account}"?',
         gender: {
           male: 'Male',
           female: 'Female'

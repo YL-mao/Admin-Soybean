@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuth } from '@/hooks/business/auth';
 import { useRouterPush } from '@/hooks/common/router';
 import { useAuthStore } from '@/store/modules/auth';
 import { useRouteStore } from '@/store/modules/route';
@@ -12,19 +13,20 @@ defineOptions({ name: 'UserNoticeBell' });
 const router = useRouter();
 const authStore = useAuthStore();
 const routeStore = useRouteStore();
+const { hasAuth } = useAuth();
 const { routerPushByKey } = useRouterPush();
 const noticeStore = useNoticeStore();
 
 const showPopover = ref(false);
 const activeTab = ref<number | string | undefined>(undefined);
 
-/**
- * user:notice:select 挂在按钮上；铃铛是否展示以鉴权后是否存在「我的公告」路由为准（页面无权限码）。
- */
+/** 有 user:notice:select 才显示铃铛并拉头；跳收件箱另看路由 */
 const visible = computed(() => {
   if (!authStore.isLogin || !routeStore.isInitAuthRoute) return false;
-  return router.getRoutes().some(item => item.name === 'account_notice');
+  return hasAuth('user:notice:select');
 });
+
+const canOpenInbox = computed(() => router.getRoutes().some(item => item.name === 'account_notice'));
 
 const tabPanes = computed(() => noticeStore.tabs);
 
@@ -51,7 +53,7 @@ async function refreshHeader() {
   }
   // 动态路由未就绪时不 clear，避免首页/铃铛互相冲掉未读
   if (!routeStore.isInitAuthRoute) return;
-  if (!router.getRoutes().some(item => item.name === 'account_notice')) {
+  if (!hasAuth('user:notice:select')) {
     noticeStore.clear();
     return;
   }
@@ -67,6 +69,7 @@ async function handlePopoverUpdate(show: boolean) {
 
 /** 点未读标题：跳我的公告并打开该条 */
 async function openNotice(noticeId: string) {
+  if (!canOpenInbox.value) return;
   showPopover.value = false;
   await routerPushByKey('account_notice', { query: { noticeId } });
 }
@@ -78,6 +81,7 @@ async function handleReadAll() {
 }
 
 async function goInbox() {
+  if (!canOpenInbox.value) return;
   showPopover.value = false;
   await routerPushByKey('account_notice');
 }
@@ -153,6 +157,7 @@ onMounted(() => {
                 :key="item.id"
                 type="button"
                 class="notice-item"
+                :disabled="!canOpenInbox"
                 @click="openNotice(item.id)"
               >
                 <span class="truncate text-13px">{{ item.title || '-' }}</span>
@@ -165,7 +170,7 @@ onMounted(() => {
         <NEmpty v-else class="py-16px" :description="$t('page.autobox.account.noticeEmptyUnread')" size="small" />
       </NSpin>
 
-      <div class="mt-8px border-t border-gray-100 pt-8px text-center dark:border-gray-700">
+      <div v-if="canOpenInbox" class="mt-8px border-t border-gray-100 pt-8px text-center dark:border-gray-700">
         <NButton text type="primary" size="small" @click="goInbox">
           {{ $t('page.autobox.account.noticeViewAll') }}
         </NButton>

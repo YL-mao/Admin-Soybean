@@ -327,8 +327,8 @@ const local: App.I18n.Schema = {
         permTree: '权限树',
         expandAll: '全部展开',
         collapseAll: '全部收起',
-        kickSessions: '踢下线',
-        confirmKickSessions: '确认强退账号「{account}」的全部会话吗？',
+        kickUser: '踢下线',
+        confirmKickUser: '确认强退账号「{account}」的全部会话吗？',
         gender: {
           male: '男',
           female: '女'

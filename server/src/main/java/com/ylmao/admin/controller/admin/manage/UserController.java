@@ -102,7 +102,7 @@ public class UserController extends BaseController {
 
     @Operation(summary = "修改用户锁定状态")
     @Log(title = "修改用户锁定状态", businessType = "UPDATE", isSaveResponseData = true)
-    @SaCheckPermission("system:user:unlock")
+    @SaCheckPermission("system:user:updateLock")
     @PatchMapping("/updateLock")
     public R<?> updateUserLock(@Valid @RequestBody UserDto.UpdateLock updateLock) {
         userService.updateUserLock(updateLock);

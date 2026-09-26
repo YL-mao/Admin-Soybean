@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuth } from '@/hooks/business/auth';
 import { useRouterPush } from '@/hooks/common/router';
 import { useAuthStore } from '@/store/modules/auth';
 import { useNoticeStore } from '@/store/modules/notice';
@@ -16,13 +17,17 @@ const router = useRouter();
 const authStore = useAuthStore();
 const routeStore = useRouteStore();
 const noticeStore = useNoticeStore();
+const { hasAuth } = useAuth();
 const { routerPushByKey } = useRouterPush();
 
-/** 与顶栏铃铛相同：有「我的公告」路由才展示并拉头 */
+/** 有 user:notice:select 才展示并拉公告头 */
 const canView = computed(() => {
   if (!authStore.isLogin || !routeStore.isInitAuthRoute) return false;
-  return router.getRoutes().some(item => item.name === 'account_notice');
+  return hasAuth('user:notice:select');
 });
+
+/** 跳「我的公告」需对应页面路由 */
+const canOpenInbox = computed(() => router.getRoutes().some(item => item.name === 'account_notice'));
 
 /** 展平各类型未读，按发送时间降序取全局 Top N（time 为 yyyy-MM-dd HH:mm:ss） */
 const noticeRows = computed(() => {
@@ -43,7 +48,7 @@ async function refresh() {
   }
   // 动态路由未就绪时不 clear，避免冲掉顶栏铃铛已拉的未读
   if (!routeStore.isInitAuthRoute) return;
-  if (!router.getRoutes().some(item => item.name === 'account_notice')) {
+  if (!hasAuth('user:notice:select')) {
     noticeStore.clear();
     return;
   }
@@ -57,10 +62,12 @@ async function handleReadAll() {
 }
 
 async function openNotice(noticeId: string) {
+  if (!canOpenInbox.value) return;
   await routerPushByKey('account_notice', { query: { noticeId } });
 }
 
 async function goInbox() {
+  if (!canOpenInbox.value) return;
   await routerPushByKey('account_notice');
 }
 
@@ -110,7 +117,7 @@ onMounted(() => {
         >
           {{ $t('page.autobox.account.noticeReadAll') }}
         </NButton>
-        <NButton size="tiny" quaternary @click="goInbox">
+        <NButton v-if="canOpenInbox" size="tiny" quaternary @click="goInbox">
           {{ $t('page.home.viewAll') }}
         </NButton>
       </NSpace>
@@ -126,6 +133,8 @@ onMounted(() => {
           :key="item.id"
           type="button"
           class="notice-row"
+          :class="{ 'is-static': !canOpenInbox }"
+          :disabled="!canOpenInbox"
           @click="openNotice(item.id)"
         >
           <div class="notice-icon flex-center shrink-0">
@@ -143,7 +152,7 @@ onMounted(() => {
               </span>
             </div>
           </div>
-          <span class="notice-go flex-center shrink-0">
+          <span v-if="canOpenInbox" class="notice-go flex-center shrink-0">
             <SvgIcon icon="mdi:chevron-right" class="text-16px" />
           </span>
         </button>
@@ -236,6 +245,10 @@ onMounted(() => {
     background 0.15s ease,
     border-color 0.15s ease,
     box-shadow 0.15s ease;
+}
+
+.notice-row.is-static {
+  cursor: default;
 }
 
 .notice-row:hover {

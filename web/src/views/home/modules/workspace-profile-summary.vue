@@ -11,8 +11,10 @@ const props = defineProps<{
   /** 首页统一拉取的个人资料 */
   profile: Api.SystemManage.UserProfileDetail | null;
   loading: boolean;
-  /** 有个人中心路由才展示摘要 */
+  /** 有 user:info:select 才展示摘要 */
   canView: boolean;
+  /** 有个人中心路由才显示「去资料」 */
+  canOpen: boolean;
 }>();
 
 const { routerPushByKey } = useRouterPush();
@@ -94,7 +96,7 @@ function goProfile() {
         <span class="text-15px font-600">{{ $t('page.home.profileSummary') }}</span>
       </div>
     </template>
-    <template v-if="canView" #header-extra>
+    <template v-if="canView && canOpen" #header-extra>
       <NButton size="tiny" quaternary type="primary" @click="goProfile">
         {{ $t('page.home.goProfile') }}
       </NButton>

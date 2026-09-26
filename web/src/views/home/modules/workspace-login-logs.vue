@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { fetchGetOwnLoginLogs } from '@/service/api';
+import { useAuth } from '@/hooks/business/auth';
 import { useRouterPush } from '@/hooks/common/router';
 import { useAuthStore } from '@/store/modules/auth';
 import { useRouteStore } from '@/store/modules/route';
@@ -12,6 +13,7 @@ defineOptions({ name: 'HomeWorkspaceLoginLogs' });
 const router = useRouter();
 const authStore = useAuthStore();
 const routeStore = useRouteStore();
+const { hasAuth } = useAuth();
 const { routerPushByKey } = useRouterPush();
 
 const loading = ref(false);
@@ -19,11 +21,14 @@ const rows = ref<Api.SystemManage.UserOwnLoginLog[]>([]);
 /** 防门禁变化后旧响应写回 */
 let loadSeq = 0;
 
-/** 最近登录挂在个人中心，无该路由则不请求 */
+/** 有 user:info:select 才拉最近登录 */
 const canView = computed(() => {
   if (!authStore.isLogin || !routeStore.isInitAuthRoute) return false;
-  return router.getRoutes().some(item => item.name === 'account_info');
+  return hasAuth('user:info:select');
 });
+
+/** 「查看全部」需个人中心路由 */
+const canOpenMore = computed(() => router.getRoutes().some(item => item.name === 'account_info'));
 
 async function loadLogs() {
   const seq = ++loadSeq;
@@ -71,7 +76,7 @@ onMounted(() => {
         <span class="text-15px font-600">{{ $t('page.home.recentLogins') }}</span>
       </div>
     </template>
-    <template v-if="canView" #header-extra>
+    <template v-if="canView && canOpenMore" #header-extra>
       <NButton size="tiny" quaternary type="primary" @click="goMore">
         {{ $t('page.home.viewAll') }}
       </NButton>
