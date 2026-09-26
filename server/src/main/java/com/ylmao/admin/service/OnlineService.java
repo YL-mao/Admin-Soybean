@@ -54,43 +54,20 @@ public class OnlineService {
                 empty.setRecords(List.of());
                 return empty;
             }
-            // 与空条件同源：按 Token 键扫再滤 loginId。
-            // 不用 getTokenValueListByLoginId：Account-Session 登记可能少于 Redis 中仍有效的 Token，会漏会话。
-            List<String> tokenKeys = StpUtil.searchTokenValue("", 0, -1, false);
-            List<String> matched = new ArrayList<>();
-            if (tokenKeys != null) {
-                for (String tokenKey : tokenKeys) {
-                    String tokenValue = toTokenValue(tokenKey);
-                    if (StrUtil.isBlank(tokenValue)) {
-                        continue;
-                    }
-                    Object loginIdObj = StpUtil.getLoginIdByToken(tokenValue);
-                    if (loginIdObj != null && userId.equals(String.valueOf(loginIdObj))) {
-                        matched.add(tokenValue);
-                    }
-                }
-            }
+            // 与空条件同源扫键再滤 loginId；不用 getTokenValueListByLoginId，避免 Account-Session 漏登。
+            List<String> matched = listTokenValuesByUserId(userId);
             total = matched.size();
-            int to = Math.min(from + limit, matched.size());
-            tokenValues = from >= matched.size() ? List.of() : matched.subList(from, to);
+            tokenValues = pageSlice(matched, from, limit);
         } else {
             // 先取键再切页，只给当前页补 Session，避免全量 hydrate。
-            List<String> tokenKeys = StpUtil.searchTokenValue("", 0, -1, false);
-            if (tokenKeys == null || tokenKeys.isEmpty()) {
+            List<String> tokenKeys = searchTokenKeys();
+            if (tokenKeys.isEmpty()) {
                 Page<OnlineVo.OnlineListVo> empty = new Page<>(page, limit, 0);
                 empty.setRecords(List.of());
                 return empty;
             }
             total = tokenKeys.size();
-            int to = Math.min(from + limit, tokenKeys.size());
-            List<String> pageKeys = from >= tokenKeys.size() ? List.of() : tokenKeys.subList(from, to);
-            tokenValues = new ArrayList<>(pageKeys.size());
-            for (String tokenKey : pageKeys) {
-                String tokenValue = toTokenValue(tokenKey);
-                if (StrUtil.isNotBlank(tokenValue)) {
-                    tokenValues.add(tokenValue);
-                }
-            }
+            tokenValues = tokenValuesFromKeys(pageSlice(tokenKeys, from, limit));
         }
 
         List<TokenRow> rows = hydrateTokenRows(tokenValues);
@@ -160,6 +137,50 @@ public class OnlineService {
             }
         }
         return online;
+    }
+
+    /** Redis 中 Token 键列表（Sa-Token 返回序）；空安全。 */
+    private List<String> searchTokenKeys() {
+        List<String> tokenKeys = StpUtil.searchTokenValue("", 0, -1, false);
+        return tokenKeys == null ? List.of() : tokenKeys;
+    }
+
+    /**
+     * 全站扫 Token 键后按 loginId 过滤出该用户的 tokenValue。
+     * 不用 getTokenValueListByLoginId：Account-Session 登记可能少于 Redis 中仍有效的 Token。
+     */
+    private List<String> listTokenValuesByUserId(String userId) {
+        List<String> matched = new ArrayList<>();
+        for (String tokenKey : searchTokenKeys()) {
+            String tokenValue = toTokenValue(tokenKey);
+            if (StrUtil.isBlank(tokenValue)) {
+                continue;
+            }
+            Object loginIdObj = StpUtil.getLoginIdByToken(tokenValue);
+            if (loginIdObj != null && userId.equals(String.valueOf(loginIdObj))) {
+                matched.add(tokenValue);
+            }
+        }
+        return matched;
+    }
+
+    /** 键列表转 tokenValue，跳过空值。 */
+    private List<String> tokenValuesFromKeys(List<String> tokenKeys) {
+        List<String> tokenValues = new ArrayList<>(tokenKeys.size());
+        for (String tokenKey : tokenKeys) {
+            String tokenValue = toTokenValue(tokenKey);
+            if (StrUtil.isNotBlank(tokenValue)) {
+                tokenValues.add(tokenValue);
+            }
+        }
+        return tokenValues;
+    }
+
+    private static <T> List<T> pageSlice(List<T> list, int from, int limit) {
+        if (from >= list.size()) {
+            return List.of();
+        }
+        return list.subList(from, Math.min(from + limit, list.size()));
     }
 
     private List<TokenRow> hydrateTokenRows(List<String> tokenValues) {

@@ -264,6 +264,7 @@ watch(visible, async val => {
             clearable
             :options="userOptions"
             :placeholder="$t('page.autobox.notice.form.receiverIds')"
+            :disabled="!hasAuth('system:user:search')"
             @update:value="(value: string | null) => (model.receiverIdList = value ? [value] : [])"
             @search="searchUser"
           />
