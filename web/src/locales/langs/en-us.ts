@@ -694,6 +694,7 @@ const local: App.I18n.Schema = {
         forceLogout: 'Force Logout',
         forceLogoutConfirm: 'Force logout this session?',
         forceLogoutSuccess: 'Session logged out',
+        fingerprintConfig: 'Fingerprint',
         form: {
           user: 'Search by account or name'
         }

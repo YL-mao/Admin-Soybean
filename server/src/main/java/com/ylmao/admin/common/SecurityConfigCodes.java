@@ -24,6 +24,13 @@ public final class SecurityConfigCodes {
     /** 软拦固定窗口分钟；0 关闭整组软拦。 */
     public static final String RATE_WINDOW_MINUTES = "security.winMinLim";
 
+    /** 会话指纹是否比对 IP；false 跳过。 */
+    public static final String FP_CHECK_IP = "security.fpCheckIp";
+    /** 会话指纹是否比对 User-Agent；false 跳过。 */
+    public static final String FP_CHECK_UA = "security.fpCheckUa";
+    /** 会话指纹是否比对 X-Device-Id；false 跳过。 */
+    public static final String FP_CHECK_DEVICE = "security.fpCheckDevice";
+
     /**
      * security 强契约清单：启动须存在、启用、number、非负整数。
      * 含失败处罚 3 项 + 软拦 4 项。
@@ -36,5 +43,12 @@ public final class SecurityConfigCodes {
             LOGIN_IP_LIMIT,
             LOGIN_ACCOUNT_LIMIT,
             RATE_WINDOW_MINUTES
+    };
+
+    /** 会话指纹三项：启动须存在、启用、boolean、值为 true/false。缺省按 true（与上线前全开行为一致）。 */
+    public static final String[] FP_CHECK_CODES = {
+            FP_CHECK_IP,
+            FP_CHECK_UA,
+            FP_CHECK_DEVICE
     };
 }

@@ -13,10 +13,13 @@ interface Props {
   permCode: string;
   /** 是否自动加载；抽屉打开时由外部触发也可 */
   autoLoad?: boolean;
+  /** 只展示/保存指定编码；不传则整组 */
+  configCodes?: string[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  autoLoad: true
+  autoLoad: true,
+  configCodes: undefined
 });
 
 interface Emits {
@@ -73,7 +76,10 @@ async function load() {
     items.value = [];
     return;
   }
-  const list = [...(data || [])].sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
+  const allowCodes = props.configCodes;
+  const list = [...(data || [])]
+    .filter(item => !allowCodes?.length || allowCodes.includes(item.configCode))
+    .sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
   items.value = list;
   list.forEach(item => {
     valueMap[item.configId] = item.configValue ?? '';
@@ -162,10 +168,6 @@ defineExpose({ load, save, loading, saving, canSave });
           :disabled="!canSave"
           :placeholder="item.configDesc || item.configCode"
         />
-      </div>
-
-      <div v-if="canSave" class="pt-8px">
-        <NButton type="primary" :loading="saving" @click="save">{{ $t('common.update') }}</NButton>
       </div>
     </div>
   </NSpin>

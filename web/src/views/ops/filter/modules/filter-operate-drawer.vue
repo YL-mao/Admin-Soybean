@@ -216,9 +216,11 @@ async function handleSubmit() {
         </NFormItem>
       </NForm>
       <template #footer>
-        <NButton type="primary" :loading="submitting" @click="handleSubmit">
-          {{ $t('common.confirm') }}
-        </NButton>
+        <div class="flex justify-end">
+          <NButton type="primary" :loading="submitting" @click="handleSubmit">
+            {{ $t('common.confirm') }}
+          </NButton>
+        </div>
       </template>
     </NDrawerContent>
   </NDrawer>

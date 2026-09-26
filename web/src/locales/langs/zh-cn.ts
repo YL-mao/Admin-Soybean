@@ -690,6 +690,7 @@ const local: App.I18n.Schema = {
         forceLogout: '强退',
         forceLogoutConfirm: '确认强退该会话？',
         forceLogoutSuccess: '已强退该会话',
+        fingerprintConfig: '指纹配置',
         form: {
           user: '请输入账号或姓名搜索'
         }

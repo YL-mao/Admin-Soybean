@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 /**
- * 启动校验 security.* 强契约：失败处罚 + 软拦共 7 项，须存在、启用、number、整数且 ≥0。
+ * 启动校验 security.* 强契约：失败处罚 + 软拦（number）与会话指纹三项（boolean）。
  */
 @Component
 @Order(50)
@@ -27,11 +27,14 @@ public class SecurityConfigChecker implements ApplicationRunner {
     @Override
     public void run(@NonNull ApplicationArguments args) {
         for (String code : SecurityConfigCodes.REQUIRED_CODES) {
-            validate(code);
+            validateNumber(code);
+        }
+        for (String code : SecurityConfigCodes.FP_CHECK_CODES) {
+            validateBoolean(code);
         }
     }
 
-    private void validate(String configCode) {
+    private Config requireEnabled(String configCode) {
         Config config = configMapper.selectOne(new LambdaQueryWrapper<Config>()
                 .eq(Config::getConfigCode, configCode)
                 .eq(Config::getIsDel, 0)
@@ -42,6 +45,11 @@ public class SecurityConfigChecker implements ApplicationRunner {
         if (config.getIsEnabled() == null || config.getIsEnabled() != 1) {
             throw new IllegalStateException("安全配置未启用: " + configCode);
         }
+        return config;
+    }
+
+    private void validateNumber(String configCode) {
+        Config config = requireEnabled(configCode);
         if (!"number".equals(config.getValueType())) {
             throw new IllegalStateException("安全配置值类型必须为 number: " + configCode);
         }
@@ -56,6 +64,17 @@ public class SecurityConfigChecker implements ApplicationRunner {
         } catch (NumberFormatException | ArithmeticException ex) {
             throw new IllegalStateException(
                     "安全配置必须为非负整数: " + configCode + "=" + config.getConfigValue(), ex);
+        }
+    }
+
+    private void validateBoolean(String configCode) {
+        Config config = requireEnabled(configCode);
+        if (!"boolean".equals(config.getValueType())) {
+            throw new IllegalStateException("安全配置值类型必须为 boolean: " + configCode);
+        }
+        String raw = StrUtil.trim(config.getConfigValue());
+        if (!"true".equalsIgnoreCase(raw) && !"false".equalsIgnoreCase(raw)) {
+            throw new IllegalStateException("安全配置必须为 true/false: " + configCode + "=" + config.getConfigValue());
         }
     }
 }

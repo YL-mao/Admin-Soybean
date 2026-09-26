@@ -1,14 +1,17 @@
 <script setup lang="tsx">
 import { ref } from 'vue';
-import { NButton, NPopconfirm, NTag } from 'naive-ui';
+import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
 import { fetchGetOnlineUserList, fetchKickOnlineSession } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
 import { useAuth } from '@/hooks/business/auth';
 import { backendPageTransform, emptyAuthListResponse, useNaivePaginatedTable } from '@/hooks/common/table';
 import { $t } from '@/locales';
+import ConfigGroupDrawer from '@/components/custom/config-group-drawer.vue';
 import OnlineSearch from './modules/online-search.vue';
 
 defineOptions({ name: 'OpsOnline' });
+
+const FP_CONFIG_CODES = ['security.fpCheckIp', 'security.fpCheckUa', 'security.fpCheckDevice'];
 
 const appStore = useAppStore();
 const { hasAuth } = useAuth();
@@ -18,6 +21,8 @@ const searchParams = ref<Api.SystemManage.OnlineSearchParams>({
   size: 10,
   userId: null
 });
+
+const showFpConfig = ref(false);
 
 const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination } = useNaivePaginatedTable({
   api: () =>
@@ -101,13 +106,24 @@ async function handleKick(row: Api.SystemManage.OnlineUser) {
       class="card-wrapper sm:flex-1-hidden"
     >
       <template #header-extra>
-        <TableHeaderOperation
-          v-model:columns="columnChecks"
-          :show-add="false"
-          :show-delete="false"
-          :loading="loading"
-          @refresh="getData"
-        />
+        <NSpace>
+          <NButton
+            v-if="hasAuth('system:config:security')"
+            size="small"
+            ghost
+            type="primary"
+            @click="showFpConfig = true"
+          >
+            {{ $t('page.autobox.online.fingerprintConfig') }}
+          </NButton>
+          <TableHeaderOperation
+            v-model:columns="columnChecks"
+            :show-add="false"
+            :show-delete="false"
+            :loading="loading"
+            @refresh="getData"
+          />
+        </NSpace>
       </template>
       <NDataTable
         :columns="columns"
@@ -125,5 +141,13 @@ async function handleKick(row: Api.SystemManage.OnlineUser) {
         {{ $t('common.noPermission') }}
       </div>
     </NCard>
+
+    <ConfigGroupDrawer
+      v-model:visible="showFpConfig"
+      config-group="security"
+      perm-code="system:config:security"
+      :title="$t('page.autobox.online.fingerprintConfig')"
+      :config-codes="FP_CONFIG_CODES"
+    />
   </div>
 </template>
