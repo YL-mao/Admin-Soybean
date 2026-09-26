@@ -59,8 +59,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- 上下两行独立栅格：避免同行等高/层叠把迎宾区盖住 -->
   <div class="workspace-page min-h-500px flex-col gap-16px">
+    <!--
+      页面级 Transition 要求单根元素。HTML 注释若写在本 div 外，会与根节点并列成多根，
+      进出动画异常并可能导致全局白屏；注释只能写在本根节点内部。
+      上下两行独立栅格：避免同行等高/层叠把迎宾区盖住。
+    -->
     <WorkspaceGreeting class="workspace-greeting" :profile="profile" />
     <NGrid class="workspace-grid" :x-gap="gap" :y-gap="16" responsive="screen" item-responsive>
       <NGi span="24 s:24 m:10" class="row-cell flex">
@@ -92,10 +96,11 @@ onMounted(() => {
   padding-bottom: 8px;
 }
 
-/* 迎宾始终压在下方卡片之上，防止 transform/层叠把样式盖住 */
+/* 迎宾不被下方栅格盖住，也不被外层 flex 压扁裁切 */
 .workspace-greeting {
   position: relative;
   z-index: 2;
+  flex-shrink: 0;
 }
 
 /* NGrid 根即本节点；同行格子默认 stretch，子卡片用 flex 吃满高度 */

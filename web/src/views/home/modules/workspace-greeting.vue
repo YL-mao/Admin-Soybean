@@ -47,7 +47,10 @@ const lastLoginTime = computed(() => props.profile?.lastLoginTime || null);
 
 <template>
   <div class="workspace-hero">
-    <div class="hero-glow" aria-hidden="true" />
+    <!-- 光晕单独裁剪，避免整卡 overflow:hidden 把窄屏换行内容裁掉 -->
+    <div class="hero-glow-clip" aria-hidden="true">
+      <div class="hero-glow" />
+    </div>
     <div class="relative z-1 flex items-center gap-16px">
       <NAvatar v-if="avatarOk" :size="68" :src="avatarSrc" round class="shrink-0" @error="onAvatarError" />
       <div v-else class="avatar-fallback flex-center shrink-0">
@@ -79,7 +82,6 @@ const lastLoginTime = computed(() => props.profile?.lastLoginTime || null);
   position: relative;
   z-index: 1;
   isolation: isolate;
-  overflow: hidden;
   padding: 22px 24px;
   border-radius: 12px;
   color: #fff;
@@ -90,6 +92,14 @@ const lastLoginTime = computed(() => props.profile?.lastLoginTime || null);
   );
 }
 
+.hero-glow-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
 .hero-glow {
   position: absolute;
   right: -40px;
@@ -98,7 +108,6 @@ const lastLoginTime = computed(() => props.profile?.lastLoginTime || null);
   height: 220px;
   border-radius: 50%;
   background: rgb(255 255 255 / 14%);
-  pointer-events: none;
 }
 
 .avatar-fallback {
