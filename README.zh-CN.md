@@ -1,7 +1,7 @@
 <div align="center">
   <img src="./docs/brand/logo.png" alt="YLmao · 月亮喵" width="220" />
   <h1>YLmao-Soybean Admin</h1>
-  <p>前后端分离的中后台脚手架（母本）</p>
+  <p>前后端分离的中后台脚手架</p>
   <p>
     <a href="./README.md">English</a> · <a href="./README.zh-CN.md">中文</a>
   </p>
