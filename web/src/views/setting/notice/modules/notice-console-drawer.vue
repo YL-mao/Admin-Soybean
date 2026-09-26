@@ -24,6 +24,9 @@ const prefetchedStats = defineModel<Api.SystemManage.NoticeConsoleStats | null>(
 
 const { hasAuth } = useAuth();
 
+/** 接收人请求过期（关抽屉 / 换公告）时抛出，供下方 catch 静默丢弃 */
+const RECEIVER_STALE = 'NOTICE_CONSOLE_RECEIVER_STALE';
+
 const statsLoading = ref(false);
 const stats = ref<Api.SystemManage.NoticeConsoleStats | null>(null);
 /** 打开/切换公告时递增，用于丢弃过期的统计请求结果 */
@@ -52,22 +55,21 @@ const {
     if (!visible.value || !props.noticeId || !hasAuth('system:notice:console')) {
       return Promise.resolve(emptyAuthListResponse<Api.SystemManage.NoticeConsoleReceiver>());
     }
-    // 切公告后对齐当前 id 再拉；上限防止快速连点打成无限请求
-    for (let attempt = 0; attempt < 8; attempt += 1) {
-      const seq = loadSeq;
-      const reqNoticeId = props.noticeId;
-      const result = await fetchGetNoticeConsoleReceivers({
-        ...receiverSearch.value,
-        noticeId: reqNoticeId
-      });
-      if (!visible.value || !props.noticeId) {
-        return emptyAuthListResponse<Api.SystemManage.NoticeConsoleReceiver>();
-      }
-      if (seq === loadSeq && props.noticeId === reqNoticeId) {
-        return result;
-      }
+    const seq = loadSeq;
+    const reqNoticeId = props.noticeId;
+    const result = await fetchGetNoticeConsoleReceivers({
+      ...receiverSearch.value,
+      noticeId: reqNoticeId
+    });
+    // 抽屉已关：回空即可（关闭时已清表）
+    if (!visible.value || !props.noticeId) {
+      return emptyAuthListResponse<Api.SystemManage.NoticeConsoleReceiver>();
     }
-    return emptyAuthListResponse<Api.SystemManage.NoticeConsoleReceiver>();
+    // 已换公告：丢弃且勿写空表，避免盖住新抽屉正在展示/拉取的数据
+    if (seq !== loadSeq || props.noticeId !== reqNoticeId) {
+      throw new Error(RECEIVER_STALE);
+    }
+    return result;
   },
   transform: response =>
     backendPageTransform(response, receiverSearch.value.current || 1, receiverSearch.value.size || 10),
@@ -177,12 +179,22 @@ watch(
       visible.value = false;
       return;
     }
-    await getReceiversByPage();
+    await loadReceiversSafe();
   }
 );
 
+/** 过期请求静默丢弃，避免空结果盖住新打开的抽屉 */
+async function loadReceiversSafe() {
+  try {
+    await getReceiversByPage();
+  } catch (e) {
+    if (e instanceof Error && e.message === RECEIVER_STALE) return;
+    throw e;
+  }
+}
+
 function handleReceiverSearch() {
-  getReceiversByPage();
+  loadReceiversSafe();
 }
 </script>
 
