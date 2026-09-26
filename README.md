@@ -1,9 +1,9 @@
 <div align="center">
-  <img src="./docs/brand/logo.png" alt="YLmao · 月亮喵" width="220" />
+  <img src="./docs/brand/logo.png" alt="YLmao · Moon Cat" width="220" />
   <h1>YLmao-Soybean Admin</h1>
-  <p>前后端分离的中后台脚手架（母本）</p>
+  <p>A full-stack admin scaffold (starter / mother project)</p>
   <p>
-    <a href="./README.md">中文</a> · <a href="./README.en.md">English</a>
+    <a href="./README.md">English</a> · <a href="./README.zh-CN.md">中文</a>
   </p>
   <p>
     <img alt="license" src="https://img.shields.io/badge/license-MIT-green.svg" />
@@ -15,119 +15,111 @@
 
 ---
 
-用于继续做业务管理系统的 **开源脚手架**，不是某一套最终生产业务系统本身。
+An **open-source admin scaffold** for building business management systems — not a final production product by itself.
 
-| 端 | 技术 | 目录 |
+| Side | Stack | Path |
 | --- | --- | --- |
-| 前端 | [SoybeanAdmin](https://github.com/soybeanjs/soybean-admin) · Vue 3 · Vite · TypeScript · Naive UI · UnoCSS | [`web/`](web/) |
-| 后端 | Spring Boot 4 · Java 25 · Sa-Token · MyBatis-Plus · MySQL · Redis | [`server/`](server/) |
+| Frontend | [SoybeanAdmin](https://github.com/soybeanjs/soybean-admin) · Vue 3 · Vite · TypeScript · Naive UI · UnoCSS | [`web/`](web/) |
+| Backend | Spring Boot 4 · Java 25 · Sa-Token · MyBatis-Plus · MySQL · Redis | [`server/`](server/) |
 
-## 简介
+## Overview
 
-提供登录鉴权、RBAC、组织人事、系统配置、字典、公告、文件、日志、在线用户、访问控制、定时任务等常见后台能力；种子数据与权限菜单已对齐，可直接作为业务系统起点扩展。
+Includes auth, RBAC, org/HR, system config, dictionaries, notices, files, logs, online users, access control, and scheduled jobs. Seed data and menus are aligned so you can extend it as a real product base.
 
-- 后端包名：`com.ylmao.admin`，启动类 `AdminApp`
-- 前端按 Soybean 官方规范实现页面与请求封装
-- 协作约定见 [`AGENTS.md`](AGENTS.md)（URL / DTO / 数据库 / 权限种子等）
+- Backend package: `com.ylmao.admin`, entry `AdminApp`
+- Frontend follows Soybean docs for pages and request wrappers
+- Conventions: [`AGENTS.md`](AGENTS.md) (URLs, DTO, DB, permission seeds)
 
-## 功能一览
+## Features
 
-| 模块 | 说明 |
+| Area | Notes |
 | --- | --- |
-| 认证 | 登录 / 注销、图形验证码、失败锁定与 IP 限流（`security.*`） |
-| 会话安全 | 管理端单登录（device=`admin`）、会话指纹可配（IP / UA / DeviceId） |
-| 权限 | 菜单 + 按钮权限码、角色授权、动态路由 |
-| 组织人事 | 用户、角色、部门、岗位 |
-| 系统设置 | 配置分组、字典、公告（含收件箱 / 控制台）、文件与虚拟目录 |
-| 安全运维 | 操作 / 登录日志、在线用户强退、访问控制（黑白名单）、定时任务 |
+| Auth | Login / logout, captcha, lockout & IP rate limit (`security.*`) |
+| Session | Single login for admin (`device=admin`), optional fingerprint (IP / UA / DeviceId) |
+| Permissions | Menu + button codes, role grants, dynamic routes |
+| Org / HR | Users, roles, departments, posts |
+| Settings | Config groups, dicts, notices (inbox / console), files & virtual folders |
+| Ops | Operate / login logs, force logout, allow/deny lists, jobs |
 
-## 技术栈
+## Stack
 
-| 类型 | 技术 |
+| Layer | Tech |
 | --- | --- |
-| 前端 | Vue 3、Vite、TypeScript、Naive UI、UnoCSS、Pinia、Elegant Router |
-| 后端 | Spring Boot **4.1**、Java **25** |
-| 权限会话 | Sa-Token **1.45** + Redis |
-| 数据访问 | MyBatis-Plus、MySQL 8 |
-| 其它 | Hutool、EasyExcel、springdoc（开发环境） |
+| Frontend | Vue 3, Vite, TypeScript, Naive UI, UnoCSS, Pinia, Elegant Router |
+| Backend | Spring Boot **4.1**, Java **25** |
+| Auth / session | Sa-Token **1.45** + Redis |
+| Data | MyBatis-Plus, MySQL 8 |
+| Other | Hutool, EasyExcel, springdoc (dev) |
 
-## 环境要求
+## Requirements
 
 - **JDK 25+**
-- **Node.js 20+** / **pnpm 10+**（见 `web/package.json`）
+- **Node.js 20+** / **pnpm 10+** (see `web/package.json`)
 - **MySQL 8.0+**
-- **Redis 6.0+**（登录态、验证码、配置缓存、限流等，必需）
-- Maven：可用项目自带 `server/mvnw` / `mvnw.cmd`
+- **Redis 6.0+** (sessions, captcha, config cache, rate limit — required)
+- Maven: use bundled `server/mvnw` / `mvnw.cmd`
 
-## 仓库结构
+## Layout
 
 ```text
 .
-├── AGENTS.md                 # 开发与 AI 协作约定
-├── docs/brand/               # 品牌 Logo
-├── LICENSE                   # MIT · 月亮喵
-├── web/                      # Soybean 前端
-│   ├── src/
-│   └── .env / .env.test      # 前端环境与后端地址
+├── AGENTS.md                 # Dev / AI conventions
+├── docs/brand/               # Brand logo
+├── LICENSE                   # MIT · YLmao (月亮喵)
+├── web/                      # Soybean frontend
 ├── server/                   # Spring Boot API
-│   ├── doc/
-│   │   ├── admin_soybean.sql           # 全量种子
-│   │   └── nginx-admin.example.conf    # Nginx 示例
-│   ├── src/main/java/com/ylmao/admin/
-│   └── src/main/resources/
-│       ├── application.yml
-│       ├── application-dev.yml         # 开发：默认端口 8085
-│       └── application-prod.yml        # 生产：默认端口 8081
-└── upload/                   # 本地上传目录（运行时，勿提交业务文件）
+│   └── doc/
+│       ├── admin_soybean.sql
+│       └── nginx-admin.example.conf
+└── upload/                   # Runtime uploads (do not commit business files)
 ```
 
-## 快速开始
+## Quick start
 
-### 1. 克隆
+### 1. Clone
 
 ```bash
+# GitHub
+git clone https://github.com/YL-mao/admin-soybean.git
+# Gitee
 git clone https://gitee.com/ylmao/admin-soybean.git
 cd admin-soybean
 ```
 
-### 2. 初始化数据库
+### 2. Database
 
-创建库（名称与配置一致即可），导入种子：
+Create a database, then import the seed:
 
 ```bash
 mysql -u <user> -p <database> < server/doc/admin_soybean.sql
 ```
 
-种子含菜单权限、`security.*` / `log.*` / 指纹开关等配置；缺项可能导致启动校验失败。
+The seed includes menus and `security.*` / `log.*` / fingerprint configs; missing keys may fail startup checks.
 
-### 3. 修改后端连接
+### 3. Backend config
 
-编辑（**勿把真实生产密码提交到公开仓库**）：
+Edit (never commit real production secrets):
 
-| 文件 | 用途 |
+| File | Purpose |
 | --- | --- |
-| `server/src/main/resources/application-dev.yml` | 开发 MySQL / Redis / 端口（默认 **8085**） |
-| `server/src/main/resources/application-prod.yml` | 生产 MySQL / Redis / 端口（默认 **8081**） |
+| `server/src/main/resources/application-dev.yml` | Dev MySQL / Redis / port (**8085**) |
+| `server/src/main/resources/application-prod.yml` | Prod MySQL / Redis / port (**8081**) |
 
-将其中的 `username` / `password` 等改成本地值。时区由 `application.yml` 的 `app.timezone`（默认 `Asia/Shanghai`）统一。
+Replace `username` / `password` with your local values. Timezone is unified via `app.timezone` in `application.yml` (default `Asia/Shanghai`).
 
-### 4. 启动后端
+### 4. Run backend
 
 ```bash
 cd server
-
-# Windows
-.\mvnw.cmd spring-boot:run
-
-# Linux / macOS
-./mvnw spring-boot:run
+./mvnw spring-boot:run          # Linux / macOS
+.\mvnw.cmd spring-boot:run      # Windows
 ```
 
-默认 **dev** profile。接口文档（springdoc）仅开发环境开启。
+Default profile is **dev**. springdoc is enabled in development only.
 
-### 5. 启动前端
+### 5. Run frontend
 
-确认 `web/.env.test`（或当前 mode）中后端地址与端口一致，例如：
+Point `web/.env.test` (or your mode) at the API, e.g.:
 
 ```env
 VITE_SERVICE_BASE_URL=http://127.0.0.1:8085
@@ -139,83 +131,82 @@ pnpm install
 pnpm dev
 ```
 
-浏览器打开终端提示的本地地址（一般为 `http://localhost:9527` 一类 Vite 端口）。开发态可走 HTTP 代理（`VITE_HTTP_PROXY=Y`）。
+Open the local URL from the terminal (often `http://localhost:9527`). Optional HTTP proxy: `VITE_HTTP_PROXY=Y`.
 
-### 6. 默认账号
+### 6. Default account
 
-| 账号 | 密码 |
+| Username | Password |
 | --- | --- |
 | `admin` | `admin` |
 
-**首次登录后请立即修改密码。**
+**Change the password immediately after first login.**
 
-## 常用说明
+## Notes
 
-### 认证与请求头
+### Auth headers
 
-- Token 仅走请求头 **`saToken`**（不依赖 Cookie）
-- 会话指纹设备标识：**`X-Device-Id`**（前端本地生成并持久化）
-- 管理端登录：`POST /api/admin/auth/login`
-- 验证码：`GET /api/admin/auth/captchaImage`
+- Token header: **`saToken`** (no Cookie dependency)
+- Device id: **`X-Device-Id`**
+- Login: `POST /api/admin/auth/login`
+- Captcha: `GET /api/admin/auth/captchaImage`
 
-### 会话指纹（可选）
+### Fingerprint (optional)
 
-在线用户页 →「指纹配置」可开关：
+Online users → fingerprint config:
 
 - `security.fpCheckIp`
 - `security.fpCheckUa`
 - `security.fpCheckDevice`
 
-三项全关则不做指纹比对；登录仍会写入指纹字段。
+All off = no fingerprint check; login still stores fingerprint fields.
 
-### 生产构建
+### Production build
 
 ```bash
-# 后端
 cd server
 ./mvnw clean package -DskipTests
 java -jar target/admin-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 
-# 前端
 cd web
 pnpm build
-# 产物：web/dist
+# output: web/dist
 ```
 
-同域部署时，将 `VITE_SERVICE_BASE_URL` 配为站点根或留空（按你的构建环境），由 Nginx 分流静态与 API。示例：[`server/doc/nginx-admin.example.conf`](server/doc/nginx-admin.example.conf)（须转发 `X-Forwarded-For`）。
+For same-origin deploy, set `VITE_SERVICE_BASE_URL` to the site root or leave empty per your env; use Nginx to split static vs API. Sample: [`server/doc/nginx-admin.example.conf`](server/doc/nginx-admin.example.conf) (forward `X-Forwarded-For`).
 
-### 多实例
+### Multi-instance
 
-各应用节点须连接 **同一 Redis**，在线用户、强退、验证码与限流才会一致。
+All app nodes must share the **same Redis** for online users, kick, captcha, and rate limits.
 
-## 二次开发建议
+## Extending
 
-1. 新业务模块后端对照 **`user`（主）/ `role`（辅）**：Controller URL、DTO/VO、Service 校验、菜单按钮权限种子。
-2. 前端严格按 [Soybean 文档](https://docs.soybeanjs.cn) 与 [代码规范](https://docs.soybeanjs.cn/zh/standard) 做页面与请求。
-3. 数据库以表结构为事实来源；种子改完检查唯一约束与孤儿关联。
-4. 详细约定见 [`AGENTS.md`](AGENTS.md)；接口联调见 [`server/doc/接口文档与开发说明.md`](server/doc/接口文档与开发说明.md)。
+1. Backend modules: follow **`user` (primary) / `role` (secondary)** for URLs, DTO/VO, Service checks, and permission seeds.
+2. Frontend: [Soybean docs](https://docs.soybeanjs.cn) and [coding standard](https://docs.soybeanjs.cn/zh/standard).
+3. Treat the database schema as source of truth; re-check unique constraints and orphan rows after seed changes.
+4. See [`AGENTS.md`](AGENTS.md) and [`server/doc/接口文档与开发说明.md`](server/doc/接口文档与开发说明.md).
 
-## 致谢
+## Credits
 
-| 项目 | 说明 |
+| Project | Role |
 | --- | --- |
-| [SoybeanAdmin](https://github.com/soybeanjs/soybean-admin) | 前端模板与工程规范 |
-| [Sa-Token](https://sa-token.cc) | 登录鉴权与会话 |
-| [Naive UI](https://www.naiveui.com) | 前端组件库 |
-| [MyBatis-Plus](https://baomidou.com) | ORM 增强 |
+| [SoybeanAdmin](https://github.com/soybeanjs/soybean-admin) | Frontend template & conventions |
+| [Sa-Token](https://sa-token.cc) | Auth & sessions |
+| [Naive UI](https://www.naiveui.com) | UI components |
+| [MyBatis-Plus](https://baomidou.com) | ORM |
 
-后端业务脚手架由本仓库维护；前端在 Soybean 之上对接真实 API 并收敛权限与运维模块。
+Backend scaffold is maintained here; the frontend is Soybean wired to a real API with permission and ops modules.
 
-## 许可证
+## License
 
-- 本仓库脚手架整体：[LICENSE](LICENSE)（MIT · 月亮喵 / YLmao）
-- 前端基于 SoybeanAdmin 的上游许可：另见 [`web/LICENSE`](web/LICENSE)
+- This scaffold: [LICENSE](LICENSE) (MIT · YLmao / 月亮喵)
+- Upstream Soybean frontend license: [`web/LICENSE`](web/LICENSE)
 
-使用与分发时请同时遵守上述许可证及所依赖开源组件的条款。
+Please also respect licenses of third-party dependencies.
 
-## 相关链接
+## Links
 
-- 仓库：https://gitee.com/ylmao/admin-soybean
-- Soybean 文档：https://docs.soybeanjs.cn
-- 协作约定：[`AGENTS.md`](AGENTS.md)
-- English：[README.en.md](README.en.md)
+- GitHub: https://github.com/YL-mao/admin-soybean
+- Gitee: https://gitee.com/ylmao/admin-soybean
+- Soybean docs: https://docs.soybeanjs.cn
+- Conventions: [`AGENTS.md`](AGENTS.md)
+- 中文：[README.zh-CN.md](README.zh-CN.md)

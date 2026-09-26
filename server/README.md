@@ -1,25 +1,23 @@
-# YLmao-Soybean · 后端（server）
+# YLmao-Soybean · Backend (server)
 
-本目录为 **Spring Boot 管理端 API**。完整说明见仓库根目录：
+Spring Boot admin API. Full docs:
 
-- 中文：[README.md](../README.md)
-- English：[README.en.md](../README.en.md)
+- English: [README.md](../README.md)
+- Chinese: [README.zh-CN.md](../README.zh-CN.md)
 
-## 本目录要点
+## This directory
 
-| 项 | 说明 |
+| Item | Notes |
 | --- | --- |
-| 启动类 | `com.ylmao.admin.AdminApp` |
-| 开发端口 | `application-dev.yml` 默认 **8085** |
-| 生产端口 | `application-prod.yml` 默认 **8081** |
-| 种子 SQL | [`doc/admin_soybean.sql`](doc/admin_soybean.sql) |
-| Nginx 示例 | [`doc/nginx-admin.example.conf`](doc/nginx-admin.example.conf) |
-| 许可证 | 根目录 [`LICENSE`](../LICENSE)（MIT · 月亮喵） |
+| Entry | `com.ylmao.admin.AdminApp` |
+| Dev port | **8085** (`application-dev.yml`) |
+| Prod port | **8081** (`application-prod.yml`) |
+| Seed SQL | [`doc/admin_soybean.sql`](doc/admin_soybean.sql) |
+| Nginx sample | [`doc/nginx-admin.example.conf`](doc/nginx-admin.example.conf) |
+| License | Root [`LICENSE`](../LICENSE) (MIT · YLmao) |
 
 ```bash
-# 开发启动（在 server/ 下）
-./mvnw spring-boot:run          # Linux / macOS
-.\mvnw.cmd spring-boot:run      # Windows
+./mvnw spring-boot:run
 ```
 
-开发约定见根目录 [`AGENTS.md`](../AGENTS.md)。
+Conventions: [`AGENTS.md`](../AGENTS.md).
