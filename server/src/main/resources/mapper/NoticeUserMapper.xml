@@ -3,7 +3,8 @@
 <mapper namespace="com.ylmao.admin.mapper.NoticeUserMapper">
 
 <insert id="insertBatch" parameterType="java.util.List">
-    INSERT INTO sys_notice_user
+    <!-- IGNORE：并发首次发布撞 uk_user_notice 时跳过已有行，其余仍写入 -->
+    INSERT IGNORE INTO sys_notice_user
     (user_notice_id,notice_id,user_id,is_read)
     VALUES
     <foreach collection="noticeUserList" item="noticeUser" separator=",">

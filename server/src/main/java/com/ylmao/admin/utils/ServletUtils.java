@@ -130,15 +130,26 @@ public class ServletUtils
 	private static boolean checkIp(String ip) {
         return !SaFoxUtil.isEmpty(ip) && !"unknown".equalsIgnoreCase(ip);
     }
+
+	/** 对端是否为本机回环（典型：同机 Nginx 反代到 127.0.0.1）。 */
+	private static boolean isLoopbackRemote(String remoteAddr) {
+		return "127.0.0.1".equals(remoteAddr)
+				|| "0:0:0:0:0:0:0:1".equals(remoteAddr)
+				|| "::1".equals(remoteAddr);
+	}
     
 	/**
 	 * 返回请求端 IP。
-	 * 优先信 Nginx 写入的 X-Real-IP（$remote_addr），勿信可伪造的 X-Forwarded-For 最左段。
+	 * 仅当对端是本机回环时采信 Nginx 的 X-Real-IP；应用被直连时忽略该头，防伪造。
 	 */
 	public static String getIP(HttpServletRequest request) {
-		String ip = request.getHeader("X-Real-IP");
+		String remote = request.getRemoteAddr();
+		String ip = null;
+		if (isLoopbackRemote(remote)) {
+			ip = request.getHeader("X-Real-IP");
+		}
 		if (!checkIp(ip)) {
-			ip = request.getRemoteAddr();
+			ip = remote;
 		}
 		if (ip != null) {
 			ip = ip.trim();

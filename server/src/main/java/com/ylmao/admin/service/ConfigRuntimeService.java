@@ -43,9 +43,9 @@ public class ConfigRuntimeService {
         refreshCache();
     }
 
-    /** 全量重建 Redis 配置缓存；配置增删改、启停后调用。 */
+    /** 全量重建 Redis 配置缓存；先覆盖写入再删孤儿，避免先 clear 造成读空窗。 */
     public void refreshCache() {
-        clearConfigCache();
+        List<String> oldCodes = readCodeIndex();
         List<Config> enabledList = configMapper.selectList(new LambdaQueryWrapper<Config>()
                 .eq(Config::getIsEnabled, 1));
         List<String> codes = new ArrayList<>();
@@ -59,6 +59,17 @@ public class ConfigRuntimeService {
             codes.add(code);
         }
         stringRedisTemplate.opsForValue().set(RedisKeys.CONFIG_INDEX, jsonMapper.writeValueAsString(codes));
+        // 已停用项：新索引落定后再删，读路径不会踩空。
+        Set<String> enabledCodes = new HashSet<>(codes);
+        Set<String> keysToDelete = new HashSet<>();
+        for (String oldCode : oldCodes) {
+            if (StrUtil.isNotBlank(oldCode) && !enabledCodes.contains(oldCode)) {
+                keysToDelete.add(RedisKeys.config(oldCode));
+            }
+        }
+        if (!keysToDelete.isEmpty()) {
+            stringRedisTemplate.delete(keysToDelete);
+        }
     }
 
     public Optional<String> getString(String configCode) {
@@ -160,16 +171,6 @@ public class ConfigRuntimeService {
             log.warn("配置缓存反序列化失败 configCode={} reason={}", configCode, ex.getMessage());
             return Optional.empty();
         }
-    }
-
-    /** 删除当前索引及其对应的 data key，再全量重建。 */
-    private void clearConfigCache() {
-        Set<String> keysToDelete = new HashSet<>();
-        keysToDelete.add(RedisKeys.CONFIG_INDEX);
-        for (String code : readCodeIndex()) {
-            keysToDelete.add(RedisKeys.config(code));
-        }
-        stringRedisTemplate.delete(keysToDelete);
     }
 
     private List<String> readCodeIndex() {

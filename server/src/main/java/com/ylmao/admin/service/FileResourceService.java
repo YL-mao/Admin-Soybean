@@ -29,16 +29,20 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -176,13 +180,55 @@ public class FileResourceService {
         if (!allowed.contains(suffix)) {
             throw new BusinessException("文件类型不被允许，仅支持：" + String.join("、", allowed));
         }
-        overwriteContent(existing, file, existing.getFileScene(), suffix);
+        Path oldPath = resolveDiskPath(existing.getStorageKey());
+        String storageKey = existing.getStorageKey();
+        if (StrUtil.isBlank(storageKey) || !suffix.equalsIgnoreCase(existing.getFileSuffix())) {
+            storageKey = buildStorageKey(existing.getFileId(), suffix);
+        }
+        Path newPath = resolveDiskPath(storageKey);
+        boolean samePath = Objects.equals(oldPath, newPath);
+        // 先写临时/新路径，库更新成功后再替换或删旧文件，避免库失败后旧字节已丢。
+        Path stagingPath = samePath
+                ? newPath.resolveSibling(newPath.getFileName() + ".uploading-" + IdWorker.getIdStr())
+                : newPath;
+        try {
+            Files.createDirectories(stagingPath.getParent());
+            file.transferTo(stagingPath);
+        } catch (IOException e) {
+            log.error("覆盖写入本地文件失败 fileId={}", existing.getFileId(), e);
+            throw new BusinessException("文件保存失败");
+        }
+        existing.setStorageKey(storageKey);
+        existing.setFileSuffix(suffix);
+        existing.setContentType(resolveStoredContentType(suffix));
+        existing.setFileSize(file.getSize());
+        existing.setFileScene(existing.getFileScene());
+        existing.setStorageType(uploadConfigService.currentStorageType());
         existing.setOriginalName(originalName);
         // 当前用户头像文件强制可直链，否则 <img> 无 saToken 会 401
         if (isCurrentUserAvatarFile(existing.getFileId())) {
             existing.setNeedLogin(0);
         }
-        fileResourceMapper.updateById(existing);
+        try {
+            int rows = fileResourceMapper.updateById(existing);
+            if (rows <= 0) {
+                deleteQuietly(stagingPath);
+                throw new BusinessException("文件不存在或修改失败");
+            }
+        } catch (RuntimeException e) {
+            deleteQuietly(stagingPath);
+            throw e;
+        }
+        try {
+            if (samePath) {
+                Files.move(stagingPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+            } else {
+                deleteQuietly(oldPath);
+            }
+        } catch (IOException e) {
+            log.error("覆盖落盘最终化失败 fileId={}", existing.getFileId(), e);
+            throw new BusinessException("文件保存失败");
+        }
         return FileResourceVo.FileListVo.from(existing, uploadConfigService.buildAccessUrl(existing.getFileId()));
     }
 
@@ -240,17 +286,18 @@ public class FileResourceService {
             }
             files.add(file);
         }
-        // 先逻辑删入库；成功后再删磁盘，避免事务回滚后文件已丢。
+        // 先逻辑删入库；提交成功后再删磁盘，避免事务回滚后文件已丢。
         int rows = fileResourceMapper.softDeleteByIds(idList, LocalDateTime.now());
         if (rows <= 0) {
             throw new BusinessException("文件不存在或删除失败");
         }
-        for (FileResource file : files) {
-            deleteQuietly(resolveDiskPath(file.getStorageKey()));
-        }
+        List<Path> diskPaths = files.stream()
+                .map(file -> resolveDiskPath(file.getStorageKey()))
+                .toList();
+        deleteDiskAfterCommit(diskPaths);
     }
 
-    /** 级联逻辑删目录（含子孙目录与其下文件），并立即删除对应磁盘文件；内置「未分类」禁止删除。 */
+    /** 级联逻辑删目录（含子孙目录与其下文件），事务提交后再删磁盘；内置「未分类」禁止删除。 */
     @Transactional
     public void softDeleteFolders(String ids) {
         List<String> idList = splitIds(ids);
@@ -283,7 +330,7 @@ public class FileResourceService {
             }
         }
         LocalDateTime now = LocalDateTime.now();
-        // 先逻辑删库，再删磁盘，避免回滚后盘文件已丢。
+        // 先逻辑删库，提交后再删磁盘，避免回滚后盘文件已丢。
         if (!files.isEmpty()) {
             fileResourceMapper.softDeleteByIds(files.stream().map(FileResource::getFileId).toList(), now);
         }
@@ -291,9 +338,10 @@ public class FileResourceService {
         if (rows <= 0) {
             throw new BusinessException("目录不存在或删除失败");
         }
-        for (FileResource file : files) {
-            deleteQuietly(resolveDiskPath(file.getStorageKey()));
-        }
+        List<Path> diskPaths = files.stream()
+                .map(file -> resolveDiskPath(file.getStorageKey()))
+                .toList();
+        deleteDiskAfterCommit(diskPaths);
     }
 
     /**
@@ -332,32 +380,6 @@ public class FileResourceService {
                 .contentType(mediaType)
                 .header("X-Content-Type-Options", "nosniff")
                 .body(resource);
-    }
-
-    private void overwriteContent(FileResource existing, MultipartFile file, String scene, String suffix) {
-        Path oldPath = resolveDiskPath(existing.getStorageKey());
-        // 覆盖时仍落在原 storage_key；后缀变化则换新键并删旧文件。
-        String storageKey = existing.getStorageKey();
-        if (StrUtil.isBlank(storageKey) || !suffix.equalsIgnoreCase(existing.getFileSuffix())) {
-            storageKey = buildStorageKey(existing.getFileId(), suffix);
-        }
-        Path newPath = resolveDiskPath(storageKey);
-        try {
-            Files.createDirectories(newPath.getParent());
-            file.transferTo(newPath);
-            if (!Objects.equals(oldPath, newPath)) {
-                deleteQuietly(oldPath);
-            }
-        } catch (IOException e) {
-            log.error("覆盖写入本地文件失败 fileId={}", existing.getFileId(), e);
-            throw new BusinessException("文件保存失败");
-        }
-        existing.setStorageKey(storageKey);
-        existing.setFileSuffix(suffix);
-        existing.setContentType(resolveStoredContentType(suffix));
-        existing.setFileSize(file.getSize());
-        existing.setFileScene(scene);
-        existing.setStorageType(uploadConfigService.currentStorageType());
     }
 
     /**
@@ -494,6 +516,28 @@ public class FileResourceService {
         }
         String suffix = fileSuffix.trim().toLowerCase(Locale.ROOT);
         return suffix.startsWith(".") ? suffix.substring(1) : suffix;
+    }
+
+    /** 事务提交后再删磁盘；无事务时立即删。 */
+    private void deleteDiskAfterCommit(Collection<Path> paths) {
+        if (paths == null || paths.isEmpty()) {
+            return;
+        }
+        List<Path> copy = List.copyOf(paths);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    for (Path path : copy) {
+                        deleteQuietly(path);
+                    }
+                }
+            });
+            return;
+        }
+        for (Path path : copy) {
+            deleteQuietly(path);
+        }
     }
 
     private void deleteQuietly(Path path) {

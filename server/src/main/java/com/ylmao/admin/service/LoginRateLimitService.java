@@ -6,9 +6,10 @@ import com.ylmao.admin.common.SecurityConfigCodes;
 import com.ylmao.admin.config.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
+import java.util.Collections;
 
 /**
  * 登录 / 验证码 Redis 固定窗口限流（多实例共享）。
@@ -19,6 +20,13 @@ import java.time.Duration;
 public class LoginRateLimitService {
 
     private static final String TOO_FREQUENT = "操作过于频繁，请稍后再试";
+
+    /** INCR + 首次 EXPIRE 原子脚本，避免计数无 TTL 永久卡住。 */
+    private static final DefaultRedisScript<Long> INCR_WITH_EXPIRE = new DefaultRedisScript<>(
+            "local c = redis.call('INCR', KEYS[1]) "
+                    + "if c == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end "
+                    + "return c",
+            Long.class);
 
     private final StringRedisTemplate stringRedisTemplate;
     private final ConfigRuntimeService configRuntimeService;
@@ -60,11 +68,16 @@ public class LoginRateLimitService {
         if (limit == 0) {
             return true;
         }
-        Long count = stringRedisTemplate.opsForValue().increment(redisKey);
-        if (count != null && count == 1L) {
-            stringRedisTemplate.expire(redisKey, Duration.ofMinutes(windowMinutes));
+        long windowSeconds = Math.max(1L, windowMinutes * 60L);
+        Long count = stringRedisTemplate.execute(
+                INCR_WITH_EXPIRE,
+                Collections.singletonList(redisKey),
+                String.valueOf(windowSeconds));
+        // Redis 异常时 fail-closed，避免限流失效被刷。
+        if (count == null) {
+            return false;
         }
-        return count == null || count <= limit;
+        return count <= limit;
     }
 
     private static String normalizeIp(String ip) {

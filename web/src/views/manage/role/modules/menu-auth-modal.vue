@@ -222,7 +222,11 @@ async function handleConfirm() {
   if (error) return;
 
   await authStore.refreshUserInfo();
-  await routeStore.reloadAuthRoute();
+  const routeOk = await routeStore.reloadAuthRoute();
+  if (!routeOk) {
+    // 动态路由刷新失败已踢登录，勿再提示「更新成功」
+    return;
+  }
   window.$message?.success($t('common.updateSuccess'));
   closeModal();
 }

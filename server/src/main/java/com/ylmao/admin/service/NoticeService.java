@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ylmao.admin.common.NoticeConfigCodes;
 import com.ylmao.admin.common.TextSafeUtils;
@@ -401,12 +402,15 @@ public class NoticeService {
                 continue;
             }
             NoticeUser noticeUser = new NoticeUser();
+            // 自定义 insertBatch 不走 MP 填充，须手写雪花主键。
+            noticeUser.setNoticeUserId(IdWorker.getIdStr());
             noticeUser.setUserId(userId);
             noticeUser.setNoticeId(notice.getNoticeId());
             noticeUser.setReadState(0);
             noticeUserList.add(noticeUser);
         }
         if (!noticeUserList.isEmpty()) {
+            // insertBatch 使用 INSERT IGNORE，并发撞 uk 时跳过已有行、写其余用户。
             noticeUserMapper.insertBatch(noticeUserList);
         }
     }

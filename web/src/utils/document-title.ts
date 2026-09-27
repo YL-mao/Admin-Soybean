@@ -1,4 +1,3 @@
-import { useTitle } from '@vueuse/core';
 import type { RouteLocationNormalizedLoaded } from 'vue-router';
 import { $t } from '@/locales';
 import { useBrandingStore } from '@/store/modules/branding';
@@ -9,8 +8,9 @@ export function pageTitleFromRoute(route: Pick<RouteLocationNormalizedLoaded, 'm
   return i18nKey ? $t(i18nKey) : title;
 }
 
-/** 拼装并写入文档标题：`页面标题 - 系统名`（与路由守卫、语言切换、品牌刷新共用） */
+/** 拼装并写入文档标题：`页面标题 - 系统名`（直接写 document.title，避免反复 useTitle 泄漏监听） */
 export function applyDocumentTitle(pageTitle?: string | null) {
+  if (typeof document === 'undefined') return;
   const appName = useBrandingStore().displayTitle;
-  useTitle(pageTitle ? `${pageTitle} - ${appName}` : appName);
+  document.title = pageTitle ? `${pageTitle} - ${appName}` : appName;
 }

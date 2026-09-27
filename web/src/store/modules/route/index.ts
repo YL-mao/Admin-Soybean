@@ -187,11 +187,12 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
 
   /**
    * 重新拉取权限路由（角色菜单变更后热更新侧栏；static 模式无菜单过滤，仅 dynamic 生效）
+   * @returns 初始化是否成功；失败时 initDynamicAuthRoute 已清会话
    */
   async function reloadAuthRoute() {
     setIsInitAuthRoute(false);
     authRoutes.value = [];
-    await initAuthRoute();
+    return initAuthRoute();
   }
 
   /** Init static auth route */
