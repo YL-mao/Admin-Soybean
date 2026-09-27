@@ -15,8 +15,7 @@ import java.io.IOException;
 
 /**
  * 客户端工具类
- * @author fuce 
- * @date: 2018年9月30日 下午2:10:48
+ * 2018年9月30日 下午2:10:48
  */
 public class ServletUtils
 {
@@ -133,27 +132,18 @@ public class ServletUtils
     }
     
 	/**
-	 * 返回请求端 IP；多级代理时取 X-Forwarded-For 第一个地址。
+	 * 返回请求端 IP。
+	 * 优先信 Nginx 写入的 X-Real-IP（$remote_addr），勿信可伪造的 X-Forwarded-For 最左段。
 	 */
 	public static String getIP(HttpServletRequest request) {
-		String ip = firstForwardedIp(request.getHeader("x-forwarded-for"));
-		ip = checkIp(ip) ? ip : (
-                checkIp(ip = request.getHeader("Proxy-Client-IP")) ? ip : (
-                        checkIp(ip = request.getHeader("WL-Proxy-Client-IP")) ? ip :
-                                request.getRemoteAddr()));
+		String ip = request.getHeader("X-Real-IP");
+		if (!checkIp(ip)) {
+			ip = request.getRemoteAddr();
+		}
 		if (ip != null) {
 			ip = ip.trim();
 		}
 		return "0:0:0:0:0:0:0:1".equals(ip) ? "127.0.0.1" : ip;
-	}
-
-	/** X-Forwarded-For 形如 client, proxy1, proxy2 时只取最左侧客户端 IP。 */
-	private static String firstForwardedIp(String forwarded) {
-		if (SaFoxUtil.isEmpty(forwarded)) {
-			return forwarded;
-		}
-		int comma = forwarded.indexOf(',');
-		return comma < 0 ? forwarded.trim() : forwarded.substring(0, comma).trim();
 	}
 
 }

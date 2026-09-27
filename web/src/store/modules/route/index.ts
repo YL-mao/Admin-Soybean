@@ -163,7 +163,7 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     tabStore.initHomeTab();
   }
 
-  /** Init auth route；userInfo 拉取失败时返回 false，由路由守卫回登录页 */
+  /** Init auth route；userInfo / 动态路由失败时返回 false，由路由守卫回登录页 */
   async function initAuthRoute() {
     if (!authStore.userInfo.userId) {
       const pass = await authStore.initUserInfo();
@@ -175,7 +175,10 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     if (authRouteMode.value === 'static') {
       initStaticAuthRoute();
     } else {
-      await initDynamicAuthRoute();
+      const pass = await initDynamicAuthRoute();
+      if (!pass) {
+        return false;
+      }
     }
 
     tabStore.initHomeTab();
@@ -208,11 +211,11 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     setIsInitAuthRoute(true);
   }
 
-  /** Init dynamic auth route */
+  /** Init dynamic auth route；失败时清会话并返回 false */
   async function initDynamicAuthRoute() {
     const { data, error } = await fetchGetUserRoutes();
 
-    if (!error) {
+    if (!error && data) {
       const { routes, home } = data;
 
       addAuthRoutes(routes);
@@ -224,10 +227,11 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
       handleUpdateRootRouteRedirect(home);
 
       setIsInitAuthRoute(true);
-    } else {
-      // if fetch user routes failed, reset store
-      authStore.resetStore();
+      return true;
     }
+
+    await authStore.resetStore();
+    return false;
   }
 
   /** handle constant and auth routes */

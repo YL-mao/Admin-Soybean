@@ -1,9 +1,10 @@
 import { effectScope, nextTick, onScopeDispose, ref, watch } from 'vue';
-import { breakpointsTailwind, useBreakpoints, useEventListener, useTitle } from '@vueuse/core';
+import { breakpointsTailwind, useBreakpoints, useEventListener } from '@vueuse/core';
 import { defineStore } from 'pinia';
 import { useBoolean } from '@sa/hooks';
 import { router } from '@/router';
 import { localStg } from '@/utils/storage';
+import { applyDocumentTitle, pageTitleFromRoute } from '@/utils/document-title';
 import { SetupStoreId } from '@/enum';
 import { $t, setLocale } from '@/locales';
 import { setDayjsLocale } from '@/locales/dayjs';
@@ -69,15 +70,9 @@ export const useAppStore = defineStore(SetupStoreId.App, () => {
     localStg.set('lang', lang);
   }
 
-  /** Update document title by locale */
+  /** Update document title by locale / branding */
   function updateDocumentTitleByLocale() {
-    const { i18nKey, title } = router.currentRoute.value.meta;
-
-    const pageTitle = i18nKey ? $t(i18nKey) : title;
-    const appName = useBrandingStore().displayTitle;
-    const documentTitle = pageTitle ? `${pageTitle} - ${appName}` : appName;
-
-    useTitle(documentTitle);
+    applyDocumentTitle(pageTitleFromRoute(router.currentRoute.value));
   }
 
   function init() {
@@ -114,6 +109,14 @@ export const useAppStore = defineStore(SetupStoreId.App, () => {
         }
       },
       { immediate: true }
+    );
+
+    // 系统名变更后按当前路由 meta 重算标题（勿对 document.title 做 lastIndexOf 切片）
+    watch(
+      () => useBrandingStore().displayTitle,
+      () => {
+        updateDocumentTitleByLocale();
+      }
     );
 
     // watch locale

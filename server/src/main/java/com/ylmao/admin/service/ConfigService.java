@@ -3,6 +3,7 @@ package com.ylmao.admin.service;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ylmao.admin.common.ConfigAuditCodes;
+import com.ylmao.admin.common.UploadConfigCodes;
 import com.ylmao.admin.config.exception.BusinessException;
 import com.ylmao.admin.config.log.ConfigAuditHolder;
 import com.ylmao.admin.config.log.ConfigAuditItem;
@@ -52,6 +53,11 @@ public class ConfigService {
         }
         if (StrUtil.isNotBlank(groupConfig.configCode()) && !groupConfig.configCode().equals(config.getConfigCode())) {
             throw new BusinessException("配置编码参数不合法");
+        }
+        // 预览路由与白名单写死 /upload，禁止改公开前缀，避免 URL 404/鉴权错位。
+        if (UploadConfigCodes.PUBLIC_URL_PREFIX.equals(config.getConfigCode())
+                && !Objects.equals("/upload", StrUtil.nullToEmpty(groupConfig.configValue()).trim())) {
+            throw new BusinessException("公开访问前缀固定为 /upload，不可修改");
         }
         validateConfigValue(config.getValueType(), groupConfig.configValue());
         String beforeValue = config.getConfigValue();

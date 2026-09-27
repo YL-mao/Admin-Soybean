@@ -57,16 +57,6 @@ export const useBrandingStore = defineStore(SetupStoreId.Branding, () => {
     link.href = href;
   }
 
-  /** 系统名变更后立刻刷新标签页标题（路由守卫只在 afterEach 时改） */
-  function refreshDocumentTitle() {
-    if (typeof document === 'undefined') return;
-    const appName = displayTitle.value;
-    const current = document.title || '';
-    const sep = ' - ';
-    const idx = current.lastIndexOf(sep);
-    document.title = idx >= 0 ? `${current.slice(0, idx)}${sep}${appName}` : appName;
-  }
-
   function applyBranding(data: Api.Auth.Branding) {
     Object.assign(branding, {
       name: data.name ?? '',
@@ -81,7 +71,6 @@ export const useBrandingStore = defineStore(SetupStoreId.Branding, () => {
       policeIcp: data.policeIcp ?? ''
     });
     applyFavicon();
-    refreshDocumentTitle();
   }
 
   /** 拉取免登录品牌快照；失败时保留上次或空值，不打断启动 */

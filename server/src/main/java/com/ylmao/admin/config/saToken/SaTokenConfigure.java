@@ -11,6 +11,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import com.ylmao.admin.common.FingerprintKeys;
 import com.ylmao.admin.common.R;
+import com.ylmao.admin.service.CaptchaService;
 import com.ylmao.admin.service.FingerprintService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -62,6 +63,8 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                                 "x-requested-with,content-type,saToken," + FingerprintKeys.Admin.DEVICE_ID_HEADER)
                         // 验证码 Cookie / withCredentials 跨域需要；Origin 已白名单，不可用 *。
                         .setHeader("Access-Control-Allow-Credentials", "true")
+                        // 跨域时 JS 才能读到验证码超限标记头。
+                        .setHeader("Access-Control-Expose-Headers", CaptchaService.LIMITED_HEADER)
                         .setHeader("Access-Control-Max-Age", String.valueOf(3600))
                         .setHeader("Vary", "Origin");
             }

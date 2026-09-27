@@ -1,6 +1,7 @@
 package com.ylmao.admin.config.exception;
 
 import cn.dev33.satoken.exception.*;
+import cn.hutool.core.util.StrUtil;
 import com.ylmao.admin.common.R;
 import com.ylmao.admin.config.saToken.SaAuthMessages;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -67,7 +69,7 @@ public class GlobalExceptionResolver {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<R<Void>> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
         logger.warn("参数校验异常: {}", e.getMessage());
-        String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        String message = e.getBindingResult().getAllErrors().getFirst().getDefaultMessage();
         return ajaxError(400, message);
     }
 
@@ -75,7 +77,7 @@ public class GlobalExceptionResolver {
     @ExceptionHandler(BindException.class)
     public ResponseEntity<R<Void>> validatedBindException(BindException e) {
         logger.warn("参数校验异常: {}", e.getMessage());
-        String message = e.getAllErrors().get(0).getDefaultMessage();
+        String message = e.getAllErrors().getFirst().getDefaultMessage();
         return ajaxError(400, message);
     }
 
@@ -98,6 +100,24 @@ public class GlobalExceptionResolver {
     public ResponseEntity<R<Void>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
         logger.warn("上传文件过大: {}", e.getMessage());
         return ajaxError(500, "文件大小超出限制");
+    }
+
+    /** 预览等场景主动抛出的状态码异常，勿落入 RuntimeException 兜成 500。 */
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<R<Void>> handleResponseStatusException(ResponseStatusException e) {
+        int status = e.getStatusCode().value();
+        if (status >= 500) {
+            logger.error("ResponseStatusException {}", status, e);
+            return ajaxError(status, SYSTEM_BUSY_MSG);
+        }
+        logger.debug("ResponseStatusException {}: {}", status, e.getReason());
+        String msg = switch (status) {
+            case 404 -> "资源不存在";
+            case 401 -> SaAuthMessages.NOT_LOGIN;
+            case 403 -> SaAuthMessages.NO_PERMISSION;
+            default -> StrUtil.blankToDefault(e.getReason(), "请求失败");
+        };
+        return ajaxError(status, msg);
     }
 
     /** 运行时异常兜底，不向用户暴露内部信息。 */

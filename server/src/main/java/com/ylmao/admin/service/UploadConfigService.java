@@ -37,7 +37,7 @@ public class UploadConfigService {
     /** 开关缺失、停用或 false 均禁止上传。 */
     public void assertUploadEnabled() {
         Optional<Boolean> enabled = configRuntimeService.getBoolean(UploadConfigCodes.ENABLED);
-        if (enabled.isEmpty() || !Boolean.TRUE.equals(enabled.get())) {
+        if (enabled.isEmpty() || !enabled.get()) {
             throw new BusinessException("上传功能已关闭");
         }
     }
@@ -71,18 +71,12 @@ public class UploadConfigService {
         return root;
     }
 
+    /**
+     * 公开访问前缀与 {@code UploadPreviewController}、Sa-Token 白名单写死一致，固定 {@code /upload}。
+     * 库里的 upload.pubUrlPfx 仅作展示，运行时不跟配置变。
+     */
     public String publicUrlPrefix() {
-        String prefix = configRuntimeService.getString(UploadConfigCodes.PUBLIC_URL_PREFIX)
-                .filter(StrUtil::isNotBlank)
-                .orElse(DEFAULT_PUBLIC_URL_PREFIX);
-        if (!prefix.startsWith("/")) {
-            prefix = "/" + prefix;
-        }
-        // 去掉末尾斜杠，便于拼接 fileId。
-        while (prefix.endsWith("/") && prefix.length() > 1) {
-            prefix = prefix.substring(0, prefix.length() - 1);
-        }
-        return prefix;
+        return DEFAULT_PUBLIC_URL_PREFIX;
     }
 
     public long maxBytes() {

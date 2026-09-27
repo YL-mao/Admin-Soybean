@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * 文件预览流接口；路径由 upload.pubUrlPfx 配置（默认 /upload/{fileId}）。
+ * 文件预览流接口；路径固定 /upload/{fileId}（与 UploadConfigService.publicUrlPrefix、白名单一致）。
  * 不挂权限注解；是否登录由单文件 needLogin 在 Service 内判断。
  */
 @Controller

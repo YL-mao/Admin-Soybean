@@ -1,4 +1,4 @@
-# 开发环境（默认 spring.profiles.default=dev，或 --spring.profiles.active=dev）
+# 开发环境（默认 spring.profiles.active=dev，见 application.yml 的 SPRING_PROFILES_ACTIVE）
 server:
   port: 8085
 
