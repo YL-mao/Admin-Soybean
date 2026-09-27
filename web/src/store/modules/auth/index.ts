@@ -162,7 +162,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     return true;
   }
 
-  /** 从后端刷新用户信息并写入本地缓存 */
+  /** 从后端刷新用户信息到内存（不落 localStorage，刷新靠 token + 再请求） */
   async function getUserInfo() {
     const { data: info, error } = await fetchGetUserInfo();
     if (error || !info) {
@@ -176,13 +176,6 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       roles: info.roles || [],
       buttons: info.buttons || []
     });
-    localStg.set('userInfo', {
-      userId: userInfo.userId,
-      userName: userInfo.userName,
-      userAvatar: userInfo.userAvatar,
-      roles: userInfo.roles,
-      buttons: userInfo.buttons
-    });
     return true;
   }
 
@@ -195,13 +188,6 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       userInfo.userAvatar = partial.userAvatar || '';
       avatarStamp.value = Date.now();
     }
-    localStg.set('userInfo', {
-      userId: userInfo.userId,
-      userName: userInfo.userName,
-      userAvatar: userInfo.userAvatar,
-      roles: userInfo.roles,
-      buttons: userInfo.buttons
-    });
   }
 
   /** 对外：角色授权变更后刷新 roles/buttons */

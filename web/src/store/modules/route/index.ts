@@ -163,11 +163,13 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     tabStore.initHomeTab();
   }
 
-  /** Init auth route */
+  /** Init auth route；userInfo 拉取失败时返回 false，由路由守卫回登录页 */
   async function initAuthRoute() {
-    // check if user info is initialized
     if (!authStore.userInfo.userId) {
-      await authStore.initUserInfo();
+      const pass = await authStore.initUserInfo();
+      if (!pass) {
+        return false;
+      }
     }
 
     if (authRouteMode.value === 'static') {
@@ -177,6 +179,7 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     }
 
     tabStore.initHomeTab();
+    return true;
   }
 
   /**

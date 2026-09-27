@@ -9,6 +9,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
@@ -34,19 +36,14 @@ public class CaptchaService {
     private static final String LIMITED_IMAGE_PATH = "static/admin/images/captcha-limited.png";
 
     private final StringRedisTemplate stringRedisTemplate;
+    private final Environment environment;
 
     public void writeImage(HttpServletResponse response) throws IOException {
         GifCaptcha gifCaptcha = new GifCaptcha(130, 48, 4);
         String captchaId = IdUtil.fastSimpleUUID();
         // 验证码原文只进 Redis，不进 Session。
         stringRedisTemplate.opsForValue().set(RedisKeys.captcha(captchaId), gifCaptcha.text(), TTL);
-        ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, captchaId)
-                .httpOnly(true)
-                .path("/")
-                .maxAge(TTL)
-                .sameSite("Lax")
-                .build();
-        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        response.setHeader(HttpHeaders.SET_COOKIE, buildCaptchaCookie(captchaId, TTL).toString());
         applyNoCacheHeaders(response, "image/gif");
         gifCaptcha.out(response.getOutputStream());
     }
@@ -95,14 +92,20 @@ public class CaptchaService {
         return null;
     }
 
-    private static void clearCaptchaCookie(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, "")
+    private void clearCaptchaCookie(HttpServletResponse response) {
+        response.addHeader(HttpHeaders.SET_COOKIE, buildCaptchaCookie("", Duration.ZERO).toString());
+    }
+
+    /** 生产 profile 强制 Secure；开发本地 HTTP 不强制，避免 Cookie 被浏览器丢弃。 */
+    private ResponseCookie buildCaptchaCookie(String value, Duration maxAge) {
+        boolean secure = environment.acceptsProfiles(Profiles.of("prod"));
+        return ResponseCookie.from(COOKIE_NAME, value)
                 .httpOnly(true)
+                .secure(secure)
                 .path("/")
-                .maxAge(Duration.ZERO)
+                .maxAge(maxAge)
                 .sameSite("Lax")
                 .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     private static void applyNoCacheHeaders(HttpServletResponse response, String contentType) {

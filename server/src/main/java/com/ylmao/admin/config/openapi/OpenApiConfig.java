@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * springdoc OpenAPI 配置：只收录 JSON 接口；鉴权说明与 Cookie/请求头 saToken 对齐。
+ * springdoc OpenAPI 配置：只收录 JSON 接口；鉴权说明与请求头 saToken 对齐。
  */
 @Configuration
 @ConditionalOnProperty(name = "springdoc.api-docs.enabled", havingValue = "true")
@@ -29,7 +29,7 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Admin 管理后台 API")
                         .description("""
-                                前后端分离：鉴权走请求头 saToken（名称与 Cookie 时代一致）。
+                                前后端分离：鉴权仅请求头 saToken（严格 Header，不读 Cookie）。
                                 文档展示 @RestController JSON 接口。
                                 书面约定见 doc/接口文档与开发说明.md。
                                 """)
@@ -39,7 +39,7 @@ public class OpenApiConfig {
                                 .name("saToken")
                                 .type(SecurityScheme.Type.APIKEY)
                                 .in(SecurityScheme.In.HEADER)
-                                .description("登录后的 saToken；同域也可由浏览器自动带 Cookie")))
+                                .description("登录后把 token 填到请求头 saToken（Authorize 里填值即可）")))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME));
     }
 

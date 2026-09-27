@@ -21,7 +21,7 @@ public class DeptVo {
         }
     }
 
-    /** 部门下拉/树选项，供 /dept/tree 等接口使用。 */
+    /** 部门下拉/树选项，供 /dept/options、/dept/selectParent 等接口使用。 */
     public record DeptOptionVo(String deptId, String parentId, String deptName) {
 
         public static DeptOptionVo from(Dept dept) {

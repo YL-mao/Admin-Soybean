@@ -35,10 +35,6 @@ public class GlobalExceptionResolver {
             logger.warn("登录校验异常 type={} msg={}", nle.getType(), e.getMessage());
             return ajaxError(401, SaAuthMessages.NOT_LOGIN);
         }
-        if (e instanceof NotSafeException) {
-            logger.warn("二次认证异常: {}", e.getMessage());
-            return ajaxError(403, SaAuthMessages.NEED_SAFE);
-        }
         if (e instanceof NotPermissionException || e instanceof NotRoleException) {
             // 权限码只打日志，不回前端
             logger.warn("权限校验异常: {}", e.getMessage());

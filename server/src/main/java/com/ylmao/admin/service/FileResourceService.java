@@ -133,7 +133,8 @@ public class FileResourceService {
         entity.setStorageKey(storageKey);
         entity.setStorageType(storageType);
         entity.setFileSuffix(suffix);
-        entity.setContentType(file.getContentType());
+        // 入库 MIME 按后缀推导，不采信 multipart 自报类型。
+        entity.setContentType(resolveStoredContentType(suffix));
         entity.setFileSize(file.getSize());
         entity.setFileScene(scene);
         entity.setNeedLogin(loginFlag);
@@ -325,15 +326,12 @@ public class FileResourceService {
         }
         org.springframework.core.io.FileSystemResource resource =
                 new org.springframework.core.io.FileSystemResource(diskPath);
-        MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
-        if (StrUtil.isNotBlank(file.getContentType())) {
-            try {
-                mediaType = MediaType.parseMediaType(file.getContentType());
-            } catch (Exception ignored) {
-                // 非法 MIME 时退回二进制流。
-            }
-        }
-        return ResponseEntity.ok().contentType(mediaType).body(resource);
+        // 预览 MIME 只认后缀白名单，不回显客户端/库里的 Content-Type，避免 text/html 等被当页执行。
+        MediaType mediaType = resolvePreviewMediaType(file.getFileSuffix());
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .header("X-Content-Type-Options", "nosniff")
+                .body(resource);
     }
 
     private void overwriteContent(FileResource existing, MultipartFile file, String scene, String suffix) {
@@ -356,7 +354,7 @@ public class FileResourceService {
         }
         existing.setStorageKey(storageKey);
         existing.setFileSuffix(suffix);
-        existing.setContentType(file.getContentType());
+        existing.setContentType(resolveStoredContentType(suffix));
         existing.setFileSize(file.getSize());
         existing.setFileScene(scene);
         existing.setStorageType(uploadConfigService.currentStorageType());
@@ -461,7 +459,41 @@ public class FileResourceService {
         if (!resource.exists()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(resource);
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .header("X-Content-Type-Options", "nosniff")
+                .body(resource);
+    }
+
+    /** 预览响应 MIME：仅按后缀映射；未识别或高风险后缀一律二进制流。 */
+    private static MediaType resolvePreviewMediaType(String fileSuffix) {
+        String suffix = normalizeSuffix(fileSuffix);
+        return switch (suffix) {
+            case "png" -> MediaType.IMAGE_PNG;
+            case "jpg", "jpeg" -> MediaType.IMAGE_JPEG;
+            case "gif" -> MediaType.IMAGE_GIF;
+            case "webp" -> MediaType.parseMediaType("image/webp");
+            case "bmp" -> MediaType.parseMediaType("image/bmp");
+            case "ico" -> MediaType.parseMediaType("image/x-icon");
+            case "pdf" -> MediaType.APPLICATION_PDF;
+            case "txt", "log", "csv", "md" -> MediaType.TEXT_PLAIN;
+            case "json" -> MediaType.APPLICATION_JSON;
+            // svg/html 等可执行标记语言不按文档类型回显，降为下载流。
+            default -> MediaType.APPLICATION_OCTET_STREAM;
+        };
+    }
+
+    /** 入库 content_type：与预览映射一致，避免库内残留客户端伪造 MIME。 */
+    private static String resolveStoredContentType(String fileSuffix) {
+        return resolvePreviewMediaType(fileSuffix).toString();
+    }
+
+    private static String normalizeSuffix(String fileSuffix) {
+        if (StrUtil.isBlank(fileSuffix)) {
+            return "";
+        }
+        String suffix = fileSuffix.trim().toLowerCase(Locale.ROOT);
+        return suffix.startsWith(".") ? suffix.substring(1) : suffix;
     }
 
     private void deleteQuietly(Path path) {

@@ -21,10 +21,8 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /** 字典运行时缓存：启用选项写入 Redis，读取时直读 Redis（方案 A）。索引为 string JSON。 */
@@ -63,19 +61,6 @@ public class DictRuntimeService {
             log.warn("字典缓存反序列化失败 dictTypeCode={} reason={}", dictTypeCode, ex.getMessage());
             return List.of();
         }
-    }
-
-    public Map<String, List<DictVo.DictOptionVo>> getOptionsBatch(List<String> dictTypeCodes) {
-        if (dictTypeCodes == null || dictTypeCodes.isEmpty()) {
-            return Map.of();
-        }
-        Map<String, List<DictVo.DictOptionVo>> result = new LinkedHashMap<>();
-        for (String dictTypeCode : dictTypeCodes) {
-            if (StrUtil.isNotBlank(dictTypeCode)) {
-                result.put(dictTypeCode, getOptions(dictTypeCode));
-            }
-        }
-        return result;
     }
 
     public String getLabel(String dictTypeCode, Object value) {

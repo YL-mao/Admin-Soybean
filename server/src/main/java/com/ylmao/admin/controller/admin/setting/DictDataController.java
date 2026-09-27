@@ -1,5 +1,4 @@
 package com.ylmao.admin.controller.admin.setting;
-import cn.hutool.core.util.StrUtil;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaMode;
@@ -25,8 +24,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.List;
-
 @Tag(name = "字典数据", description = "字典项 CRUD 与运行时选项")
 @RestController
 @RequestMapping("/api/admin/dictData")
@@ -42,16 +39,6 @@ public class DictDataController extends BaseController {
     public R<?> dictDataOptions(String dictTypeCode) {
         // 运行时字典选项，供表单下拉/单选使用；登录即可访问，无需字典管理权限。
         return R.ok(dictRuntimeService.getOptions(dictTypeCode));
-    }
-
-    @Operation(summary = "字典选项批量查询")
-    @Log(title = "字典选项批量查询", businessType = "QUERY")
-    @GetMapping("/optionsBatch")
-    public R<?> dictDataOptionsBatch(String dictTypeCodes) {
-        List<String> codeList = StrUtil.isBlank(dictTypeCodes)
-                ? List.of()
-                : StrUtil.splitTrim(dictTypeCodes, ',');
-        return R.ok(dictRuntimeService.getOptionsBatch(codeList));
     }
 
     @Operation(summary = "刷新字典缓存")

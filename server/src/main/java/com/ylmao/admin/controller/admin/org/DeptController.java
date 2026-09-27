@@ -24,14 +24,6 @@ public class DeptController extends BaseController {
 
     private final DeptService deptService;
 
-    @Operation(summary = "部门树")
-    @Log(title = "部门树查询", businessType = "QUERY")
-    @SaCheckPermission("system:dept:select")
-    @GetMapping("/tree")
-    public R<?> deptTree() {
-        return okData(deptService.listOptions());
-    }
-
     @Operation(summary = "部门列表")
     @Log(title = "部门列表查询", businessType = "QUERY")
     @SaCheckPermission("system:dept:select")

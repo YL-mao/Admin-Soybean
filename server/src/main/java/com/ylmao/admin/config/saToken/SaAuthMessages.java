@@ -11,9 +11,6 @@ public final class SaAuthMessages {
     /** 无权限 / 无角色：不回传具体权限码。 */
     public static final String NO_PERMISSION = "无操作权限";
 
-    /** 二次认证未通过。 */
-    public static final String NEED_SAFE = "请先完成安全验证";
-
     private SaAuthMessages() {
     }
 }

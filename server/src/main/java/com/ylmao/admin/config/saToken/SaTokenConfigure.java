@@ -60,6 +60,8 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                         .setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
                         .setHeader("Access-Control-Allow-Headers",
                                 "x-requested-with,content-type,saToken," + FingerprintKeys.Admin.DEVICE_ID_HEADER)
+                        // 验证码 Cookie / withCredentials 跨域需要；Origin 已白名单，不可用 *。
+                        .setHeader("Access-Control-Allow-Credentials", "true")
                         .setHeader("Access-Control-Max-Age", String.valueOf(3600))
                         .setHeader("Vary", "Origin");
             }
@@ -132,9 +134,6 @@ public class SaTokenConfigure implements WebMvcConfigurer {
     private R<Void> toAuthErrorR(Throwable e) {
         if (e instanceof NotLoginException) {
             return R.fail(401, SaAuthMessages.NOT_LOGIN);
-        }
-        if (e instanceof NotSafeException) {
-            return R.fail(403, SaAuthMessages.NEED_SAFE);
         }
         if (e instanceof NotPermissionException || e instanceof NotRoleException) {
             return R.fail(403, SaAuthMessages.NO_PERMISSION);
