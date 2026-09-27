@@ -44,16 +44,16 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
   },
   columns: () => [
     { type: 'selection', align: 'center', width: 48 },
-    { key: 'policyModeName', title: $t('page.autobox.filter.policyMode'), align: 'center' },
-    { key: 'filterTypeName', title: $t('page.autobox.filter.filterType'), align: 'center' },
-    { key: 'valueLabel', title: $t('page.autobox.filter.valueLabel'), align: 'center' },
-    { key: 'filterSourceName', title: $t('page.autobox.filter.filterSource'), align: 'center' },
-    { key: 'filterDesc', title: $t('page.autobox.filter.filterDesc'), align: 'center' },
+    { key: 'policyModeName', title: $t('page.ops.filter.policyMode'), align: 'center' },
+    { key: 'filterTypeName', title: $t('page.ops.filter.filterType'), align: 'center' },
+    { key: 'valueLabel', title: $t('page.ops.filter.valueLabel'), align: 'center' },
+    { key: 'filterSourceName', title: $t('page.ops.filter.filterSource'), align: 'center' },
+    { key: 'filterDesc', title: $t('page.ops.filter.filterDesc'), align: 'center' },
     {
       key: 'expireTime',
-      title: $t('page.autobox.filter.expireTime'),
+      title: $t('page.ops.filter.expireTime'),
       align: 'center',
-      render: row => (row.permanent === 1 ? $t('page.autobox.filter.permanent') : row.expireTime)
+      render: row => (row.permanent === 1 ? $t('page.ops.filter.permanent') : row.expireTime)
     },
     {
       key: 'isEnabled',
@@ -81,7 +81,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
         );
       }
     },
-    { key: 'createTime', title: $t('page.autobox.filter.createTime'), align: 'center' },
+    { key: 'createTime', title: $t('page.ops.filter.createTime'), align: 'center' },
     {
       key: 'operate',
       title: $t('common.operate'),
@@ -144,7 +144,7 @@ async function handleUpdateEnabled(row: Api.SystemManage.Filter, checked: boolea
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <FilterSearch v-model:model="searchParams" @search="getDataByPage" />
     <NCard
-      :title="$t('page.autobox.filter.title')"
+      :title="$t('page.ops.filter.title')"
       :bordered="false"
       size="small"
       class="card-wrapper sm:flex-1-hidden"
@@ -158,7 +158,7 @@ async function handleUpdateEnabled(row: Api.SystemManage.Filter, checked: boolea
             type="primary"
             @click="securityConfigVisible = true"
           >
-            {{ $t('page.autobox.filter.securityConfig') }}
+            {{ $t('page.ops.filter.securityConfig') }}
           </NButton>
           <TableHeaderOperation
             v-model:columns="columnChecks"
@@ -197,7 +197,7 @@ async function handleUpdateEnabled(row: Api.SystemManage.Filter, checked: boolea
         v-model:visible="securityConfigVisible"
         config-group="security"
         perm-code="system:config:security"
-        :title="$t('page.autobox.filter.securityConfig')"
+        :title="$t('page.ops.filter.securityConfig')"
       />
     </NCard>
   </div>

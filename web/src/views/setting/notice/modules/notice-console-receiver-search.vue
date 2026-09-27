@@ -16,8 +16,8 @@ const model = defineModel<Api.SystemManage.NoticeConsoleReceiverSearchParams>('m
 const defaultModel = jsonClone(toRaw(model.value));
 
 const readOptions = [
-  { label: $t('page.autobox.notice.consoleUnread'), value: 0 },
-  { label: $t('page.autobox.notice.consoleRead'), value: 1 }
+  { label: $t('page.setting.notice.consoleUnread'), value: 0 },
+  { label: $t('page.setting.notice.consoleRead'), value: 1 }
 ];
 
 watch(
@@ -48,12 +48,12 @@ function search() {
       <NCollapseItem :title="$t('common.search')" name="notice-console-receiver-search">
         <NForm :model="model" label-placement="left" :label-width="80">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:8" :label="$t('page.autobox.notice.consoleReadState')" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:8" :label="$t('page.setting.notice.consoleReadState')" class="pr-24px">
               <NSelect
                 v-model:value="model.readState"
                 clearable
                 :options="readOptions"
-                :placeholder="$t('page.autobox.notice.form.consoleReadState')"
+                :placeholder="$t('page.setting.notice.form.consoleReadState')"
               />
             </NFormItemGi>
             <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">

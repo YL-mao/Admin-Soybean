@@ -77,7 +77,7 @@ async function openNotice(noticeId: string) {
 async function handleReadAll() {
   const ok = await noticeStore.readAll();
   if (!ok) return;
-  window.$message?.success($t('page.autobox.account.noticeReadAllSuccess'));
+  window.$message?.success($t('page.account.noticeReadAllSuccess'));
 }
 
 async function goInbox() {
@@ -126,9 +126,9 @@ onMounted(() => {
 
     <div class="user-notice-popover">
       <div class="mb-8px flex items-center justify-between px-4px">
-        <span class="text-14px font-600">{{ $t('page.autobox.account.noticeTitle') }}</span>
+        <span class="text-14px font-600">{{ $t('page.account.noticeTitle') }}</span>
         <NButton text type="primary" size="tiny" :disabled="!noticeStore.unreadCount" @click="handleReadAll">
-          {{ $t('page.autobox.account.noticeReadAll') }}
+          {{ $t('page.account.noticeReadAll') }}
         </NButton>
       </div>
 
@@ -164,15 +164,15 @@ onMounted(() => {
                 <span v-if="item.time" class="mt-2px text-12px text-gray-400">{{ item.time }}</span>
               </button>
             </div>
-            <NEmpty v-else class="py-16px" :description="$t('page.autobox.account.noticeEmptyUnread')" size="small" />
+            <NEmpty v-else class="py-16px" :description="$t('page.account.noticeEmptyUnread')" size="small" />
           </div>
         </template>
-        <NEmpty v-else class="py-16px" :description="$t('page.autobox.account.noticeEmptyUnread')" size="small" />
+        <NEmpty v-else class="py-16px" :description="$t('page.account.noticeEmptyUnread')" size="small" />
       </NSpin>
 
       <div v-if="canOpenInbox" class="mt-8px border-t border-gray-100 pt-8px text-center dark:border-gray-700">
         <NButton text type="primary" size="small" @click="goInbox">
-          {{ $t('page.autobox.account.noticeViewAll') }}
+          {{ $t('page.account.noticeViewAll') }}
         </NButton>
       </div>
     </div>

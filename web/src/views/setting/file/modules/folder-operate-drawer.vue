@@ -34,7 +34,7 @@ const { formRef, validate, restoreValidation } = useNaiveForm();
 const { defaultRequiredRule } = useFormRules();
 
 const title = computed(() =>
-  props.operateType === 'add' ? $t('page.autobox.file.addFolder') : $t('page.autobox.file.editFolder')
+  props.operateType === 'add' ? $t('page.setting.file.addFolder') : $t('page.setting.file.editFolder')
 );
 
 type Model = {
@@ -65,7 +65,7 @@ function handleInitModel() {
   const excludeId = props.operateType === 'edit' ? props.rowData?.folderId : null;
   parentOptions.value = mapFolderParentSelectOptions(
     props.folderList,
-    $t('page.autobox.file.rootFolder'),
+    $t('page.setting.file.rootFolder'),
     excludeId
   );
   model.value = createDefaultModel();
@@ -110,20 +110,20 @@ watch(visible, val => {
   <NDrawer v-model:show="visible" :width="480">
     <NDrawerContent :title="title" closable>
       <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" :label-width="90">
-        <NFormItem :label="$t('page.autobox.file.parentFolder')" path="parentId">
+        <NFormItem :label="$t('page.setting.file.parentFolder')" path="parentId">
           <NTreeSelect
             v-model:value="model.parentId"
             :options="parentOptions"
             key-field="key"
             label-field="label"
             default-expand-all
-            :placeholder="$t('page.autobox.file.form.parentFolder')"
+            :placeholder="$t('page.setting.file.form.parentFolder')"
           />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.file.folderName')" path="folderName">
-          <NInput v-model:value="model.folderName" :placeholder="$t('page.autobox.file.form.folderName')" />
+        <NFormItem :label="$t('page.setting.file.folderName')" path="folderName">
+          <NInput v-model:value="model.folderName" :placeholder="$t('page.setting.file.form.folderName')" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.file.orderNum')" path="orderNum">
+        <NFormItem :label="$t('page.setting.file.orderNum')" path="orderNum">
           <NInputNumber v-model:value="model.orderNum" :min="0" class="w-full" />
         </NFormItem>
       </NForm>

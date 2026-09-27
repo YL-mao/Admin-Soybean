@@ -66,14 +66,14 @@ const {
     { type: 'selection', align: 'center', width: 40 },
     {
       key: 'dictTypeName',
-      title: $t('page.autobox.dict.dictTypeName'),
+      title: $t('page.setting.dict.dictTypeName'),
       align: 'left',
       ellipsis: { tooltip: true },
       minWidth: 100
     },
     {
       key: 'dictTypeCode',
-      title: $t('page.autobox.dict.dictTypeCode'),
+      title: $t('page.setting.dict.dictTypeCode'),
       align: 'left',
       ellipsis: { tooltip: true },
       minWidth: 100
@@ -161,12 +161,12 @@ const {
       width: 64,
       render: (_, index) => index + 1
     },
-    { key: 'dictDataLabel', title: $t('page.autobox.dict.dictDataLabel'), align: 'center', minWidth: 100 },
-    { key: 'dictDataValue', title: $t('page.autobox.dict.dictDataValue'), align: 'center', minWidth: 100 },
-    { key: 'orderNum', title: $t('page.autobox.dict.orderNum'), align: 'center', width: 80 },
+    { key: 'dictDataLabel', title: $t('page.setting.dict.dictDataLabel'), align: 'center', minWidth: 100 },
+    { key: 'dictDataValue', title: $t('page.setting.dict.dictDataValue'), align: 'center', minWidth: 100 },
+    { key: 'orderNum', title: $t('page.setting.dict.orderNum'), align: 'center', width: 80 },
     {
       key: 'isDefault',
-      title: $t('page.autobox.dict.isDefault'),
+      title: $t('page.setting.dict.isDefault'),
       align: 'center',
       width: 90,
       render: row => (
@@ -275,7 +275,7 @@ function editData(dictDataId: string) {
 
 function openDataAdd() {
   if (!selectedType.value) {
-    window.$message?.warning($t('page.autobox.dict.selectTypeFirst'));
+    window.$message?.warning($t('page.setting.dict.selectTypeFirst'));
     return;
   }
   handleDataAdd();
@@ -374,7 +374,7 @@ async function handleDataDefault(row: Api.SystemManage.DictData, checked: boolea
 
 async function handleRefreshCache() {
   if (!selectedType.value) {
-    window.$message?.warning($t('page.autobox.dict.selectTypeFirst'));
+    window.$message?.warning($t('page.setting.dict.selectTypeFirst'));
     return;
   }
   if (!guardAuth('system:dictData:update')) {
@@ -384,12 +384,12 @@ async function handleRefreshCache() {
   const { error } = await fetchRefreshDictCache(selectedType.value.dictTypeCode);
   refreshing.value = false;
   if (error) return;
-  window.$message?.success($t('page.autobox.dict.refreshSuccess'));
+  window.$message?.success($t('page.setting.dict.refreshSuccess'));
 }
 
 function handleDataSearch() {
   if (!selectedType.value) {
-    window.$message?.warning($t('page.autobox.dict.selectTypeFirst'));
+    window.$message?.warning($t('page.setting.dict.selectTypeFirst'));
     return;
   }
   getDataDataByPage();
@@ -403,7 +403,7 @@ function handleDataSearch() {
       <div class="flex-1 flex-col-stretch gap-16px overflow-hidden lt-sm:w-full">
         <DictTypeSearch v-model:model="typeSearchParams" @search="getTypeDataByPage" />
         <NCard
-          :title="$t('page.autobox.dict.typeTitle')"
+          :title="$t('page.setting.dict.typeTitle')"
           :bordered="false"
           size="small"
           class="card-wrapper sm:flex-1-hidden"
@@ -454,8 +454,8 @@ function handleDataSearch() {
         <NCard
           :title="
             selectedType
-              ? `${$t('page.autobox.dict.dataTitle')} - ${selectedType.dictTypeName}`
-              : $t('page.autobox.dict.dataTitle')
+              ? `${$t('page.setting.dict.dataTitle')} - ${selectedType.dictTypeName}`
+              : $t('page.setting.dict.dataTitle')
           "
           :bordered="false"
           size="small"
@@ -481,7 +481,7 @@ function handleDataSearch() {
                   :loading="refreshing"
                   @click="handleRefreshCache"
                 >
-                  {{ $t('page.autobox.dict.refreshCache') }}
+                  {{ $t('page.setting.dict.refreshCache') }}
                 </NButton>
               </template>
             </TableHeaderOperation>
@@ -506,7 +506,7 @@ function handleDataSearch() {
                     ? $t('common.noPermission')
                     : selectedType
                       ? $t('common.noData')
-                      : $t('page.autobox.dict.selectTypeFirst')
+                      : $t('page.setting.dict.selectTypeFirst')
                 "
               />
             </template>

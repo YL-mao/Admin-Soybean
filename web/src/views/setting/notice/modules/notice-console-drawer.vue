@@ -78,28 +78,28 @@ const {
     receiverSearch.value.size = params.pageSize || 10;
   },
   columns: () => [
-    { key: 'userAccount', title: $t('page.autobox.notice.consoleUserAccount'), align: 'center', minWidth: 120 },
-    { key: 'userName', title: $t('page.autobox.notice.consoleUserName'), align: 'center', minWidth: 100 },
-    { key: 'deptName', title: $t('page.autobox.notice.consoleDeptName'), align: 'center', minWidth: 120 },
+    { key: 'userAccount', title: $t('page.setting.notice.consoleUserAccount'), align: 'center', minWidth: 120 },
+    { key: 'userName', title: $t('page.setting.notice.consoleUserName'), align: 'center', minWidth: 100 },
+    { key: 'deptName', title: $t('page.setting.notice.consoleDeptName'), align: 'center', minWidth: 120 },
     {
       key: 'readState',
-      title: $t('page.autobox.notice.consoleReadState'),
+      title: $t('page.setting.notice.consoleReadState'),
       align: 'center',
       width: 100,
       render: (row: Api.SystemManage.NoticeConsoleReceiver) =>
         row.readState === 1 ? (
           <NTag type="success" size="small">
-            {$t('page.autobox.notice.consoleRead')}
+            {$t('page.setting.notice.consoleRead')}
           </NTag>
         ) : (
           <NTag type="warning" size="small">
-            {$t('page.autobox.notice.consoleUnread')}
+            {$t('page.setting.notice.consoleUnread')}
           </NTag>
         )
     },
     {
       key: 'readTime',
-      title: $t('page.autobox.notice.consoleReadTime'),
+      title: $t('page.setting.notice.consoleReadTime'),
       align: 'center',
       width: 170,
       render: (row: Api.SystemManage.NoticeConsoleReceiver) => row.readTime || '-'
@@ -234,17 +234,17 @@ function handleReceiverSearch() {
               </NTag>
               <div v-if="targetText" class="hero-meta shrink-0">
                 <SvgIcon icon="mdi:account-group-outline" class="text-15px opacity-80" />
-                <span class="opacity-80">{{ $t('page.autobox.notice.consoleTargets') }}</span>
+                <span class="opacity-80">{{ $t('page.setting.notice.consoleTargets') }}</span>
                 <span class="max-w-200px truncate font-500">{{ targetText }}</span>
               </div>
               <div class="hero-meta shrink-0">
                 <SvgIcon icon="mdi:clock-outline" class="text-15px opacity-80" />
-                <span class="opacity-80">{{ $t('page.autobox.notice.sendTime') }}</span>
+                <span class="opacity-80">{{ $t('page.setting.notice.sendTime') }}</span>
                 <span class="font-500">{{ stats.sendTime || '-' }}</span>
               </div>
               <div class="hero-meta shrink-0">
                 <SvgIcon icon="mdi:timer-sand" class="text-15px opacity-80" />
-                <span class="opacity-80">{{ $t('page.autobox.notice.expireTime') }}</span>
+                <span class="opacity-80">{{ $t('page.setting.notice.expireTime') }}</span>
                 <span class="font-500">{{ stats.expireTime || '-' }}</span>
               </div>
             </div>
@@ -262,7 +262,7 @@ function handleReceiverSearch() {
               >
                 <div class="flex-col-center">
                   <span class="text-22px font-700 text-primary">{{ stats.readRate || '0%' }}</span>
-                  <span class="mt-2px text-12px text-gray-400">{{ $t('page.autobox.notice.consoleReadRate') }}</span>
+                  <span class="mt-2px text-12px text-gray-400">{{ $t('page.setting.notice.consoleReadRate') }}</span>
                 </div>
               </NProgress>
             </div>
@@ -272,7 +272,7 @@ function handleReceiverSearch() {
                   <SvgIcon icon="mdi:account-multiple-outline" class="text-18px" />
                 </div>
                 <div class="min-w-0">
-                  <div class="text-12px text-gray-400">{{ $t('page.autobox.notice.consoleTotal') }}</div>
+                  <div class="text-12px text-gray-400">{{ $t('page.setting.notice.consoleTotal') }}</div>
                   <div class="mt-2px text-22px font-700">{{ stats.totalCount }}</div>
                 </div>
               </div>
@@ -281,7 +281,7 @@ function handleReceiverSearch() {
                   <SvgIcon icon="mdi:check-circle-outline" class="text-18px" />
                 </div>
                 <div class="min-w-0">
-                  <div class="text-12px text-gray-400">{{ $t('page.autobox.notice.consoleReadCount') }}</div>
+                  <div class="text-12px text-gray-400">{{ $t('page.setting.notice.consoleReadCount') }}</div>
                   <div class="mt-2px text-22px font-700 text-success">{{ stats.readCount }}</div>
                 </div>
               </div>
@@ -290,7 +290,7 @@ function handleReceiverSearch() {
                   <SvgIcon icon="mdi:email-outline" class="text-18px" />
                 </div>
                 <div class="min-w-0">
-                  <div class="text-12px text-gray-400">{{ $t('page.autobox.notice.consoleUnreadCount') }}</div>
+                  <div class="text-12px text-gray-400">{{ $t('page.setting.notice.consoleUnreadCount') }}</div>
                   <div class="mt-2px text-22px font-700 text-warning">{{ stats.unreadCount }}</div>
                 </div>
               </div>
@@ -300,7 +300,7 @@ function handleReceiverSearch() {
           <!-- 接收人明细：Soybean 统一列表 = 上搜索卡 + 下表格卡 -->
           <NoticeConsoleReceiverSearch v-model:model="receiverSearch" @search="handleReceiverSearch" />
           <NCard
-            :title="$t('page.autobox.notice.consoleReceiversTab')"
+            :title="$t('page.setting.notice.consoleReceiversTab')"
             :bordered="false"
             size="small"
             class="card-wrapper sm:flex-1-hidden"

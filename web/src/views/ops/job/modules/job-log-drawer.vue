@@ -36,7 +36,7 @@ function runStatusTagType(runStatus: string | null): NaiveUI.ThemeColor {
 }
 
 const drawerTitle = computed(() => {
-  const base = $t('page.autobox.jobLog.title');
+  const base = $t('page.ops.jobLog.title');
   return props.jobName ? `${base}（${props.jobName}）` : base;
 });
 
@@ -54,20 +54,20 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
     searchParams.value.size = params.pageSize;
   },
   columns: () => [
-    { key: 'startTime', title: $t('page.autobox.jobLog.startTime'), align: 'center', width: 170 },
-    { key: 'endTime', title: $t('page.autobox.jobLog.endTime'), align: 'center', width: 170 },
+    { key: 'startTime', title: $t('page.ops.jobLog.startTime'), align: 'center', width: 170 },
+    { key: 'endTime', title: $t('page.ops.jobLog.endTime'), align: 'center', width: 170 },
     {
       key: 'runStatusName',
-      title: $t('page.autobox.job.runStatus'),
+      title: $t('page.ops.job.runStatus'),
       align: 'center',
       width: 100,
       render: row => <NTag type={runStatusTagType(row.runStatus)}>{row.runStatusName}</NTag>
     },
-    { key: 'triggerTypeName', title: $t('page.autobox.jobLog.triggerType'), align: 'center', width: 100 },
-    { key: 'costMs', title: $t('page.autobox.jobLog.costMs'), align: 'center', width: 100 },
+    { key: 'triggerTypeName', title: $t('page.ops.jobLog.triggerType'), align: 'center', width: 100 },
+    { key: 'costMs', title: $t('page.ops.jobLog.costMs'), align: 'center', width: 100 },
     {
       key: 'message',
-      title: $t('page.autobox.jobLog.message'),
+      title: $t('page.ops.jobLog.message'),
       align: 'center',
       minWidth: 180,
       ellipsis: { tooltip: true }
@@ -103,7 +103,7 @@ watch(
           @search="getDataByPage"
         />
         <NCard
-          :title="$t('page.autobox.jobLog.title')"
+          :title="$t('page.ops.jobLog.title')"
           :bordered="false"
           size="small"
           class="card-wrapper sm:flex-1-hidden"

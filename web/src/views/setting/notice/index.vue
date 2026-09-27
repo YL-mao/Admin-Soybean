@@ -56,7 +56,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
     { type: 'selection', align: 'center', width: 48 },
     {
       key: 'noticeTitle',
-      title: $t('page.autobox.notice.noticeTitle'),
+      title: $t('page.setting.notice.noticeTitle'),
       align: 'center',
       minWidth: 120,
       render: row => (
@@ -64,12 +64,12 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
         <span class="notice-title" innerHTML={row.noticeTitle} onClick={() => openDetail(row)} />
       )
     },
-    { key: 'noticeTypeName', title: $t('page.autobox.notice.noticeType'), align: 'center', minWidth: 100 },
-    { key: 'receiverTypeName', title: $t('page.autobox.notice.receiverType'), align: 'center', minWidth: 100 },
-    { key: 'orderNum', title: $t('page.autobox.dict.orderNum'), align: 'center', width: 80 },
+    { key: 'noticeTypeName', title: $t('page.setting.notice.noticeType'), align: 'center', minWidth: 100 },
+    { key: 'receiverTypeName', title: $t('page.setting.notice.receiverType'), align: 'center', minWidth: 100 },
+    { key: 'orderNum', title: $t('page.setting.dict.orderNum'), align: 'center', width: 80 },
     {
       key: 'isSend',
-      title: $t('page.autobox.notice.publishStatus'),
+      title: $t('page.setting.notice.publishStatus'),
       align: 'center',
       width: 100,
       render: row => (
@@ -80,14 +80,14 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
           onUpdateValue={value => handlePublish(row, value)}
         >
           {{
-            checked: () => $t('page.autobox.notice.published'),
-            unchecked: () => $t('page.autobox.notice.draft')
+            checked: () => $t('page.setting.notice.published'),
+            unchecked: () => $t('page.setting.notice.draft')
           }}
         </NSwitch>
       )
     },
-    { key: 'sendTime', title: $t('page.autobox.notice.sendTime'), align: 'center', width: 170 },
-    { key: 'expireTime', title: $t('page.autobox.notice.expireTime'), align: 'center', width: 170 },
+    { key: 'sendTime', title: $t('page.setting.notice.sendTime'), align: 'center', width: 170 },
+    { key: 'expireTime', title: $t('page.setting.notice.expireTime'), align: 'center', width: 170 },
     {
       key: 'operate',
       title: $t('common.operate'),
@@ -103,7 +103,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
               disabled={row.isSend !== 1}
               onClick={() => openConsole(row)}
             >
-              {$t('page.autobox.notice.console')}
+              {$t('page.setting.notice.console')}
             </NButton>
           )}
           {hasAuth('system:notice:update') && row.isSend !== 1 && (
@@ -165,7 +165,7 @@ async function openConsoleFromQuery(noticeId: string) {
   }
   const local = data.value.find(item => item.noticeId === noticeId);
   if (local && local.isSend !== 1) {
-    window.$message?.warning($t('page.autobox.notice.consoleUnpublishedTip'));
+    window.$message?.warning($t('page.setting.notice.consoleUnpublishedTip'));
     await clearConsoleQuery(noticeId);
     return;
   }
@@ -180,7 +180,7 @@ async function openConsoleFromQuery(noticeId: string) {
     if (error || !statsData) {
       // 有 error 时请求层已弹过后端文案，避免再叠一条 tip
       if (!error) {
-        window.$message?.warning($t('page.autobox.notice.consoleOpenFailedTip'));
+        window.$message?.warning($t('page.setting.notice.consoleOpenFailedTip'));
       }
       await clearConsoleQuery(noticeId);
       return;
@@ -250,7 +250,7 @@ async function handleDelete(noticeId: string) {
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <NoticeSearch v-model:model="searchParams" @search="getDataByPage" />
     <NCard
-      :title="$t('page.autobox.notice.title')"
+      :title="$t('page.setting.notice.title')"
       :bordered="false"
       size="small"
       class="card-wrapper sm:flex-1-hidden"
@@ -264,7 +264,7 @@ async function handleDelete(noticeId: string) {
             type="primary"
             @click="noticeConfigVisible = true"
           >
-            {{ $t('page.autobox.notice.noticeConfig') }}
+            {{ $t('page.setting.notice.noticeConfig') }}
           </NButton>
           <TableHeaderOperation
             v-model:columns="columnChecks"
@@ -306,9 +306,9 @@ async function handleDelete(noticeId: string) {
         v-model:visible="noticeConfigVisible"
         config-group="notice"
         perm-code="system:config:notice"
-        :title="$t('page.autobox.notice.noticeConfig')"
+        :title="$t('page.setting.notice.noticeConfig')"
       />
-      <NModal v-model:show="detailVisible" preset="card" :title="$t('page.autobox.notice.detailTitle')" class="w-640px">
+      <NModal v-model:show="detailVisible" preset="card" :title="$t('page.setting.notice.detailTitle')" class="w-640px">
         <!-- 标题、正文都已在服务端按白名单清洗 -->
         <!-- eslint-disable-next-line vue/no-v-html -->
         <div class="notice-html text-center text-16px font-600" v-html="detailRow?.noticeTitle || ''"></div>

@@ -44,25 +44,25 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
     },
     {
       key: 'postName',
-      title: $t('page.autobox.post.postName'),
+      title: $t('page.org.post.postName'),
       align: 'center',
       minWidth: 120
     },
     {
       key: 'postCode',
-      title: $t('page.autobox.post.postCode'),
+      title: $t('page.org.post.postCode'),
       align: 'center',
       minWidth: 120
     },
     {
       key: 'postTypeName',
-      title: $t('page.autobox.post.postType'),
+      title: $t('page.org.post.postType'),
       align: 'center',
       width: 100
     },
     {
       key: 'orderNum',
-      title: $t('page.autobox.post.orderNum'),
+      title: $t('page.org.post.orderNum'),
       align: 'center',
       width: 80
     },
@@ -159,7 +159,7 @@ function edit(postId: string) {
 <template>
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <PostSearch v-model:model="searchParams" @search="getDataByPage" />
-    <NCard :title="$t('page.autobox.post.title')" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
+    <NCard :title="$t('page.org.post.title')" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
       <template #header-extra>
         <TableHeaderOperation
           v-model:columns="columnChecks"

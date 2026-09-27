@@ -19,8 +19,8 @@ const defaultModel = jsonClone(toRaw(model.value));
 const typeOptions = ref<{ label: string; value: number }[]>([]);
 
 const readOptions = [
-  { label: $t('page.autobox.account.noticeUnread'), value: 0 },
-  { label: $t('page.autobox.account.noticeRead'), value: 1 }
+  { label: $t('page.account.noticeUnread'), value: 0 },
+  { label: $t('page.account.noticeRead'), value: 1 }
 ];
 
 function resetModel() {
@@ -50,27 +50,27 @@ onMounted(async () => {
   <NCard :bordered="false" size="small" class="card-wrapper">
     <NForm :model="model" label-placement="left" :label-width="80" :show-feedback="false">
       <NGrid cols="1 s:2 m:4" responsive="screen" :x-gap="16" :y-gap="16">
-        <NFormItemGi :label="$t('page.autobox.notice.noticeTitle')" class="pr-24px">
+        <NFormItemGi :label="$t('page.setting.notice.noticeTitle')" class="pr-24px">
           <NInput
             v-model:value="model.noticeTitle"
             clearable
-            :placeholder="$t('page.autobox.notice.form.noticeTitle')"
+            :placeholder="$t('page.setting.notice.form.noticeTitle')"
           />
         </NFormItemGi>
-        <NFormItemGi :label="$t('page.autobox.notice.noticeType')" class="pr-24px">
+        <NFormItemGi :label="$t('page.setting.notice.noticeType')" class="pr-24px">
           <NSelect
             v-model:value="model.noticeType"
             clearable
             :options="typeOptions"
-            :placeholder="$t('page.autobox.notice.form.noticeType')"
+            :placeholder="$t('page.setting.notice.form.noticeType')"
           />
         </NFormItemGi>
-        <NFormItemGi :label="$t('page.autobox.account.noticeReadState')" class="pr-24px">
+        <NFormItemGi :label="$t('page.account.noticeReadState')" class="pr-24px">
           <NSelect
             v-model:value="model.readState"
             clearable
             :options="readOptions"
-            :placeholder="$t('page.autobox.account.form.noticeReadState')"
+            :placeholder="$t('page.account.form.noticeReadState')"
           />
         </NFormItemGi>
         <NFormItemGi class="pr-24px">

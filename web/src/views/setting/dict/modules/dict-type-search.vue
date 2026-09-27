@@ -32,8 +32,8 @@ function search() {
       <NCollapseItem :title="$t('common.search')" name="dict-type-search">
         <NForm :model="model" label-placement="left" :label-width="80">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:12" :label="$t('page.autobox.dict.dictTypeName')" path="dictTypeName" class="pr-24px">
-              <NInput v-model:value="model.dictTypeName" :placeholder="$t('page.autobox.dict.form.dictTypeName')" />
+            <NFormItemGi span="24 s:12 m:12" :label="$t('page.setting.dict.dictTypeName')" path="dictTypeName" class="pr-24px">
+              <NInput v-model:value="model.dictTypeName" :placeholder="$t('page.setting.dict.form.dictTypeName')" />
             </NFormItemGi>
             <!-- Soybean：操作行占满一行，按钮靠右下 -->
             <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">

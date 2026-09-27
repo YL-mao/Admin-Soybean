@@ -1,6 +1,6 @@
 <div align="center">
   <img src="./docs/brand/logo.png" alt="YLmao · Moon Cat" width="220" />
-  <h1>YLmao-Soybean Admin</h1>
+  <h1>Admin-Soybean</h1>
   <p>A full-stack admin scaffold</p>
   <p>
     <a href="./README.md">English</a> · <a href="./README.zh-CN.md">中文</a>

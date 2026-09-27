@@ -58,7 +58,7 @@ async function refresh() {
 async function handleReadAll() {
   const ok = await noticeStore.readAll();
   if (!ok) return;
-  window.$message?.success($t('page.autobox.account.noticeReadAllSuccess'));
+  window.$message?.success($t('page.account.noticeReadAllSuccess'));
 }
 
 async function openNotice(noticeId: string) {
@@ -115,7 +115,7 @@ onMounted(() => {
           :loading="noticeStore.loading"
           @click="handleReadAll"
         >
-          {{ $t('page.autobox.account.noticeReadAll') }}
+          {{ $t('page.account.noticeReadAll') }}
         </NButton>
         <NButton v-if="canOpenInbox" size="tiny" quaternary @click="goInbox">
           {{ $t('page.home.viewAll') }}
@@ -158,7 +158,7 @@ onMounted(() => {
         </button>
       </div>
       <div v-else class="panel-empty">
-        <NEmpty :description="$t('page.autobox.account.noticeEmptyUnread')" />
+        <NEmpty :description="$t('page.account.noticeEmptyUnread')" />
       </div>
     </NSpin>
   </NCard>

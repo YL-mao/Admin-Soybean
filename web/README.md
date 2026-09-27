@@ -4,7 +4,7 @@
   <span>中文 | <a href="./README.en_US.md">English</a></span>
 </div>
 
-> **本仓库用法**：`web/` 为 **YLmao-Soybean** monorepo 前端。整仓快速开始与后端对接见根目录 [README.md](../README.md)（English）/ [README.zh-CN.md](../README.zh-CN.md)（中文）。以下为 Soybean 上游模板说明。
+> **本仓库用法**：`web/` 为 **Admin-Soybean** monorepo 前端。整仓快速开始与后端对接见根目录 [README.md](../README.md)（English）/ [README.zh-CN.md](../README.zh-CN.md)（中文）。以下为 Soybean 上游模板说明。
 
 ---
 

@@ -56,14 +56,14 @@ async function handleUserSearch(keyword: string) {
       <NCollapseItem :title="$t('common.search')" name="online-search">
         <NForm :model="model" label-placement="left" :label-width="80">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:8" :label="$t('page.autobox.online.user')" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:8" :label="$t('page.ops.online.user')" class="pr-24px">
               <NSelect
                 v-model:value="model.userId"
                 filterable
                 remote
                 clearable
                 :options="userOptions"
-                :placeholder="$t('page.autobox.online.form.user')"
+                :placeholder="$t('page.ops.online.form.user')"
                 :disabled="!hasAuth('system:user:search')"
                 @search="handleUserSearch"
               />

@@ -1,4 +1,4 @@
-# YLmao-Soybean · 后端（server）
+# Admin-Soybean · 后端（server）
 
 本目录为 **Spring Boot 管理端 API**。完整说明见仓库根目录：
 

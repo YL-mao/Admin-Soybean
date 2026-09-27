@@ -42,10 +42,10 @@ export const lockFlagOptions: CommonType.Option<Api.SystemManage.EnabledFlag, Ap
 
 /** 岗位类型：1 管理 2 技术 3 运营 4 市场 */
 export const postTypeRecord: Record<Api.SystemManage.PostType, App.I18n.I18nKey> = {
-  1: 'page.autobox.post.postTypeOptions.manage',
-  2: 'page.autobox.post.postTypeOptions.tech',
-  3: 'page.autobox.post.postTypeOptions.ops',
-  4: 'page.autobox.post.postTypeOptions.market'
+  1: 'page.org.post.postTypeOptions.manage',
+  2: 'page.org.post.postTypeOptions.tech',
+  3: 'page.org.post.postTypeOptions.ops',
+  4: 'page.org.post.postTypeOptions.market'
 };
 
 export const postTypeOptions: CommonType.Option<Api.SystemManage.PostType, App.I18n.I18nKey>[] = [

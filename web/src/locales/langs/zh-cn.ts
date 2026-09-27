@@ -1,6 +1,6 @@
 const local: App.I18n.Schema = {
   system: {
-    title: 'AdminSoybean',
+    title: 'Admin-Soybean',
     updateTitle: '系统版本更新通知',
     updateContent: '检测到系统有新版本发布，是否立即刷新页面？',
     updateConfirm: '立即刷新',
@@ -378,7 +378,9 @@ const local: App.I18n.Schema = {
           layout: '请选择布局组件',
           i18nKey: '请输入国际化key',
           icon: '搜索 MDI 图标，如 home',
+          iconInvalid: '请从下拉选择本地 MDI 图标',
           localIcon: '请选择本地图标',
+          localIconInvalid: '请从下拉选择本地图标',
           order: '请输入排序',
           keepAlive: '请选择是否缓存路由',
           href: '请输入外链',
@@ -403,7 +405,7 @@ const local: App.I18n.Schema = {
         }
       }
     },
-    autobox: {
+    org: {
       post: {
         title: '岗位列表',
         postName: '岗位名称',
@@ -447,7 +449,9 @@ const local: App.I18n.Schema = {
           orderNum: '请输入排序',
           status: '请选择状态'
         }
-      },
+      }
+    },
+    setting: {
       dict: {
         typeTitle: '字典类型',
         dataTitle: '字典数据',
@@ -554,6 +558,49 @@ const local: App.I18n.Schema = {
         consoleUnpublishedTip: '仅已发布公告可查看控制台',
         consoleOpenFailedTip: '无法打开控制台，公告不存在或未发布'
       },
+      file: {
+        title: '文件列表',
+        folderTitle: '目录',
+        rootFolder: '根目录',
+        parentFolder: '上级目录',
+        folderName: '目录名称',
+        currentFolder: '当前目录',
+        fileName: '文件名称',
+        fileSize: '文件大小',
+        sceneName: '业务场景',
+        createTime: '上传时间',
+        fileScene: '业务场景',
+        needLogin: '需登录访问',
+        pickFile: '选择文件',
+        uploadFile: '上传文件',
+        uploadConfig: '上传配置',
+        fileDetail: '文件详情',
+        download: '下载',
+        overwrite: '覆盖上传',
+        addFolder: '新增目录',
+        editFolder: '编辑目录',
+        orderNum: '排序',
+        sceneImage: '图片',
+        sceneDocument: '文档',
+        sceneExcel: '表格',
+        uploadToUnclassified: '根目录上传将保存到「未分类」',
+        deleteFolderConfirm: '删除目录将同时软删其子目录与文件，确认继续？',
+        deleteReferenced: '文件可能仍被引用，确认删除？',
+        fileTooLarge: '文件超过大小限制（{size} MB）',
+        uploadHint: '最大 {size} MB，允许后缀：{accept}',
+        loadRulesFailed: '加载上传规则失败，请检查上传开关与配置',
+        accessUrl: '访问地址',
+        previewFailed: '预览失败',
+        downloadFailed: '下载失败',
+        form: {
+          fileName: '请输入文件名称',
+          folderName: '请输入目录名称',
+          parentFolder: '请选择上级目录',
+          pickFile: '请选择要上传的文件'
+        }
+      }
+    },
+    ops: {
       operateLog: {
         title: '行为日志',
         operateTitle: '操作模块',
@@ -694,108 +741,69 @@ const local: App.I18n.Schema = {
         form: {
           user: '请输入账号或姓名搜索'
         }
-      },
-      file: {
-        title: '文件列表',
-        folderTitle: '目录',
-        rootFolder: '根目录',
-        parentFolder: '上级目录',
-        folderName: '目录名称',
-        currentFolder: '当前目录',
-        fileName: '文件名称',
-        fileSize: '文件大小',
-        sceneName: '业务场景',
-        createTime: '上传时间',
-        fileScene: '业务场景',
-        needLogin: '需登录访问',
-        pickFile: '选择文件',
-        uploadFile: '上传文件',
-        uploadConfig: '上传配置',
-        fileDetail: '文件详情',
-        download: '下载',
-        overwrite: '覆盖上传',
-        addFolder: '新增目录',
-        editFolder: '编辑目录',
-        orderNum: '排序',
-        sceneImage: '图片',
-        sceneDocument: '文档',
-        sceneExcel: '表格',
-        uploadToUnclassified: '根目录上传将保存到「未分类」',
-        deleteFolderConfirm: '删除目录将同时软删其子目录与文件，确认继续？',
-        deleteReferenced: '文件可能仍被引用，确认删除？',
-        fileTooLarge: '文件超过大小限制（{size} MB）',
-        uploadHint: '最大 {size} MB，允许后缀：{accept}',
-        loadRulesFailed: '加载上传规则失败，请检查上传开关与配置',
-        accessUrl: '访问地址',
-        previewFailed: '预览失败',
-        downloadFailed: '下载失败',
-        form: {
-          fileName: '请输入文件名称',
-          folderName: '请输入目录名称',
-          parentFolder: '请选择上级目录',
-          pickFile: '请选择要上传的文件'
-        }
-      },
+      }
+    },
+    dev: {
       apidoc: {
         title: '接口文档',
         desc: '开发环境本页嵌入 Swagger UI；OpenAPI 与试调均携带登录 saToken。',
         openDoc: '打开 Swagger UI',
         devOnly: '接口文档仅在开发环境可用；生产环境已关闭 springdoc。'
-      },
-
-      account: {
-        infoTitle: '个人中心',
-        noticeTitle: '我的公告',
-        tabProfile: '基本资料',
-        tabPassword: '修改密码',
-        tabLoginLog: '最近登录',
-        userName: '用户昵称',
-        userAccount: '登录账号',
-        userEmail: '邮箱',
-        userPhone: '手机号',
-        deptName: '部门',
-        postName: '岗位',
-        roleNames: '角色',
-        createTime: '创建时间',
-        lastLoginTime: '最近登录',
-        oldPassword: '原密码',
-        newPassword: '新密码',
-        confirmPassword: '确认密码',
-        changePassword: '修改密码',
-        pwdChangedRelogin: '密码修改成功，请重新登录',
-        avatarHint: '点击更换',
-        avatarUploading: '上传中…',
-        avatarUpdated: '头像已更新',
-        sectionEditable: '可编辑资料',
-        sectionReadonly: '组织与账号',
-        pwdHint: '密码需 8～64 位，且包含字母、数字和特殊字符；修改成功后需重新登录。',
-        loginTime: '登录时间',
-        loginIp: '登录 IP',
-        browser: '浏览器',
-        systemOs: '操作系统',
-        currentSession: '当前',
-        form: {
-          userName: '请输入用户昵称',
-          userEmail: '请输入邮箱',
-          userPhone: '请输入手机号',
-          oldPassword: '请输入原密码',
-          newPassword: '请输入新密码',
-          confirmPassword: '请再次输入新密码',
-          noticeReadState: '请选择阅读状态'
-        },
-        noticeReadState: '阅读状态',
-        noticeUnread: '未读',
-        noticeRead: '已读',
-        noticeReadTime: '阅读时间',
-        noticeView: '查看',
-        noticeDetail: '公告详情',
-        noticeReadAll: '全部已读',
-        noticeReadAllSuccess: '已全部标为已读',
-        noticeViewAll: '查看全部',
-        noticeEmptyUnread: '暂无未读公告',
-        noticeNotFound: '公告不存在或已过期'
       }
     },
+    account: {
+      infoTitle: '个人中心',
+      noticeTitle: '我的公告',
+      tabProfile: '基本资料',
+      tabPassword: '修改密码',
+      tabLoginLog: '最近登录',
+      userName: '用户昵称',
+      userAccount: '登录账号',
+      userEmail: '邮箱',
+      userPhone: '手机号',
+      deptName: '部门',
+      postName: '岗位',
+      roleNames: '角色',
+      createTime: '创建时间',
+      lastLoginTime: '最近登录',
+      oldPassword: '原密码',
+      newPassword: '新密码',
+      confirmPassword: '确认密码',
+      changePassword: '修改密码',
+      pwdChangedRelogin: '密码修改成功，请重新登录',
+      avatarHint: '点击更换',
+      avatarUploading: '上传中…',
+      avatarUpdated: '头像已更新',
+      sectionEditable: '可编辑资料',
+      sectionReadonly: '组织与账号',
+      pwdHint: '密码需 8～64 位，且包含字母、数字和特殊字符；修改成功后需重新登录。',
+      loginTime: '登录时间',
+      loginIp: '登录 IP',
+      browser: '浏览器',
+      systemOs: '操作系统',
+      currentSession: '当前',
+      form: {
+        userName: '请输入用户昵称',
+        userEmail: '请输入邮箱',
+        userPhone: '请输入手机号',
+        oldPassword: '请输入原密码',
+        newPassword: '请输入新密码',
+        confirmPassword: '请再次输入新密码',
+        noticeReadState: '请选择阅读状态'
+      },
+      noticeReadState: '阅读状态',
+      noticeUnread: '未读',
+      noticeRead: '已读',
+      noticeReadTime: '阅读时间',
+      noticeView: '查看',
+      noticeDetail: '公告详情',
+      noticeReadAll: '全部已读',
+      noticeReadAllSuccess: '已全部标为已读',
+      noticeViewAll: '查看全部',
+      noticeEmptyUnread: '暂无未读公告',
+      noticeNotFound: '公告不存在或已过期'
+    },
+
     login: {
       common: {
         loginOrRegister: '登录 / 注册',

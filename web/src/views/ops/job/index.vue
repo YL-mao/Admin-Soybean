@@ -56,10 +56,10 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
     searchParams.value.size = params.pageSize;
   },
   columns: () => [
-    { key: 'jobName', title: $t('page.autobox.job.jobName'), align: 'center', minWidth: 140 },
-    { key: 'jobCode', title: $t('page.autobox.job.jobCode'), align: 'center', minWidth: 140 },
-    { key: 'jobCronDesc', title: $t('page.autobox.job.jobCronDesc'), align: 'center', minWidth: 120 },
-    { key: 'jobDesc', title: $t('page.autobox.job.jobDesc'), align: 'center', minWidth: 180 },
+    { key: 'jobName', title: $t('page.ops.job.jobName'), align: 'center', minWidth: 140 },
+    { key: 'jobCode', title: $t('page.ops.job.jobCode'), align: 'center', minWidth: 140 },
+    { key: 'jobCronDesc', title: $t('page.ops.job.jobCronDesc'), align: 'center', minWidth: 120 },
+    { key: 'jobDesc', title: $t('page.ops.job.jobDesc'), align: 'center', minWidth: 180 },
     {
       key: 'isEnabled',
       title: $t('page.manage.common.status.enable'),
@@ -87,15 +87,15 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
         );
       }
     },
-    { key: 'lastRunTime', title: $t('page.autobox.job.lastRunTime'), align: 'center', minWidth: 160 },
+    { key: 'lastRunTime', title: $t('page.ops.job.lastRunTime'), align: 'center', minWidth: 160 },
     {
       key: 'runStatusName',
-      title: $t('page.autobox.job.runStatus'),
+      title: $t('page.ops.job.runStatus'),
       align: 'center',
       width: 100,
       render: row => <NTag type={runStatusTagType(row.runStatus)}>{row.runStatusName}</NTag>
     },
-    { key: 'nextRunTime', title: $t('page.autobox.job.nextRunTime'), align: 'center', minWidth: 160 },
+    { key: 'nextRunTime', title: $t('page.ops.job.nextRunTime'), align: 'center', minWidth: 160 },
     {
       key: 'operate',
       title: $t('common.operate'),
@@ -106,16 +106,16 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
         <div class="flex-center gap-8px">
           {hasAuth('system:job:log') && (
             <NButton size="small" ghost type="info" onClick={() => openLogDrawer(row)}>
-              {$t('page.autobox.job.viewLog')}
+              {$t('page.ops.job.viewLog')}
             </NButton>
           )}
           {hasAuth('system:job:run') && (
             <NPopconfirm onPositiveClick={() => handleRunOnce(row)}>
               {{
-                default: () => $t('page.autobox.job.runOnceConfirm'),
+                default: () => $t('page.ops.job.runOnceConfirm'),
                 trigger: () => (
                   <NButton size="small" ghost type="primary">
-                    {$t('page.autobox.job.runOnce')}
+                    {$t('page.ops.job.runOnce')}
                   </NButton>
                 )
               }}
@@ -141,7 +141,7 @@ async function handleRunOnce(row: Api.SystemManage.Job) {
   // 手动执行不受启停限制，与后端约定一致。
   const { error } = await fetchRunJob({ jobId: row.jobId });
   if (error) return;
-  window.$message?.success($t('page.autobox.job.runOnceSuccess'));
+  window.$message?.success($t('page.ops.job.runOnceSuccess'));
   getData();
 }
 </script>
@@ -149,7 +149,7 @@ async function handleRunOnce(row: Api.SystemManage.Job) {
 <template>
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <JobSearch v-model:model="searchParams" @search="getDataByPage" />
-    <NCard :title="$t('page.autobox.job.title')" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
+    <NCard :title="$t('page.ops.job.title')" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
       <template #header-extra>
         <NSpace>
           <NButton
@@ -159,7 +159,7 @@ async function handleRunOnce(row: Api.SystemManage.Job) {
             type="primary"
             @click="jobConfigVisible = true"
           >
-            {{ $t('page.autobox.job.jobConfig') }}
+            {{ $t('page.ops.job.jobConfig') }}
           </NButton>
           <TableHeaderOperation
             v-model:columns="columnChecks"
@@ -192,7 +192,7 @@ async function handleRunOnce(row: Api.SystemManage.Job) {
         v-model:visible="jobConfigVisible"
         config-group="job"
         perm-code="system:config:job"
-        :title="$t('page.autobox.job.jobConfig')"
+        :title="$t('page.ops.job.jobConfig')"
       />
     </NCard>
   </div>

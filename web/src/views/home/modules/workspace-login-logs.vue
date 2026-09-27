@@ -101,7 +101,7 @@ onMounted(() => {
             <div class="flex flex-wrap items-center gap-8px">
               <span class="log-time">{{ item.loginTime || '-' }}</span>
               <NTag v-if="item.current" size="small" type="success" :bordered="false" round>
-                {{ $t('page.autobox.account.currentSession') }}
+                {{ $t('page.account.currentSession') }}
               </NTag>
             </div>
             <div class="log-chips">

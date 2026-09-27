@@ -32,8 +32,8 @@ function search() {
       <NCollapseItem :title="$t('common.search')" name="file-search">
         <NForm :model="model" label-placement="left" :label-width="80">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:8" :label="$t('page.autobox.file.fileName')" class="pr-24px">
-              <NInput v-model:value="model.originalName" :placeholder="$t('page.autobox.file.form.fileName')" />
+            <NFormItemGi span="24 s:12 m:8" :label="$t('page.setting.file.fileName')" class="pr-24px">
+              <NInput v-model:value="model.originalName" :placeholder="$t('page.setting.file.form.fileName')" />
             </NFormItemGi>
             <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">
               <TableSearchActions @reset="resetModel" @search="search" />

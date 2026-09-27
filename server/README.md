@@ -1,4 +1,4 @@
-# YLmao-Soybean · Backend (server)
+# Admin-Soybean · Backend (server)
 
 Spring Boot admin API. Full docs:
 

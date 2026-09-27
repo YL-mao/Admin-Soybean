@@ -59,9 +59,9 @@ const isImage = computed(() => {
 
 const sceneLabel = computed(() => {
   const scene = props.rowData?.fileScene;
-  if (scene === 'image') return $t('page.autobox.file.sceneImage');
-  if (scene === 'document') return $t('page.autobox.file.sceneDocument');
-  if (scene === 'excel') return $t('page.autobox.file.sceneExcel');
+  if (scene === 'image') return $t('page.setting.file.sceneImage');
+  if (scene === 'document') return $t('page.setting.file.sceneDocument');
+  if (scene === 'excel') return $t('page.setting.file.sceneExcel');
   return scene || '-';
 });
 
@@ -79,7 +79,7 @@ async function loadPreview() {
   try {
     previewUrl.value = await fetchFileBlobUrl(props.rowData.accessUrl);
   } catch {
-    window.$message?.error($t('page.autobox.file.previewFailed'));
+    window.$message?.error($t('page.setting.file.previewFailed'));
   } finally {
     previewLoading.value = false;
   }
@@ -95,7 +95,7 @@ async function handleDownload() {
     anchor.click();
     URL.revokeObjectURL(url);
   } catch {
-    window.$message?.error($t('page.autobox.file.downloadFailed'));
+    window.$message?.error($t('page.setting.file.downloadFailed'));
   }
 }
 
@@ -159,29 +159,29 @@ onBeforeUnmount(revokePreview);
 
 <template>
   <NDrawer v-model:show="visible" :width="560">
-    <NDrawerContent :title="$t('page.autobox.file.fileDetail')" closable>
+    <NDrawerContent :title="$t('page.setting.file.fileDetail')" closable>
       <div v-if="rowData" class="flex-col gap-16px">
         <div v-if="isImage" class="h-200px flex-center overflow-hidden rd-8px bg-#fafafc dark:bg-#ffffff08">
           <NSpin :show="previewLoading">
             <NImage v-if="previewUrl" :src="previewUrl" object-fit="contain" class="max-h-200px" />
-            <NEmpty v-else-if="!previewLoading" :description="$t('page.autobox.file.previewFailed')" />
+            <NEmpty v-else-if="!previewLoading" :description="$t('page.setting.file.previewFailed')" />
           </NSpin>
         </div>
 
         <NDescriptions label-placement="left" :column="1" size="small">
-          <NDescriptionsItem :label="$t('page.autobox.file.fileName')">
+          <NDescriptionsItem :label="$t('page.setting.file.fileName')">
             {{ rowData.originalName }}
           </NDescriptionsItem>
-          <NDescriptionsItem :label="$t('page.autobox.file.fileSize')">
+          <NDescriptionsItem :label="$t('page.setting.file.fileSize')">
             {{ formatFileSize(rowData.fileSize) }}
           </NDescriptionsItem>
-          <NDescriptionsItem :label="$t('page.autobox.file.sceneName')">
+          <NDescriptionsItem :label="$t('page.setting.file.sceneName')">
             {{ sceneLabel }}
           </NDescriptionsItem>
-          <NDescriptionsItem :label="$t('page.autobox.file.createTime')">
+          <NDescriptionsItem :label="$t('page.setting.file.createTime')">
             {{ rowData.createTime || '-' }}
           </NDescriptionsItem>
-          <NDescriptionsItem :label="$t('page.autobox.file.accessUrl')">
+          <NDescriptionsItem :label="$t('page.setting.file.accessUrl')">
             <NText depth="3" class="break-all text-12px">{{ rowData.accessUrl }}</NText>
           </NDescriptionsItem>
         </NDescriptions>
@@ -194,10 +194,10 @@ onBeforeUnmount(revokePreview);
           label-placement="left"
           :label-width="90"
         >
-          <NFormItem :label="$t('page.autobox.file.fileName')" path="originalName">
-            <NInput v-model:value="model.originalName" :placeholder="$t('page.autobox.file.form.fileName')" />
+          <NFormItem :label="$t('page.setting.file.fileName')" path="originalName">
+            <NInput v-model:value="model.originalName" :placeholder="$t('page.setting.file.form.fileName')" />
           </NFormItem>
-          <NFormItem :label="$t('page.autobox.file.needLogin')" path="needLogin">
+          <NFormItem :label="$t('page.setting.file.needLogin')" path="needLogin">
             <NRadioGroup v-model:value="model.needLogin">
               <NRadio :value="1">{{ $t('common.yesOrNo.yes') }}</NRadio>
               <NRadio :value="0">{{ $t('common.yesOrNo.no') }}</NRadio>
@@ -206,9 +206,9 @@ onBeforeUnmount(revokePreview);
         </NForm>
 
         <NSpace>
-          <NButton size="small" @click="handleDownload">{{ $t('page.autobox.file.download') }}</NButton>
+          <NButton size="small" @click="handleDownload">{{ $t('page.setting.file.download') }}</NButton>
           <NButton v-if="canUpdate" size="small" @click="triggerOverwrite">
-            {{ $t('page.autobox.file.overwrite') }}
+            {{ $t('page.setting.file.overwrite') }}
           </NButton>
         </NSpace>
         <input ref="overwriteInput" type="file" class="hidden" @change="handleOverwriteChange" />

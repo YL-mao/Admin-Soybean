@@ -30,8 +30,8 @@ function search() {
       <NCollapseItem :title="$t('common.search')" name="dept-search">
         <NForm :model="model" label-placement="left" :label-width="80">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.dept.deptName')" path="deptName" class="pr-24px">
-              <NInput v-model:value="model.deptName" :placeholder="$t('page.autobox.dept.form.deptName')" />
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.org.dept.deptName')" path="deptName" class="pr-24px">
+              <NInput v-model:value="model.deptName" :placeholder="$t('page.org.dept.form.deptName')" />
             </NFormItemGi>
             <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">
               <TableSearchActions @reset="resetModel" @search="search" />

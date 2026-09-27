@@ -76,31 +76,31 @@ const {
   columns: () => [
     {
       key: 'loginTime',
-      title: $t('page.autobox.account.loginTime'),
+      title: $t('page.account.loginTime'),
       align: 'center',
       minWidth: 170
     },
     {
       key: 'loginIp',
-      title: $t('page.autobox.account.loginIp'),
+      title: $t('page.account.loginIp'),
       align: 'center',
       minWidth: 120
     },
     {
       key: 'browser',
-      title: $t('page.autobox.account.browser'),
+      title: $t('page.account.browser'),
       align: 'center',
       minWidth: 120
     },
     {
       key: 'systemOs',
-      title: $t('page.autobox.account.systemOs'),
+      title: $t('page.account.systemOs'),
       align: 'center',
       minWidth: 120
     },
     {
       key: 'current',
-      title: $t('page.autobox.account.currentSession'),
+      title: $t('page.account.currentSession'),
       align: 'center',
       width: 100,
       render: (row: Api.SystemManage.UserOwnLoginLog) =>
@@ -113,7 +113,7 @@ const {
 const passwordPolicyRule: App.Global.FormRule = {
   validator: (_rule, value: string) => {
     if (!value) {
-      return new Error($t('page.autobox.account.form.newPassword'));
+      return new Error($t('page.account.form.newPassword'));
     }
     if (value.length < 8 || value.length > 64) {
       return new Error($t('page.manage.user.passwordPolicy'));
@@ -132,8 +132,8 @@ const profileRules = {
 };
 
 const pwdRules = {
-  oldPassword: createRequiredRule($t('page.autobox.account.form.oldPassword')),
-  newPassword: [createRequiredRule($t('page.autobox.account.form.newPassword')), passwordPolicyRule],
+  oldPassword: createRequiredRule($t('page.account.form.oldPassword')),
+  newPassword: [createRequiredRule($t('page.account.form.newPassword')), passwordPolicyRule],
   confirmPassword: createConfirmPwdRule(toRef(pwdModel, 'newPassword'))
 };
 
@@ -165,12 +165,12 @@ const roleNames = computed(() => profile.value?.roleNames ?? []);
 
 /** 只读组织信息行 */
 const readonlyItems = computed(() => [
-  { label: $t('page.autobox.account.userAccount'), value: profile.value?.userAccount || '-' },
-  { label: $t('page.autobox.account.deptName'), value: profile.value?.deptName || '-' },
-  { label: $t('page.autobox.account.postName'), value: profile.value?.postName || '-' },
-  { label: $t('page.autobox.account.roleNames'), value: roleNames.value.length ? roleNames.value.join('、') : '-' },
-  { label: $t('page.autobox.account.createTime'), value: profile.value?.createTime || '-' },
-  { label: $t('page.autobox.account.lastLoginTime'), value: profile.value?.lastLoginTime || '-' }
+  { label: $t('page.account.userAccount'), value: profile.value?.userAccount || '-' },
+  { label: $t('page.account.deptName'), value: profile.value?.deptName || '-' },
+  { label: $t('page.account.postName'), value: profile.value?.postName || '-' },
+  { label: $t('page.account.roleNames'), value: roleNames.value.length ? roleNames.value.join('、') : '-' },
+  { label: $t('page.account.createTime'), value: profile.value?.createTime || '-' },
+  { label: $t('page.account.lastLoginTime'), value: profile.value?.lastLoginTime || '-' }
 ]);
 
 function fillProfileModel(detail: Api.SystemManage.UserProfileDetail) {
@@ -264,7 +264,7 @@ async function handleSavePassword() {
   });
   savingPwd.value = false;
   if (error) return;
-  window.$message?.success($t('page.autobox.account.pwdChangedRelogin'));
+  window.$message?.success($t('page.account.pwdChangedRelogin'));
   await authStore.resetStore();
 }
 
@@ -288,7 +288,7 @@ async function handleAvatarFileChange(event: Event) {
     const { error } = await fetchOverwriteFile(existingFileId, raw);
     uploadingAvatar.value = false;
     if (error) return;
-    window.$message?.success($t('page.autobox.account.avatarUpdated'));
+    window.$message?.success($t('page.account.avatarUpdated'));
     await loadDetail();
     return;
   }
@@ -305,7 +305,7 @@ async function handleAvatarFileChange(event: Event) {
   const { error: avatarError } = await fetchUpdateOwnAvatar(data.accessUrl);
   uploadingAvatar.value = false;
   if (avatarError) return;
-  window.$message?.success($t('page.autobox.account.avatarUpdated'));
+  window.$message?.success($t('page.account.avatarUpdated'));
   await loadDetail();
 }
 
@@ -368,7 +368,7 @@ onMounted(async () => {
               <div class="avatar-mask absolute inset-0 flex-col-center gap-4px bg-black/45 text-12px text-white">
                 <SvgIcon icon="mdi:camera-outline" class="text-22px" />
                 <span>
-                  {{ uploadingAvatar ? $t('page.autobox.account.avatarUploading') : $t('page.autobox.account.avatarHint') }}
+                  {{ uploadingAvatar ? $t('page.account.avatarUploading') : $t('page.account.avatarHint') }}
                 </span>
               </div>
             </div>
@@ -416,13 +416,13 @@ onMounted(async () => {
     <NCard :bordered="false" size="small" class="card-wrapper">
       <!-- 不用 animated：高度过渡会先裁切再撑开，看起来像「先一半后全部」 -->
       <NTabs :value="activeTab" type="segment" size="medium" @update:value="handleTabUpdate">
-        <NTabPane name="profile" :tab="$t('page.autobox.account.tabProfile')">
+        <NTabPane name="profile" :tab="$t('page.account.tabProfile')">
           <!-- 可编辑 / 只读：左右两栏；窄屏再叠成上下 -->
           <div class="grid grid-cols-1 gap-20px pt-16px md:grid-cols-2">
             <div class="section-panel min-w-0">
               <div class="section-title">
                 <SvgIcon icon="mdi:account-edit-outline" class="text-18px text-primary" />
-                <span>{{ $t('page.autobox.account.sectionEditable') }}</span>
+                <span>{{ $t('page.account.sectionEditable') }}</span>
               </div>
               <NForm
                 ref="profileFormRef"
@@ -432,10 +432,10 @@ onMounted(async () => {
                 label-placement="top"
                 require-mark-placement="right-hanging"
               >
-                <NFormItem :label="$t('page.autobox.account.userName')" path="userName">
+                <NFormItem :label="$t('page.account.userName')" path="userName">
                   <NInput
                     v-model:value="profileModel.userName"
-                    :placeholder="$t('page.autobox.account.form.userName')"
+                    :placeholder="$t('page.account.form.userName')"
                   />
                 </NFormItem>
                 <NFormItem :label="$t('page.manage.user.userSex')" path="userSex">
@@ -450,16 +450,16 @@ onMounted(async () => {
                     </NSpace>
                   </NRadioGroup>
                 </NFormItem>
-                <NFormItem :label="$t('page.autobox.account.userEmail')" path="userEmail">
+                <NFormItem :label="$t('page.account.userEmail')" path="userEmail">
                   <NInput
                     v-model:value="profileModel.userEmail"
-                    :placeholder="$t('page.autobox.account.form.userEmail')"
+                    :placeholder="$t('page.account.form.userEmail')"
                   />
                 </NFormItem>
-                <NFormItem :label="$t('page.autobox.account.userPhone')" path="userPhone">
+                <NFormItem :label="$t('page.account.userPhone')" path="userPhone">
                   <NInput
                     v-model:value="profileModel.userPhone"
-                    :placeholder="$t('page.autobox.account.form.userPhone')"
+                    :placeholder="$t('page.account.form.userPhone')"
                   />
                 </NFormItem>
                 <div class="mt-4px">
@@ -473,7 +473,7 @@ onMounted(async () => {
             <div class="section-panel min-w-0">
               <div class="section-title">
                 <SvgIcon icon="mdi:information-outline" class="text-18px text-primary" />
-                <span>{{ $t('page.autobox.account.sectionReadonly') }}</span>
+                <span>{{ $t('page.account.sectionReadonly') }}</span>
               </div>
               <div class="mt-8px flex-col gap-0">
                 <div v-for="item in readonlyItems" :key="item.label" class="info-row">
@@ -485,15 +485,15 @@ onMounted(async () => {
           </div>
         </NTabPane>
 
-        <NTabPane name="password" :tab="$t('page.autobox.account.tabPassword')">
+        <NTabPane name="password" :tab="$t('page.account.tabPassword')">
           <div class="mx-auto max-w-520px pt-16px">
             <div class="section-panel">
               <div class="section-title">
                 <SvgIcon icon="mdi:lock-reset" class="text-18px text-primary" />
-                <span>{{ $t('page.autobox.account.tabPassword') }}</span>
+                <span>{{ $t('page.account.tabPassword') }}</span>
               </div>
               <NAlert class="mb-16px mt-8px" type="warning" :bordered="false">
-                {{ $t('page.autobox.account.pwdHint') }}
+                {{ $t('page.account.pwdHint') }}
               </NAlert>
               <NForm
                 ref="pwdFormRef"
@@ -502,43 +502,43 @@ onMounted(async () => {
                 label-placement="top"
                 require-mark-placement="right-hanging"
               >
-                <NFormItem :label="$t('page.autobox.account.oldPassword')" path="oldPassword">
+                <NFormItem :label="$t('page.account.oldPassword')" path="oldPassword">
                   <NInput
                     v-model:value="pwdModel.oldPassword"
                     type="password"
                     show-password-on="click"
-                    :placeholder="$t('page.autobox.account.form.oldPassword')"
+                    :placeholder="$t('page.account.form.oldPassword')"
                   />
                 </NFormItem>
-                <NFormItem :label="$t('page.autobox.account.newPassword')" path="newPassword">
+                <NFormItem :label="$t('page.account.newPassword')" path="newPassword">
                   <NInput
                     v-model:value="pwdModel.newPassword"
                     type="password"
                     show-password-on="click"
-                    :placeholder="$t('page.autobox.account.form.newPassword')"
+                    :placeholder="$t('page.account.form.newPassword')"
                   />
                 </NFormItem>
-                <NFormItem :label="$t('page.autobox.account.confirmPassword')" path="confirmPassword">
+                <NFormItem :label="$t('page.account.confirmPassword')" path="confirmPassword">
                   <NInput
                     v-model:value="pwdModel.confirmPassword"
                     type="password"
                     show-password-on="click"
-                    :placeholder="$t('page.autobox.account.form.confirmPassword')"
+                    :placeholder="$t('page.account.form.confirmPassword')"
                   />
                 </NFormItem>
                 <NButton type="primary" block :loading="savingPwd" @click="handleSavePassword">
-                  {{ $t('page.autobox.account.changePassword') }}
+                  {{ $t('page.account.changePassword') }}
                 </NButton>
               </NForm>
             </div>
           </div>
         </NTabPane>
 
-        <NTabPane name="loginLog" :tab="$t('page.autobox.account.tabLoginLog')">
+        <NTabPane name="loginLog" :tab="$t('page.account.tabLoginLog')">
           <div class="section-panel mt-16px">
             <div class="section-title mb-12px">
               <SvgIcon icon="mdi:history" class="text-18px text-primary" />
-              <span>{{ $t('page.autobox.account.tabLoginLog') }}</span>
+              <span>{{ $t('page.account.tabLoginLog') }}</span>
             </div>
             <NDataTable
               size="small"

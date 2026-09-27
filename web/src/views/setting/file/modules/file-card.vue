@@ -62,9 +62,9 @@ const iconClass = computed(() => {
 
 const sceneLabel = computed(() => {
   const scene = props.item.fileScene;
-  if (scene === 'image') return $t('page.autobox.file.sceneImage');
-  if (scene === 'document') return $t('page.autobox.file.sceneDocument');
-  if (scene === 'excel') return $t('page.autobox.file.sceneExcel');
+  if (scene === 'image') return $t('page.setting.file.sceneImage');
+  if (scene === 'document') return $t('page.setting.file.sceneDocument');
+  if (scene === 'excel') return $t('page.setting.file.sceneExcel');
   return scene || '-';
 });
 

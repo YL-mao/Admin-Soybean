@@ -549,9 +549,13 @@ declare namespace App {
           goProfile: string;
           accountStatus: string;
         };
-        /** 系统管理示例页与 autobox 静态脚手架文案（结构见 zh-cn `page.manage` / `page.autobox`） */
+        /** 业务页文案（结构见 zh-cn `page.manage` / `page.org` / `page.setting` / `page.ops` / `page.dev` / `page.account`） */
         manage: Record<string, unknown>;
-        autobox: Record<string, unknown>;
+        org: Record<string, unknown>;
+        setting: Record<string, unknown>;
+        ops: Record<string, unknown>;
+        dev: Record<string, unknown>;
+        account: Record<string, unknown>;
       };
       form: {
         required: string;
@@ -591,7 +595,14 @@ declare namespace App {
         : K
       : never;
 
-    type I18nKey = GetI18nKey<Schema> | `page.manage.${string}` | `page.autobox.${string}`;
+    type I18nKey =
+      | GetI18nKey<Schema>
+      | `page.manage.${string}`
+      | `page.org.${string}`
+      | `page.setting.${string}`
+      | `page.ops.${string}`
+      | `page.dev.${string}`
+      | `page.account.${string}`;
 
     type TranslateOptions<Locales extends string> = import('vue-i18n').TranslateOptions<Locales>;
 
@@ -610,8 +621,8 @@ declare namespace App {
 
   /** Service namespace */
   namespace Service {
-    /** Other baseURL key */
-    type OtherBaseURLKey = 'demo';
+    /** Other baseURL key（预留多后端；当前无额外服务） */
+    type OtherBaseURLKey = string;
 
     interface ServiceConfigItem {
       /** The backend service base url */
@@ -644,16 +655,6 @@ declare namespace App {
       data: T;
       /** 分页总数（后端 R.count，与 data 列表并列） */
       count?: number | null;
-    };
-
-    /** The demo backend service response data */
-    type DemoResponse<T = unknown> = {
-      /** The backend service response code */
-      status: string;
-      /** The backend service response message */
-      message: string;
-      /** The backend service response data */
-      result: T;
     };
   }
 }

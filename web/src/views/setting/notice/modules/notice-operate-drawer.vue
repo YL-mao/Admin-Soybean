@@ -36,7 +36,7 @@ const { formRef, validate, restoreValidation } = useNaiveForm();
 const { defaultRequiredRule } = useFormRules();
 
 const title = computed(() =>
-  props.operateType === 'add' ? $t('page.autobox.notice.addNotice') : $t('page.autobox.notice.editNotice')
+  props.operateType === 'add' ? $t('page.setting.notice.addNotice') : $t('page.setting.notice.editNotice')
 );
 
 type Model = {
@@ -79,8 +79,8 @@ function createDefaultModel(): Model {
 }
 
 const sendOptions = [
-  { label: $t('page.autobox.notice.draft'), value: 0 },
-  { label: $t('page.autobox.notice.published'), value: 1 }
+  { label: $t('page.setting.notice.draft'), value: 0 },
+  { label: $t('page.setting.notice.published'), value: 1 }
 ];
 
 const rules = {
@@ -187,7 +187,7 @@ function buildPayload(): Api.SystemManage.NoticeInsert {
 async function handleSubmit() {
   await validate();
   if ((model.value.receiverType ?? 1) !== 1 && !model.value.receiverIdList.length) {
-    window.$message?.error($t('page.autobox.notice.form.receiverIds'));
+    window.$message?.error($t('page.setting.notice.form.receiverIds'));
     return;
   }
   submitting.value = true;
@@ -222,60 +222,60 @@ watch(visible, async val => {
   <NDrawer v-model:show="visible" :width="900">
     <NDrawerContent :title="title" closable>
       <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" :label-width="90">
-        <NFormItem :label="$t('page.autobox.notice.noticeTitle')" path="noticeTitle">
-          <NInput v-model:value="model.noticeTitle" :placeholder="$t('page.autobox.notice.form.noticeTitle')" />
+        <NFormItem :label="$t('page.setting.notice.noticeTitle')" path="noticeTitle">
+          <NInput v-model:value="model.noticeTitle" :placeholder="$t('page.setting.notice.form.noticeTitle')" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.notice.noticeContent')" path="noticeContent">
+        <NFormItem :label="$t('page.setting.notice.noticeContent')" path="noticeContent">
           <!-- 抽屉打开后再挂载，避免隐藏态初始化异常；key 保证增改切换时重建 -->
           <WangEditor
             v-if="visible && editorReady"
             :key="`${operateType}-${rowData?.noticeId || 'new'}`"
             v-model:value="model.noticeContent"
             :height="280"
-            :placeholder="$t('page.autobox.notice.form.noticeContent')"
+            :placeholder="$t('page.setting.notice.form.noticeContent')"
           />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.notice.noticeType')" path="noticeType">
+        <NFormItem :label="$t('page.setting.notice.noticeType')" path="noticeType">
           <NSelect
             v-model:value="model.noticeType"
             :options="typeOptions"
-            :placeholder="$t('page.autobox.notice.form.noticeType')"
+            :placeholder="$t('page.setting.notice.form.noticeType')"
           />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.notice.receiverType')" path="receiverType">
+        <NFormItem :label="$t('page.setting.notice.receiverType')" path="receiverType">
           <NSelect
             v-model:value="model.receiverType"
             :options="receiverTypeOptions"
-            :placeholder="$t('page.autobox.notice.form.receiverType')"
+            :placeholder="$t('page.setting.notice.form.receiverType')"
             @update:value="onReceiverTypeChange"
           />
         </NFormItem>
-        <NFormItem v-if="model.receiverType === 2" :label="$t('page.autobox.notice.form.receiverIds')">
+        <NFormItem v-if="model.receiverType === 2" :label="$t('page.setting.notice.form.receiverIds')">
           <NSelect v-model:value="model.receiverIdList" multiple :options="roleOptions" />
         </NFormItem>
-        <NFormItem v-else-if="model.receiverType === 3" :label="$t('page.autobox.notice.form.receiverIds')">
+        <NFormItem v-else-if="model.receiverType === 3" :label="$t('page.setting.notice.form.receiverIds')">
           <NSelect v-model:value="model.receiverIdList" multiple :options="deptOptions" />
         </NFormItem>
-        <NFormItem v-else-if="model.receiverType === 4" :label="$t('page.autobox.notice.form.receiverIds')">
+        <NFormItem v-else-if="model.receiverType === 4" :label="$t('page.setting.notice.form.receiverIds')">
           <NSelect
             :value="model.receiverIdList[0] ?? null"
             filterable
             remote
             clearable
             :options="userOptions"
-            :placeholder="$t('page.autobox.notice.form.receiverIds')"
+            :placeholder="$t('page.setting.notice.form.receiverIds')"
             :disabled="!hasAuth('system:user:search')"
             @update:value="(value: string | null) => (model.receiverIdList = value ? [value] : [])"
             @search="searchUser"
           />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.notice.noticeDesc')">
-          <NInput v-model:value="model.noticeDesc" :placeholder="$t('page.autobox.notice.form.noticeDesc')" />
+        <NFormItem :label="$t('page.setting.notice.noticeDesc')">
+          <NInput v-model:value="model.noticeDesc" :placeholder="$t('page.setting.notice.form.noticeDesc')" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.dict.orderNum')" path="orderNum">
+        <NFormItem :label="$t('page.setting.dict.orderNum')" path="orderNum">
           <NInputNumber v-model:value="model.orderNum" :min="0" class="w-full" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.notice.expireTime')">
+        <NFormItem :label="$t('page.setting.notice.expireTime')">
           <NDatePicker
             v-model:formatted-value="model.expireTime"
             type="datetime"
@@ -284,7 +284,7 @@ watch(visible, async val => {
             class="w-full"
           />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.notice.publishStatus')" path="isSend">
+        <NFormItem :label="$t('page.setting.notice.publishStatus')" path="isSend">
           <NRadioGroup v-model:value="model.isSend">
             <NRadio v-for="item in sendOptions" :key="item.value" :value="item.value">{{ item.label }}</NRadio>
           </NRadioGroup>

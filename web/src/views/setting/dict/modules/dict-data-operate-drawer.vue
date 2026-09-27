@@ -34,8 +34,8 @@ const { defaultRequiredRule } = useFormRules();
 
 const title = computed(() => {
   const titles: Record<NaiveUI.TableOperateType, string> = {
-    add: $t('page.autobox.dict.addDictData'),
-    edit: $t('page.autobox.dict.editDictData')
+    add: $t('page.setting.dict.addDictData'),
+    edit: $t('page.setting.dict.editDictData')
   };
   return titles[props.operateType];
 });
@@ -86,7 +86,7 @@ function handleInitModel() {
 async function handleSubmit() {
   await validate();
   if (!dictTypeCode.value) {
-    window.$message?.warning($t('page.autobox.dict.selectTypeFirst'));
+    window.$message?.warning($t('page.setting.dict.selectTypeFirst'));
     return;
   }
 
@@ -99,7 +99,7 @@ async function handleSubmit() {
     labelOk === false &&
     !(props.operateType === 'edit' && props.rowData?.dictDataLabel === model.value.dictDataLabel)
   ) {
-    window.$message?.error($t('page.autobox.dict.labelExists'));
+    window.$message?.error($t('page.setting.dict.labelExists'));
     return;
   }
 
@@ -112,7 +112,7 @@ async function handleSubmit() {
     valueOk === false &&
     !(props.operateType === 'edit' && props.rowData?.dictDataValue === model.value.dictDataValue)
   ) {
-    window.$message?.error($t('page.autobox.dict.valueExists'));
+    window.$message?.error($t('page.setting.dict.valueExists'));
     return;
   }
 
@@ -151,23 +151,23 @@ watch(visible, () => {
   <NDrawer v-model:show="visible" display-directive="show" :width="360">
     <NDrawerContent :title="title" :native-scrollbar="false" closable>
       <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" :label-width="90">
-        <NFormItem :label="$t('page.autobox.dict.dictTypeCode')">
+        <NFormItem :label="$t('page.setting.dict.dictTypeCode')">
           <NInput :value="dictTypeCode" disabled />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.dict.dictDataLabel')" path="dictDataLabel">
-          <NInput v-model:value="model.dictDataLabel" :placeholder="$t('page.autobox.dict.form.dictDataLabel')" />
+        <NFormItem :label="$t('page.setting.dict.dictDataLabel')" path="dictDataLabel">
+          <NInput v-model:value="model.dictDataLabel" :placeholder="$t('page.setting.dict.form.dictDataLabel')" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.dict.dictDataValue')" path="dictDataValue">
-          <NInput v-model:value="model.dictDataValue" :placeholder="$t('page.autobox.dict.form.dictDataValue')" />
+        <NFormItem :label="$t('page.setting.dict.dictDataValue')" path="dictDataValue">
+          <NInput v-model:value="model.dictDataValue" :placeholder="$t('page.setting.dict.form.dictDataValue')" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.dict.orderNum')" path="orderNum">
-          <NInputNumber v-model:value="model.orderNum" class="w-full" :placeholder="$t('page.autobox.dict.form.orderNum')" />
+        <NFormItem :label="$t('page.setting.dict.orderNum')" path="orderNum">
+          <NInputNumber v-model:value="model.orderNum" class="w-full" :placeholder="$t('page.setting.dict.form.orderNum')" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.dict.dictDataDesc')" path="dictDataDesc">
+        <NFormItem :label="$t('page.setting.dict.dictDataDesc')" path="dictDataDesc">
           <NInput
             v-model:value="model.dictDataDesc"
             type="textarea"
-            :placeholder="$t('page.autobox.dict.form.dictDataDesc')"
+            :placeholder="$t('page.setting.dict.form.dictDataDesc')"
           />
         </NFormItem>
         <NFormItem :label="$t('page.manage.common.status.enable')" path="isEnabled">

@@ -62,8 +62,8 @@ const selectedFolder = computed(() => {
 });
 
 const selectedFolderLabel = computed(() => {
-  if (selectedFolderId.value === FILE_ROOT_FOLDER_ID) return $t('page.autobox.file.rootFolder');
-  return selectedFolder.value?.folderName || $t('page.autobox.file.title');
+  if (selectedFolderId.value === FILE_ROOT_FOLDER_ID) return $t('page.setting.file.rootFolder');
+  return selectedFolder.value?.folderName || $t('page.setting.file.title');
 });
 
 /** 虚拟根与内置目录不可改删 */
@@ -72,7 +72,7 @@ const canEditSelectedFolder = computed(() => {
   return selectedFolder.value.isBuiltin !== 1;
 });
 
-const fileCardTitle = computed(() => `${$t('page.autobox.file.title')} - ${selectedFolderLabel.value}`);
+const fileCardTitle = computed(() => `${$t('page.setting.file.title')} - ${selectedFolderLabel.value}`);
 
 const { data, getData, getDataByPage, loading, mobilePagination, pagination } = useNaivePaginatedTable({
   api: () =>
@@ -95,7 +95,7 @@ const { data, getData, getDataByPage, loading, mobilePagination, pagination } = 
   // 卡片墙不用表格列，占位满足 hook 约束并锁定行类型
   columns: (): NaiveUI.TableColumn<Api.SystemManage.FileResource>[] => [
     { key: 'fileId', title: 'fileId' },
-    { key: 'originalName', title: $t('page.autobox.file.fileName') }
+    { key: 'originalName', title: $t('page.setting.file.fileName') }
   ]
 });
 
@@ -103,7 +103,7 @@ const { data, getData, getDataByPage, loading, mobilePagination, pagination } = 
 pagination.pageSize = 12;
 async function loadFolderTree() {
   if (!hasAuth('system:file:tree')) {
-    treeOptions.value = mapFolderTreeOptions([], $t('page.autobox.file.rootFolder'));
+    treeOptions.value = mapFolderTreeOptions([], $t('page.setting.file.rootFolder'));
     return;
   }
   treeLoading.value = true;
@@ -111,7 +111,7 @@ async function loadFolderTree() {
   treeLoading.value = false;
   if (error) return;
   folderList.value = list || [];
-  treeOptions.value = mapFolderTreeOptions(folderList.value, $t('page.autobox.file.rootFolder'));
+  treeOptions.value = mapFolderTreeOptions(folderList.value, $t('page.setting.file.rootFolder'));
   if (!expandedKeys.value.includes(FILE_ROOT_FOLDER_ID)) {
     expandedKeys.value = [FILE_ROOT_FOLDER_ID, ...expandedKeys.value];
   }
@@ -145,7 +145,7 @@ function handleFolderDelete() {
   if (!canEditSelectedFolder.value || !selectedFolder.value) return;
   window.$dialog?.warning({
     title: $t('common.tip'),
-    content: $t('page.autobox.file.deleteFolderConfirm'),
+    content: $t('page.setting.file.deleteFolderConfirm'),
     positiveText: $t('common.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
@@ -194,7 +194,7 @@ async function handleFileDelete(item: Api.SystemManage.FileResource) {
   if (refResult?.referenced) {
     window.$dialog?.warning({
       title: $t('common.tip'),
-      content: refResult.message || $t('page.autobox.file.deleteReferenced'),
+      content: refResult.message || $t('page.setting.file.deleteReferenced'),
       positiveText: $t('common.confirm'),
       negativeText: $t('common.cancel'),
       onPositiveClick: async () => {
@@ -235,7 +235,7 @@ onMounted(() => {
       <!-- 左侧：目录树（点选；增改删在标题栏） -->
       <div class="w-280px flex-col-stretch gap-16px overflow-hidden lt-sm:w-full">
         <NCard
-          :title="$t('page.autobox.file.folderTitle')"
+          :title="$t('page.setting.file.folderTitle')"
           :bordered="false"
           size="small"
           class="card-wrapper sm:flex-1-hidden"
@@ -326,7 +326,7 @@ onMounted(() => {
                 type="primary"
                 @click="uploadConfigVisible = true"
               >
-                {{ $t('page.autobox.file.uploadConfig') }}
+                {{ $t('page.setting.file.uploadConfig') }}
               </NButton>
               <NButton
                 size="small"
@@ -339,7 +339,7 @@ onMounted(() => {
                 <template #icon>
                   <icon-ic-round-upload class="text-icon" />
                 </template>
-                {{ $t('page.autobox.file.uploadFile') }}
+                {{ $t('page.setting.file.uploadFile') }}
               </NButton>
               <NButton size="small" @click="getData">
                 <template #icon>
@@ -394,7 +394,7 @@ onMounted(() => {
       v-model:visible="uploadConfigVisible"
       config-group="upload"
       perm-code="system:config:upload"
-      :title="$t('page.autobox.file.uploadConfig')"
+      :title="$t('page.setting.file.uploadConfig')"
     />
 
     <FolderOperateDrawer

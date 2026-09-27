@@ -24,9 +24,9 @@ const defaultModel = jsonClone(toRaw(model.value));
 
 /** 与后端 JobDto.JobLogList.runStatus 枚举一致 */
 const runStatusOptions = [
-  { label: $t('page.autobox.jobLog.statusSuccess'), value: 'SUCCESS' },
-  { label: $t('page.autobox.jobLog.statusFailed'), value: 'FAILED' },
-  { label: $t('page.autobox.jobLog.statusSkipped'), value: 'SKIPPED' }
+  { label: $t('page.ops.jobLog.statusSuccess'), value: 'SUCCESS' },
+  { label: $t('page.ops.jobLog.statusFailed'), value: 'FAILED' },
+  { label: $t('page.ops.jobLog.statusSkipped'), value: 'SKIPPED' }
 ];
 
 watch(
@@ -55,18 +55,18 @@ function search() {
       <NCollapseItem :title="$t('common.search')" name="job-log-search">
         <NForm :model="model" label-placement="left" :label-width="80">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:8" :label="$t('page.autobox.jobLog.jobName')" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:8" :label="$t('page.ops.jobLog.jobName')" class="pr-24px">
               <NInput :value="jobName" disabled />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:8" :label="$t('page.autobox.jobLog.jobCode')" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:8" :label="$t('page.ops.jobLog.jobCode')" class="pr-24px">
               <NInput :value="jobCode" disabled />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:8" :label="$t('page.autobox.job.runStatus')" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:8" :label="$t('page.ops.job.runStatus')" class="pr-24px">
               <NSelect
                 v-model:value="model.runStatus"
                 clearable
                 :options="runStatusOptions"
-                :placeholder="$t('page.autobox.jobLog.form.runStatus')"
+                :placeholder="$t('page.ops.jobLog.form.runStatus')"
               />
             </NFormItemGi>
             <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">

@@ -32,11 +32,11 @@ function search() {
       <NCollapseItem :title="$t('common.search')" name="job-search">
         <NForm :model="model" label-placement="left" :label-width="80">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.job.jobName')" path="jobName" class="pr-24px">
-              <NInput v-model:value="model.jobName" :placeholder="$t('page.autobox.job.form.jobName')" clearable />
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.ops.job.jobName')" path="jobName" class="pr-24px">
+              <NInput v-model:value="model.jobName" :placeholder="$t('page.ops.job.form.jobName')" clearable />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.job.jobCode')" path="jobCode" class="pr-24px">
-              <NInput v-model:value="model.jobCode" :placeholder="$t('page.autobox.job.form.jobCode')" clearable />
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.ops.job.jobCode')" path="jobCode" class="pr-24px">
+              <NInput v-model:value="model.jobCode" :placeholder="$t('page.ops.job.form.jobCode')" clearable />
             </NFormItemGi>
             <NFormItemGi
               span="24 s:12 m:6"
@@ -46,7 +46,7 @@ function search() {
             >
               <NSelect
                 v-model:value="model.isEnabled"
-                :placeholder="$t('page.autobox.job.form.isEnabled')"
+                :placeholder="$t('page.ops.job.form.isEnabled')"
                 :options="translateOptions(enabledFlagOptions)"
                 clearable
               />

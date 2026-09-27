@@ -11,16 +11,16 @@
 ## 仓库结构
 
 - 本仓库为前后端分离 monorepo：
-  - `web/`：SoybeanAdmin（Vue3 + Vite + TypeScript + Naive UI + UnoCSS）
+  - `web/`：Admin-Soybean 前端（Vue3 + Vite + TypeScript + Naive UI + UnoCSS，基于 SoybeanAdmin）
   - `server/`：Spring Boot 管理端 API（包名 `com.ylmao.admin`，入口 `AdminApp`）
-- 当前仍是后台脚手架，不是最终生产业务系统。
+- 产品对外名称：**Admin-Soybean**。当前仍是后台脚手架，不是最终生产业务系统。
 - 保留有用的脚手架模块（用户/角色等）、菜单、权限与种子数据，便于继续开发和 AI 辅助改码。
 - 种子 SQL 须清理明显脏数据、无意义随机串、孤儿关联。
 - 生产不需要的可选菜单，默认用权限/菜单配置隐藏，不要直接删脚手架引用。
 - **以数据库结构为事实来源**；后端字段与前端展示/入参应对齐库字段名、类型、默认值、注释与约束。
 - 影响行为或数据契约的规范变更，逐项先与用户确认再改。
 - 改后端模块前先对照同类已完成模块：以 `user` 为主、`role` 为辅（Controller URL、方法名、DTO/VO/PO、Service 校验、菜单/权限种子）。
-- 前端目前仍处 Soybean 样板阶段、尚未对接真实 API：页面与 UI **只严格按 Soybean 官方文档与代码规范实现**，不以本仓库现有样板页为硬性参照；对接真实 API 并稳定后，再另行约定前端模块参照。
+- 前端业务页已对接真实 `/api/admin` 接口；页面与 UI **仍严格按 Soybean 官方文档与代码规范实现**，已对接模块以本仓库对应页为参照。
 
 ## 数据库风格
 
@@ -36,8 +36,7 @@
 - 改表时连同字段注释、类型、长度、默认值、索引一起审视。
 - 种子可保留有意义脚手架示例，禁止脏测试值与孤儿行。
 - 非空权限码须唯一；两菜单同视图时用不同权限码，或隐藏其一。
-- 权限树种子须 `perm_path` 与 `parent_id` 一致，路径以本行 `perm_id` 结尾。
-- 后端路由若写入 `sys_perm.perm_url`，须同步改 Controller、前端调用与种子 URL。
+- 权限在 `sys_menu`（`perm_code` 等），无独立 `sys_perm` 表；改接口时同步 Controller、前端调用与菜单/权限种子。
 - 改种子后检查唯一约束、关系表重复、孤儿引用与脏数据残留。
 
 ## URL 风格（后端）
@@ -103,7 +102,7 @@
 
 ## 协作与契约
 
-- 同一接口变更须同时考虑：`server` Controller/DTO/VO、`web` API 与页面、必要时种子/`sys_perm`。
+- 同一接口变更须同时考虑：`server` Controller/DTO/VO、`web` API 与页面、必要时种子/`sys_menu` 权限码。
 - 包名、Maven 坐标、Redis key 前缀、库名等标识变更属规范项，改前先确认。
 
 ## 验证

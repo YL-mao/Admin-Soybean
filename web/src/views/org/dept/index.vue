@@ -39,31 +39,31 @@ const { columns, columnChecks, data, loading, getData } = useNaiveTable({
     { type: 'selection', align: 'center', width: 48 },
     {
       key: 'deptName',
-      title: $t('page.autobox.dept.deptName'),
+      title: $t('page.org.dept.deptName'),
       align: 'left',
       minWidth: 160
     },
     {
       key: 'orderNum',
-      title: $t('page.autobox.dept.orderNum'),
+      title: $t('page.org.dept.orderNum'),
       align: 'center',
       width: 80
     },
     {
       key: 'deptLeader',
-      title: $t('page.autobox.dept.deptLeader'),
+      title: $t('page.org.dept.deptLeader'),
       align: 'center',
       width: 100
     },
     {
       key: 'leaderPhone',
-      title: $t('page.autobox.dept.leaderPhone'),
+      title: $t('page.org.dept.leaderPhone'),
       align: 'center',
       width: 120
     },
     {
       key: 'leaderEmail',
-      title: $t('page.autobox.dept.leaderEmail'),
+      title: $t('page.org.dept.leaderEmail'),
       align: 'center',
       minWidth: 140
     },
@@ -94,7 +94,7 @@ const { columns, columnChecks, data, loading, getData } = useNaiveTable({
         <div class="flex-center justify-end gap-8px">
           {hasAuth('system:dept:insert') && (
             <NButton type="primary" ghost size="small" onClick={() => handleAddChild(row)}>
-              {$t('page.autobox.dept.addChildDept')}
+              {$t('page.org.dept.addChildDept')}
             </NButton>
           )}
           {hasAuth('system:dept:update') && (
@@ -177,7 +177,7 @@ function handleSearch() {
 <template>
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <DeptSearch v-model:model="searchParams" @search="handleSearch" />
-    <NCard :title="$t('page.autobox.dept.title')" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
+    <NCard :title="$t('page.org.dept.title')" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
       <template #header-extra>
         <TableHeaderOperation
           v-model:columns="columnChecks"

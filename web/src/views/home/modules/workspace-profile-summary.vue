@@ -38,35 +38,35 @@ const summaryItems = computed(() => {
   return [
     {
       key: 'userName',
-      label: $t('page.autobox.account.userName'),
+      label: $t('page.account.userName'),
       value: props.profile.userName || '-',
       icon: 'mdi:badge-account-horizontal-outline',
       tone: 'primary' as TileTone
     },
     {
       key: 'account',
-      label: $t('page.autobox.account.userAccount'),
+      label: $t('page.account.userAccount'),
       value: props.profile.userAccount || '-',
       icon: 'mdi:account-outline',
       tone: 'info' as TileTone
     },
     {
       key: 'dept',
-      label: $t('page.autobox.account.deptName'),
+      label: $t('page.account.deptName'),
       value: props.profile.deptName || '-',
       icon: 'mdi:office-building-outline',
       tone: 'warning' as TileTone
     },
     {
       key: 'post',
-      label: $t('page.autobox.account.postName'),
+      label: $t('page.account.postName'),
       value: props.profile.postName || '-',
       icon: 'mdi:briefcase-outline',
       tone: 'violet' as TileTone
     },
     {
       key: 'role',
-      label: $t('page.autobox.account.roleNames'),
+      label: $t('page.account.roleNames'),
       value: roleText.value,
       icon: 'mdi:shield-account-outline',
       tone: 'cyan' as TileTone

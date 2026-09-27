@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { computed, ref, watch } from 'vue';
 import type { SelectOption, TreeSelectOption } from 'naive-ui';
-import { getIcon, Icon } from '@iconify/vue';
+import { Icon } from '@iconify/vue/offline';
 import { enabledFlagOptions, menuIconTypeOptions, menuTypeOptions } from '@/constants/business';
 import {
   fetchCheckMenuCodeUnique,
@@ -12,7 +12,7 @@ import {
 } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { translateOptions } from '@/utils/common';
-import { getLocalIcons, getMdiIconNames } from '@/utils/icon';
+import { getLocalIcons, getMdiIconNames, isLocalMdiIcon } from '@/utils/icon';
 import { $t } from '@/locales';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 import {
@@ -118,6 +118,18 @@ function createDefaultModel(): Model {
   };
 }
 
+const localIcons = getLocalIcons();
+const localIconNameSet = new Set(localIcons);
+const localIconOptions = localIcons.map<SelectOption>(item => ({
+  label: () => (
+    <div class="flex-y-center gap-16px">
+      <SvgIcon localIcon={item} class="text-icon" />
+      <span>{item}</span>
+    </div>
+  ),
+  value: item
+}));
+
 const rules = computed(() => {
   const base: Record<string, App.Global.FormRule | App.Global.FormRule[]> = {
     menuName: defaultRequiredRule,
@@ -142,21 +154,28 @@ const rules = computed(() => {
     ];
   }
 
+  // 图标只能是对应下拉里的值：Iconify=本地 mdi:*，本地=assets 下 SVG 名
+  base.menuIcon = {
+    trigger: ['change', 'blur'],
+    validator(_rule, value: string) {
+      if (!value) return true;
+      if (model.value.iconType === 1) {
+        if (!isLocalMdiIcon(value)) {
+          return new Error($t('page.manage.menu.form.iconInvalid'));
+        }
+        return true;
+      }
+      if (!localIconNameSet.has(value)) {
+        return new Error($t('page.manage.menu.form.localIconInvalid'));
+      }
+      return true;
+    }
+  };
+
   return base;
 });
 
 const disabledMenuType = computed(() => props.operateType === 'edit');
-
-const localIcons = getLocalIcons();
-const localIconOptions = localIcons.map<SelectOption>(item => ({
-  label: () => (
-    <div class="flex-y-center gap-16px">
-      <SvgIcon localIcon={item} class="text-icon" />
-      <span>{item}</span>
-    </div>
-  ),
-  value: item
-}));
 
 /** 无关键字时展示的常用 / 已用图标，避免一次塞入全量 MDI */
 const ICONIFY_PRESET = [
@@ -196,7 +215,8 @@ function defaultIconifyCandidates(): string[] {
   if (model.value.menuIcon && model.value.iconType === 1) {
     set.add(model.value.menuIcon);
   }
-  return [...set].filter(Boolean).sort();
+  // 只保留本地 MDI，避免历史非 mdi 名进入候选
+  return [...set].filter(isLocalMdiIcon).sort();
 }
 
 /** 按关键字检索本地 MDI；空关键字回常用列表。优先前缀匹配 */
@@ -226,12 +246,11 @@ function searchMdiIcons(keyword: string): string[] {
 }
 
 function renderIconifyOptionLabel(name: string) {
-  // 本地 addCollection 后 getIcon 同步可读，避免下拉空白
-  const data = getIcon(name);
+  // offline Icon + 本地全集，按名称同步渲染
   return (
     <div class="flex-y-center gap-12px min-w-0">
       <span class="inline-flex h-20px w-20px shrink-0 items-center justify-center text-icon">
-        {data ? <Icon icon={data} /> : null}
+        <Icon icon={name} />
       </span>
       <span class="truncate">{name}</span>
     </div>

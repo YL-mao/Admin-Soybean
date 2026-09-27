@@ -23,8 +23,8 @@ const defaultModel = jsonClone(toRaw(model.value));
 
 /** 访问状态：成功 / 失败 */
 const successOptions = [
-  { label: $t('page.autobox.operateLog.visitSuccess'), value: 1 as const },
-  { label: $t('page.autobox.operateLog.visitFail'), value: 0 as const }
+  { label: $t('page.ops.operateLog.visitSuccess'), value: 1 as const },
+  { label: $t('page.ops.operateLog.visitFail'), value: 0 as const }
 ];
 
 const businessTypeOptions = computed(() => {
@@ -96,46 +96,46 @@ function search() {
             <NFormItemGi
               v-if="tab === 'operate'"
               span="24 s:12 m:6"
-              :label="$t('page.autobox.operateLog.operateTitle')"
+              :label="$t('page.ops.operateLog.operateTitle')"
               class="pr-24px"
             >
               <NInput
                 v-model:value="model.operateTitle"
-                :placeholder="$t('page.autobox.operateLog.form.operateTitle')"
+                :placeholder="$t('page.ops.operateLog.form.operateTitle')"
               />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.operateLog.businessType')" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.ops.operateLog.businessType')" class="pr-24px">
               <NSelect
                 v-model:value="model.businessType"
                 clearable
-                :placeholder="$t('page.autobox.operateLog.form.businessType')"
+                :placeholder="$t('page.ops.operateLog.form.businessType')"
                 :options="businessTypeOptions"
               />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.operateLog.operateName')" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.ops.operateLog.operateName')" class="pr-24px">
               <NInput
                 v-model:value="model.operateName"
-                :placeholder="$t('page.autobox.operateLog.form.operateName')"
+                :placeholder="$t('page.ops.operateLog.form.operateName')"
               />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.operateLog.operateIp')" class="pr-24px">
-              <NInput v-model:value="model.operateIp" :placeholder="$t('page.autobox.operateLog.form.operateIp')" />
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.ops.operateLog.operateIp')" class="pr-24px">
+              <NInput v-model:value="model.operateIp" :placeholder="$t('page.ops.operateLog.form.operateIp')" />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.operateLog.requestUri')" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.ops.operateLog.requestUri')" class="pr-24px">
               <NInput
                 v-model:value="model.requestUri"
-                :placeholder="$t('page.autobox.operateLog.form.requestUri')"
+                :placeholder="$t('page.ops.operateLog.form.requestUri')"
               />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.operateLog.visitStatus')" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.ops.operateLog.visitStatus')" class="pr-24px">
               <NSelect
                 v-model:value="model.isSuccess"
                 clearable
-                :placeholder="$t('page.autobox.operateLog.form.isSuccess')"
+                :placeholder="$t('page.ops.operateLog.form.isSuccess')"
                 :options="successOptions"
               />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.operateLog.timeRange')" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.ops.operateLog.timeRange')" class="pr-24px">
               <!-- 输入框最宽对齐双月历 datetimerange 面板，避免占满半行 -->
               <NDatePicker
                 v-model:formatted-value="timeRange"
@@ -143,7 +143,7 @@ function search() {
                 value-format="yyyy-MM-dd HH:mm:ss"
                 clearable
                 class="w-full max-w-640px"
-                :placeholder="$t('page.autobox.operateLog.form.timeRange')"
+                :placeholder="$t('page.ops.operateLog.form.timeRange')"
               />
             </NFormItemGi>
             <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">

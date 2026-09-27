@@ -14,15 +14,15 @@ defineOptions({ name: 'SettingConfig' });
  */
 const SECTION_DEFS: { titleKey: App.I18n.I18nKey; codes: string[] }[] = [
   {
-    titleKey: 'page.autobox.config.sectionBrand',
+    titleKey: 'page.setting.config.sectionBrand',
     codes: ['system.name', 'system.shortName', 'system.copyright', 'system.logo', 'system.favicon']
   },
   {
-    titleKey: 'page.autobox.config.sectionContact',
+    titleKey: 'page.setting.config.sectionContact',
     codes: ['system.adminMail', 'system.version', 'system.website']
   },
   {
-    titleKey: 'page.autobox.config.sectionFiling',
+    titleKey: 'page.setting.config.sectionFiling',
     codes: ['system.icp', 'system.policeIcp']
   }
 ];
@@ -58,7 +58,7 @@ const sections = computed(() => {
 
   const rest = items.value.filter(item => !used.has(item.configCode));
   if (rest.length) {
-    result.push({ titleKey: 'page.autobox.config.sectionOther' as App.I18n.I18nKey, items: rest });
+    result.push({ titleKey: 'page.setting.config.sectionOther' as App.I18n.I18nKey, items: rest });
   }
   return result;
 });
@@ -85,7 +85,7 @@ async function load() {
 async function save() {
   if (!guardAuth('system:config:system')) return;
   if (!items.value.length) {
-    window.$message?.error($t('page.autobox.config.configMissing'));
+    window.$message?.error($t('page.setting.config.configMissing'));
     return;
   }
   saving.value = true;
@@ -111,7 +111,7 @@ void load();
 <template>
   <div class="min-h-500px flex-col-stretch gap-16px">
     <NCard
-      :title="$t('page.autobox.config.title')"
+      :title="$t('page.setting.config.title')"
       :bordered="false"
       size="small"
       class="card-wrapper mx-auto max-w-640px"
@@ -123,7 +123,7 @@ void load();
       </template>
 
       <NSpin :show="loading">
-        <NEmpty v-if="!loading && !items.length" :description="$t('page.autobox.config.configMissing')" />
+        <NEmpty v-if="!loading && !items.length" :description="$t('page.setting.config.configMissing')" />
         <div v-else>
           <template v-for="section in sections" :key="section.titleKey">
             <NDivider>{{ $t(section.titleKey) }}</NDivider>

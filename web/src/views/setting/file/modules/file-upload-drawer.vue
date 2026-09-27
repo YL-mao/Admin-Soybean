@@ -48,14 +48,14 @@ const maxMb = ref(10);
 const cachedRules = ref<Api.SystemManage.FileUploadRules | null>(null);
 
 const sceneOptions = computed(() => [
-  { label: $t('page.autobox.file.sceneImage'), value: 'image' },
-  { label: $t('page.autobox.file.sceneDocument'), value: 'document' },
-  { label: $t('page.autobox.file.sceneExcel'), value: 'excel' }
+  { label: $t('page.setting.file.sceneImage'), value: 'image' },
+  { label: $t('page.setting.file.sceneDocument'), value: 'document' },
+  { label: $t('page.setting.file.sceneExcel'), value: 'excel' }
 ]);
 
 const folderTip = computed(() =>
   props.folderId === FILE_ROOT_FOLDER_ID
-    ? $t('page.autobox.file.uploadToUnclassified')
+    ? $t('page.setting.file.uploadToUnclassified')
     : props.folderLabel
 );
 
@@ -105,7 +105,7 @@ function handleBeforeUpload(options: { file: UploadFileInfo; fileList: UploadFil
   const raw = options.file.file;
   if (!raw) return false;
   if (raw.size > maxMb.value * 1024 * 1024) {
-    window.$message?.error($t('page.autobox.file.fileTooLarge', { size: maxMb.value }));
+    window.$message?.error($t('page.setting.file.fileTooLarge', { size: maxMb.value }));
     return false;
   }
   fileList.value = [options.file];
@@ -117,7 +117,7 @@ async function handleSubmit() {
   await validate();
   const raw = fileList.value[0]?.file;
   if (!raw) {
-    window.$message?.error($t('page.autobox.file.form.pickFile'));
+    window.$message?.error($t('page.setting.file.form.pickFile'));
     return;
   }
   submitting.value = true;
@@ -150,21 +150,21 @@ watch(visible, async val => {
 
 <template>
   <NDrawer v-model:show="visible" :width="560">
-    <NDrawerContent :title="$t('page.autobox.file.uploadFile')" closable>
+    <NDrawerContent :title="$t('page.setting.file.uploadFile')" closable>
       <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" :label-width="100">
-        <NFormItem :label="$t('page.autobox.file.currentFolder')">
+        <NFormItem :label="$t('page.setting.file.currentFolder')">
           <NText>{{ folderTip }}</NText>
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.file.fileScene')" path="fileScene">
+        <NFormItem :label="$t('page.setting.file.fileScene')" path="fileScene">
           <NSelect v-model:value="model.fileScene" :options="sceneOptions" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.file.needLogin')" path="needLogin">
+        <NFormItem :label="$t('page.setting.file.needLogin')" path="needLogin">
           <NRadioGroup v-model:value="model.needLogin">
             <NRadio :value="1">{{ $t('common.yesOrNo.yes') }}</NRadio>
             <NRadio :value="0">{{ $t('common.yesOrNo.no') }}</NRadio>
           </NRadioGroup>
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.file.pickFile')">
+        <NFormItem :label="$t('page.setting.file.pickFile')">
           <NUpload
             :file-list="fileList"
             :max="1"
@@ -173,11 +173,11 @@ watch(visible, async val => {
             @before-upload="handleBeforeUpload"
             @remove="() => (fileList = [])"
           >
-            <NButton>{{ $t('page.autobox.file.form.pickFile') }}</NButton>
+            <NButton>{{ $t('page.setting.file.form.pickFile') }}</NButton>
           </NUpload>
         </NFormItem>
         <NText depth="3" class="text-12px">
-          {{ $t('page.autobox.file.uploadHint', { size: maxMb, accept }) }}
+          {{ $t('page.setting.file.uploadHint', { size: maxMb, accept }) }}
         </NText>
       </NForm>
       <template #footer>

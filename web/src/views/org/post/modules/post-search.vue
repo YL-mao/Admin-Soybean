@@ -30,11 +30,11 @@ function search() {
       <NCollapseItem :title="$t('common.search')" name="post-search">
         <NForm :model="model" label-placement="left" :label-width="80">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.post.postName')" path="postName" class="pr-24px">
-              <NInput v-model:value="model.postName" :placeholder="$t('page.autobox.post.form.postName')" />
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.org.post.postName')" path="postName" class="pr-24px">
+              <NInput v-model:value="model.postName" :placeholder="$t('page.org.post.form.postName')" />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('page.autobox.post.postCode')" path="postCode" class="pr-24px">
-              <NInput v-model:value="model.postCode" :placeholder="$t('page.autobox.post.form.postCode')" />
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.org.post.postCode')" path="postCode" class="pr-24px">
+              <NInput v-model:value="model.postCode" :placeholder="$t('page.org.post.form.postCode')" />
             </NFormItemGi>
             <NFormItemGi span="24" class="pr-24px" :show-label="false" :show-feedback="false">
               <TableSearchActions @reset="resetModel" @search="search" />

@@ -1,6 +1,6 @@
 const local: App.I18n.Schema = {
   system: {
-    title: 'AdminSoybean',
+    title: 'Admin-Soybean',
     updateTitle: 'System Version Update Notification',
     updateContent: 'A new version of the system has been detected. Do you want to refresh the page immediately?',
     updateConfirm: 'Refresh immediately',
@@ -305,7 +305,9 @@ const local: App.I18n.Schema = {
           layout: 'Please select layout',
           i18nKey: 'Please enter i18n key',
           icon: 'Search MDI icon, e.g. home',
+          iconInvalid: 'Please select a local MDI icon from the list',
           localIcon: 'Please select local icon',
+          localIconInvalid: 'Please select a local icon from the list',
           order: 'Please enter order',
           keepAlive: 'Please select keep alive',
           href: 'Please enter href',
@@ -407,7 +409,7 @@ const local: App.I18n.Schema = {
         }
       }
     },
-    autobox: {
+    org: {
       post: {
         title: 'Post List',
         postName: 'Post Name',
@@ -451,7 +453,9 @@ const local: App.I18n.Schema = {
           orderNum: 'Please enter order',
           status: 'Please select status'
         }
-      },
+      }
+    },
+    setting: {
       dict: {
         typeTitle: 'Dict Types',
         dataTitle: 'Dict Data',
@@ -558,6 +562,49 @@ const local: App.I18n.Schema = {
         consoleUnpublishedTip: 'Only published notices have a console',
         consoleOpenFailedTip: 'Cannot open console: notice missing or unpublished'
       },
+      file: {
+        title: 'Files',
+        folderTitle: 'Folders',
+        rootFolder: 'Root',
+        parentFolder: 'Parent Folder',
+        folderName: 'Folder Name',
+        currentFolder: 'Current Folder',
+        fileName: 'File Name',
+        fileSize: 'Size',
+        sceneName: 'Scene',
+        createTime: 'Uploaded',
+        fileScene: 'Scene',
+        needLogin: 'Require Login',
+        pickFile: 'Choose File',
+        uploadFile: 'Upload',
+        uploadConfig: 'Upload Config',
+        fileDetail: 'File Detail',
+        download: 'Download',
+        overwrite: 'Overwrite',
+        addFolder: 'Add Folder',
+        editFolder: 'Edit Folder',
+        orderNum: 'Order',
+        sceneImage: 'Image',
+        sceneDocument: 'Document',
+        sceneExcel: 'Spreadsheet',
+        uploadToUnclassified: 'Uploads under Root go to Unclassified',
+        deleteFolderConfirm: 'Deleting a folder soft-deletes its subfolders and files. Continue?',
+        deleteReferenced: 'This file may still be referenced. Delete anyway?',
+        fileTooLarge: 'File exceeds the size limit ({size} MB)',
+        uploadHint: 'Max {size} MB. Allowed: {accept}',
+        loadRulesFailed: 'Failed to load upload rules. Check upload switch and config.',
+        accessUrl: 'Access URL',
+        previewFailed: 'Preview failed',
+        downloadFailed: 'Download failed',
+        form: {
+          fileName: 'Please enter file name',
+          folderName: 'Please enter folder name',
+          parentFolder: 'Please select parent folder',
+          pickFile: 'Please choose a file'
+        }
+      }
+    },
+    ops: {
       operateLog: {
         title: 'Operation Logs',
         operateTitle: 'Module',
@@ -698,108 +745,70 @@ const local: App.I18n.Schema = {
         form: {
           user: 'Search by account or name'
         }
-      },
-      file: {
-        title: 'Files',
-        folderTitle: 'Folders',
-        rootFolder: 'Root',
-        parentFolder: 'Parent Folder',
-        folderName: 'Folder Name',
-        currentFolder: 'Current Folder',
-        fileName: 'File Name',
-        fileSize: 'Size',
-        sceneName: 'Scene',
-        createTime: 'Uploaded',
-        fileScene: 'Scene',
-        needLogin: 'Require Login',
-        pickFile: 'Choose File',
-        uploadFile: 'Upload',
-        uploadConfig: 'Upload Config',
-        fileDetail: 'File Detail',
-        download: 'Download',
-        overwrite: 'Overwrite',
-        addFolder: 'Add Folder',
-        editFolder: 'Edit Folder',
-        orderNum: 'Order',
-        sceneImage: 'Image',
-        sceneDocument: 'Document',
-        sceneExcel: 'Spreadsheet',
-        uploadToUnclassified: 'Uploads under Root go to Unclassified',
-        deleteFolderConfirm: 'Deleting a folder soft-deletes its subfolders and files. Continue?',
-        deleteReferenced: 'This file may still be referenced. Delete anyway?',
-        fileTooLarge: 'File exceeds the size limit ({size} MB)',
-        uploadHint: 'Max {size} MB. Allowed: {accept}',
-        loadRulesFailed: 'Failed to load upload rules. Check upload switch and config.',
-        accessUrl: 'Access URL',
-        previewFailed: 'Preview failed',
-        downloadFailed: 'Download failed',
-        form: {
-          fileName: 'Please enter file name',
-          folderName: 'Please enter folder name',
-          parentFolder: 'Please select parent folder',
-          pickFile: 'Please choose a file'
-        }
-      },
+      }
+    },
+    dev: {
       apidoc: {
         title: 'API Docs',
         desc: 'Swagger UI is embedded here in development; OpenAPI fetch and Try it out send saToken.',
         openDoc: 'Open Swagger UI',
         devOnly: 'API docs are available in development only; springdoc is disabled in production.'
-      },
-
-      account: {
-        infoTitle: 'Profile',
-        noticeTitle: 'My Notices',
-        tabProfile: 'Profile',
-        tabPassword: 'Password',
-        tabLoginLog: 'Login history',
-        userName: 'Nickname',
-        userAccount: 'Account',
-        userEmail: 'Email',
-        userPhone: 'Phone',
-        deptName: 'Department',
-        postName: 'Post',
-        roleNames: 'Roles',
-        createTime: 'Created at',
-        lastLoginTime: 'Last login',
-        oldPassword: 'Current password',
-        newPassword: 'New password',
-        confirmPassword: 'Confirm password',
-        changePassword: 'Change password',
-        pwdChangedRelogin: 'Password updated. Please sign in again.',
-        avatarHint: 'Change',
-        avatarUploading: 'Uploading…',
-        avatarUpdated: 'Avatar updated',
-        sectionEditable: 'Editable profile',
-        sectionReadonly: 'Organization',
-        pwdHint: 'Password must be 8–64 characters and include letters, numbers, and a special character. You will be signed out after a successful change.',
-        loginTime: 'Login time',
-        loginIp: 'Login IP',
-        browser: 'Browser',
-        systemOs: 'OS',
-        currentSession: 'Current',
-        form: {
-          userName: 'Please enter nickname',
-          userEmail: 'Please enter email',
-          userPhone: 'Please enter phone',
-          oldPassword: 'Please enter current password',
-          newPassword: 'Please enter new password',
-          confirmPassword: 'Please confirm new password',
-          noticeReadState: 'Please select read status'
-        },
-        noticeReadState: 'Read status',
-        noticeUnread: 'Unread',
-        noticeRead: 'Read',
-        noticeReadTime: 'Read at',
-        noticeView: 'View',
-        noticeDetail: 'Notice detail',
-        noticeReadAll: 'Mark all read',
-        noticeReadAllSuccess: 'All notices marked as read',
-        noticeViewAll: 'View all',
-        noticeEmptyUnread: 'No unread notices',
-        noticeNotFound: 'Notice not found or expired'
       }
     },
+    account: {
+      infoTitle: 'Profile',
+      noticeTitle: 'My Notices',
+      tabProfile: 'Profile',
+      tabPassword: 'Password',
+      tabLoginLog: 'Login history',
+      userName: 'Nickname',
+      userAccount: 'Account',
+      userEmail: 'Email',
+      userPhone: 'Phone',
+      deptName: 'Department',
+      postName: 'Post',
+      roleNames: 'Roles',
+      createTime: 'Created at',
+      lastLoginTime: 'Last login',
+      oldPassword: 'Current password',
+      newPassword: 'New password',
+      confirmPassword: 'Confirm password',
+      changePassword: 'Change password',
+      pwdChangedRelogin: 'Password updated. Please sign in again.',
+      avatarHint: 'Change',
+      avatarUploading: 'Uploading…',
+      avatarUpdated: 'Avatar updated',
+      sectionEditable: 'Editable profile',
+      sectionReadonly: 'Organization',
+      pwdHint:
+        'Password must be 8–64 characters and include letters, numbers, and a special character. You will be signed out after a successful change.',
+      loginTime: 'Login time',
+      loginIp: 'Login IP',
+      browser: 'Browser',
+      systemOs: 'OS',
+      currentSession: 'Current',
+      form: {
+        userName: 'Please enter nickname',
+        userEmail: 'Please enter email',
+        userPhone: 'Please enter phone',
+        oldPassword: 'Please enter current password',
+        newPassword: 'Please enter new password',
+        confirmPassword: 'Please confirm new password',
+        noticeReadState: 'Please select read status'
+      },
+      noticeReadState: 'Read status',
+      noticeUnread: 'Unread',
+      noticeRead: 'Read',
+      noticeReadTime: 'Read at',
+      noticeView: 'View',
+      noticeDetail: 'Notice detail',
+      noticeReadAll: 'Mark all read',
+      noticeReadAllSuccess: 'All notices marked as read',
+      noticeViewAll: 'View all',
+      noticeEmptyUnread: 'No unread notices',
+      noticeNotFound: 'Notice not found or expired'
+    },
+
     login: {
       common: {
         loginOrRegister: 'Login / Register',

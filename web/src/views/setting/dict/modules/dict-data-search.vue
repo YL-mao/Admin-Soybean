@@ -44,11 +44,11 @@ function search() {
       <NCollapseItem :title="$t('common.search')" name="dict-data-search">
         <NForm :model="model" label-placement="left" :label-width="80">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:12" :label="$t('page.autobox.dict.dictDataLabel')" path="dictDataLabel" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:12" :label="$t('page.setting.dict.dictDataLabel')" path="dictDataLabel" class="pr-24px">
               <NInput
                 v-model:value="model.dictDataLabel"
                 :disabled="disabled"
-                :placeholder="$t('page.autobox.dict.form.dictDataLabel')"
+                :placeholder="$t('page.setting.dict.form.dictDataLabel')"
               />
             </NFormItemGi>
             <!-- Soybean：操作行占满一行，按钮靠右下 -->

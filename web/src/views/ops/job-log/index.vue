@@ -9,7 +9,7 @@ const router = useRouter();
 
 // 执行日志已改为任务列表抽屉；隐藏路由仅作兜底跳回，不单独维护页面。
 onMounted(() => {
-  window.$message?.info($t('page.autobox.jobLog.useDrawerHint'));
+  window.$message?.info($t('page.ops.jobLog.useDrawerHint'));
   router.replace({ name: 'ops_job' });
 });
 </script>

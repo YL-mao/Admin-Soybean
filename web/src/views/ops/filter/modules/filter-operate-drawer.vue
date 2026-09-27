@@ -36,7 +36,7 @@ const submitting = ref(false);
 const permanent = ref(true);
 
 const title = computed(() =>
-  props.operateType === 'add' ? $t('page.autobox.filter.addFilter') : $t('page.autobox.filter.editFilter')
+  props.operateType === 'add' ? $t('page.ops.filter.addFilter') : $t('page.ops.filter.editFilter')
 );
 
 type Model = {
@@ -73,10 +73,10 @@ const rules: Record<string, App.Global.FormRule | App.Global.FormRule[]> = {
       validator: () => {
         if (permanent.value) return true;
         if (!model.value.expireTime) {
-          return new Error($t('page.autobox.filter.form.expireTime'));
+          return new Error($t('page.ops.filter.form.expireTime'));
         }
         if (new Date(model.value.expireTime.replace(/-/g, '/')).getTime() <= Date.now()) {
-          return new Error($t('page.autobox.filter.form.expireTimePast'));
+          return new Error($t('page.ops.filter.form.expireTimePast'));
         }
         return true;
       }
@@ -86,8 +86,8 @@ const rules: Record<string, App.Global.FormRule | App.Global.FormRule[]> = {
 
 const filterTypeOptions = computed(() => {
   const all = [
-    { label: $t('page.autobox.filter.typeIp'), value: 'IP' },
-    { label: $t('page.autobox.filter.typeUser'), value: 'USER_ID' }
+    { label: $t('page.ops.filter.typeIp'), value: 'IP' },
+    { label: $t('page.ops.filter.typeUser'), value: 'USER_ID' }
   ];
   // 白名单仅 IP
   if (model.value.policyMode === 'WHITE') {
@@ -97,8 +97,8 @@ const filterTypeOptions = computed(() => {
 });
 
 const policyModeOptions = computed(() => [
-  { label: $t('page.autobox.filter.modeBlack'), value: 'BLACK' },
-  { label: $t('page.autobox.filter.modeWhite'), value: 'WHITE' }
+  { label: $t('page.ops.filter.modeBlack'), value: 'BLACK' },
+  { label: $t('page.ops.filter.modeWhite'), value: 'WHITE' }
 ]);
 
 watch(
@@ -167,28 +167,28 @@ async function handleSubmit() {
   <NDrawer v-model:show="visible" :width="420">
     <NDrawerContent :title="title" closable>
       <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" :label-width="90">
-        <NFormItem :label="$t('page.autobox.filter.policyMode')" path="policyMode">
+        <NFormItem :label="$t('page.ops.filter.policyMode')" path="policyMode">
           <NSelect v-model:value="model.policyMode" :options="policyModeOptions" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.filter.filterType')" path="filterType">
+        <NFormItem :label="$t('page.ops.filter.filterType')" path="filterType">
           <NSelect v-model:value="model.filterType" :options="filterTypeOptions" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.filter.valueLabel')" path="filterValue">
+        <NFormItem :label="$t('page.ops.filter.valueLabel')" path="filterValue">
           <NInput
             v-model:value="model.filterValue"
             :placeholder="
               model.filterType === 'USER_ID'
-                ? $t('page.autobox.filter.form.filterValueUser')
-                : $t('page.autobox.filter.form.filterValue')
+                ? $t('page.ops.filter.form.filterValueUser')
+                : $t('page.ops.filter.form.filterValue')
             "
           />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.filter.permanent')">
+        <NFormItem :label="$t('page.ops.filter.permanent')">
           <NSwitch v-model:value="permanent" />
         </NFormItem>
         <NFormItem
           v-if="!permanent"
-          :label="$t('page.autobox.filter.expireTime')"
+          :label="$t('page.ops.filter.expireTime')"
           path="expireTime"
         >
           <NDatePicker
@@ -200,7 +200,7 @@ async function handleSubmit() {
             :is-date-disabled="isExpireDateDisabled"
           />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.filter.filterDesc')" path="filterDesc">
+        <NFormItem :label="$t('page.ops.filter.filterDesc')" path="filterDesc">
           <NInput v-model:value="model.filterDesc" type="textarea" :rows="2" />
         </NFormItem>
         <NFormItem :label="$t('page.manage.common.status.enable')" path="isEnabled">

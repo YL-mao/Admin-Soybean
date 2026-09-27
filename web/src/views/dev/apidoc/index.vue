@@ -74,18 +74,18 @@ onBeforeUnmount(() => {
 <template>
   <div class="min-h-500px flex-col-stretch gap-16px">
     <NCard
-      :title="$t('page.autobox.apidoc.title')"
+      :title="$t('page.dev.apidoc.title')"
       :bordered="false"
       size="small"
       class="card-wrapper flex-col-stretch flex-1-hidden"
       content-style="flex: 1; display: flex; flex-direction: column; min-height: 0;"
     >
       <template v-if="isDev">
-        <p class="mb-12px text-gray-600">{{ $t('page.autobox.apidoc.desc') }}</p>
+        <p class="mb-12px text-gray-600">{{ $t('page.dev.apidoc.desc') }}</p>
         <!-- 本页 Swagger UI：已登录请求头拉 OpenAPI / 试调 -->
         <div ref="hostRef" class="w-full flex-1 overflow-auto rounded-8px bg-white" style="min-height: 70vh" />
       </template>
-      <p v-else class="text-gray-600">{{ $t('page.autobox.apidoc.devOnly') }}</p>
+      <p v-else class="text-gray-600">{{ $t('page.dev.apidoc.devOnly') }}</p>
     </NCard>
   </div>
 </template>

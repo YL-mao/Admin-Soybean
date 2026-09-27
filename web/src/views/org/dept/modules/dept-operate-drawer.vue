@@ -36,9 +36,9 @@ const { defaultRequiredRule } = useFormRules();
 
 const title = computed(() => {
   const titles: Record<DeptOperateType, string> = {
-    add: $t('page.autobox.dept.addDept'),
-    edit: $t('page.autobox.dept.editDept'),
-    addChild: $t('page.autobox.dept.addChildDept')
+    add: $t('page.org.dept.addDept'),
+    edit: $t('page.org.dept.editDept'),
+    addChild: $t('page.org.dept.addChildDept')
   };
   return titles[props.operateType];
 });
@@ -92,7 +92,7 @@ async function loadParentOptions() {
   // 顶级「无上级」
   const tree = buildDeptOptionTree(data);
   parentOptions.value = [
-    { key: '0', label: $t('page.autobox.dept.parentDept') },
+    { key: '0', label: $t('page.org.dept.parentDept') },
     ...mapParentTreeOptions(tree)
   ];
 }
@@ -134,7 +134,7 @@ async function handleSubmit() {
       (props.rowData.parentId || '0') === (model.value.parentId || '0')
     )
   ) {
-    window.$message?.error($t('page.autobox.dept.form.deptName'));
+    window.$message?.error($t('page.org.dept.form.deptName'));
     return;
   }
 
@@ -175,7 +175,7 @@ watch(visible, async () => {
   <NDrawer v-model:show="visible" display-directive="show" :width="360">
     <NDrawerContent :title="title" :native-scrollbar="false" closable>
       <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" :label-width="100">
-        <NFormItem :label="$t('page.autobox.dept.parentDept')" path="parentId">
+        <NFormItem :label="$t('page.org.dept.parentDept')" path="parentId">
           <NTreeSelect
             v-model:value="model.parentId"
             :options="parentOptions"
@@ -185,19 +185,19 @@ watch(visible, async () => {
             :disabled="operateType === 'addChild'"
           />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.dept.deptName')" path="deptName">
-          <NInput v-model:value="model.deptName" :placeholder="$t('page.autobox.dept.form.deptName')" />
+        <NFormItem :label="$t('page.org.dept.deptName')" path="deptName">
+          <NInput v-model:value="model.deptName" :placeholder="$t('page.org.dept.form.deptName')" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.dept.deptLeader')" path="deptLeader">
-          <NInput v-model:value="model.deptLeader" :placeholder="$t('page.autobox.dept.form.deptLeader')" />
+        <NFormItem :label="$t('page.org.dept.deptLeader')" path="deptLeader">
+          <NInput v-model:value="model.deptLeader" :placeholder="$t('page.org.dept.form.deptLeader')" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.dept.leaderPhone')" path="leaderPhone">
-          <NInput v-model:value="model.leaderPhone" :placeholder="$t('page.autobox.dept.form.leaderPhone')" />
+        <NFormItem :label="$t('page.org.dept.leaderPhone')" path="leaderPhone">
+          <NInput v-model:value="model.leaderPhone" :placeholder="$t('page.org.dept.form.leaderPhone')" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.dept.leaderEmail')" path="leaderEmail">
-          <NInput v-model:value="model.leaderEmail" :placeholder="$t('page.autobox.dept.form.leaderEmail')" />
+        <NFormItem :label="$t('page.org.dept.leaderEmail')" path="leaderEmail">
+          <NInput v-model:value="model.leaderEmail" :placeholder="$t('page.org.dept.form.leaderEmail')" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.dept.orderNum')" path="orderNum">
+        <NFormItem :label="$t('page.org.dept.orderNum')" path="orderNum">
           <NInputNumber v-model:value="model.orderNum" class="w-full" :min="0" />
         </NFormItem>
         <NFormItem :label="$t('page.manage.common.status.enable')" path="isEnabled">

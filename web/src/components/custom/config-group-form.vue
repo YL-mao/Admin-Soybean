@@ -89,7 +89,7 @@ async function load() {
 async function save() {
   if (!guardAuth(props.permCode)) return;
   if (!items.value.length) {
-    window.$message?.error($t('page.autobox.config.configMissing'));
+    window.$message?.error($t('page.setting.config.configMissing'));
     return;
   }
   const configs: Api.SystemManage.ConfigGroupSaveItem[] = items.value.map(item => ({
@@ -122,7 +122,7 @@ defineExpose({ load, save, loading, saving, canSave });
 
 <template>
   <NSpin :show="loading">
-    <NEmpty v-if="!loading && !items.length" :description="$t('page.autobox.config.configMissing')" />
+    <NEmpty v-if="!loading && !items.length" :description="$t('page.setting.config.configMissing')" />
     <!-- 抽屉内也用主题设置行式布局，避免表单标签把输入框拉满 -->
     <div v-else class="flex-col-stretch gap-16px">
       <div

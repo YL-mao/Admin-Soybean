@@ -1,4 +1,4 @@
-import { listIcons } from '@iconify/vue';
+import mdiIcons from '@iconify-json/mdi/icons.json';
 
 export function getLocalIcons() {
   const svgIcons = import.meta.glob('/src/assets/svg-icon/*.svg');
@@ -10,12 +10,27 @@ export function getLocalIcons() {
   return keys;
 }
 
-/** 本地 addCollection 后的 MDI 全名（含别名），按需缓存 */
+/** 本地 MDI 全名（含别名），供菜单图标检索；与 offline addCollection 同源 */
 let cachedMdiIconNames: string[] | null = null;
 
 export function getMdiIconNames() {
   if (!cachedMdiIconNames) {
-    cachedMdiIconNames = listIcons('', 'mdi');
+    const ids = new Set<string>(Object.keys(mdiIcons.icons));
+    if (mdiIcons.aliases) {
+      for (const alias of Object.keys(mdiIcons.aliases)) {
+        ids.add(alias);
+      }
+    }
+    cachedMdiIconNames = [...ids].map(id => `mdi:${id}`);
   }
   return cachedMdiIconNames;
+}
+
+/** 是否为本地已注册的 mdi 图标（下拉选中值校验） */
+export function isLocalMdiIcon(name: string | null | undefined) {
+  if (!name || !name.startsWith('mdi:')) {
+    return false;
+  }
+  const id = name.slice(4);
+  return Object.hasOwn(mdiIcons.icons, id) || Object.hasOwn(mdiIcons.aliases ?? {}, id);
 }

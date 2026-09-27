@@ -32,8 +32,8 @@ const { defaultRequiredRule } = useFormRules();
 
 const title = computed(() => {
   const titles: Record<NaiveUI.TableOperateType, string> = {
-    add: $t('page.autobox.post.addPost'),
-    edit: $t('page.autobox.post.editPost')
+    add: $t('page.org.post.addPost'),
+    edit: $t('page.org.post.editPost')
   };
   return titles[props.operateType];
 });
@@ -65,7 +65,7 @@ const rules: Record<'postName' | 'postCode' | 'postType' | 'orderNum' | 'isEnabl
     defaultRequiredRule,
     {
       pattern: /^[a-zA-Z0-9_-]+$/,
-      message: $t('page.autobox.post.form.postCode'),
+      message: $t('page.org.post.form.postCode'),
       trigger: 'blur'
     }
   ],
@@ -94,14 +94,14 @@ async function handleSubmit() {
   const { data: nameOk, error: nameErr } = await fetchCheckPostNameUnique({ postName: model.value.postName });
   if (nameErr) return;
   if (nameOk === false && !(props.operateType === 'edit' && props.rowData?.postName === model.value.postName)) {
-    window.$message?.error($t('page.autobox.post.form.postName'));
+    window.$message?.error($t('page.org.post.form.postName'));
     return;
   }
 
   const { data: codeOk, error: codeErr } = await fetchCheckPostCodeUnique({ postCode: model.value.postCode });
   if (codeErr) return;
   if (codeOk === false && !(props.operateType === 'edit' && props.rowData?.postCode === model.value.postCode)) {
-    window.$message?.error($t('page.autobox.post.form.postCode'));
+    window.$message?.error($t('page.org.post.form.postCode'));
     return;
   }
 
@@ -139,20 +139,20 @@ watch(visible, () => {
   <NDrawer v-model:show="visible" display-directive="show" :width="360">
     <NDrawerContent :title="title" :native-scrollbar="false" closable>
       <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" :label-width="100">
-        <NFormItem :label="$t('page.autobox.post.postName')" path="postName">
-          <NInput v-model:value="model.postName" :placeholder="$t('page.autobox.post.form.postName')" />
+        <NFormItem :label="$t('page.org.post.postName')" path="postName">
+          <NInput v-model:value="model.postName" :placeholder="$t('page.org.post.form.postName')" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.post.postCode')" path="postCode">
-          <NInput v-model:value="model.postCode" :placeholder="$t('page.autobox.post.form.postCode')" />
+        <NFormItem :label="$t('page.org.post.postCode')" path="postCode">
+          <NInput v-model:value="model.postCode" :placeholder="$t('page.org.post.form.postCode')" />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.post.postType')" path="postType">
+        <NFormItem :label="$t('page.org.post.postType')" path="postType">
           <NSelect
             v-model:value="model.postType"
             :options="postTypeOptions.map(item => ({ value: item.value, label: $t(item.label) }))"
-            :placeholder="$t('page.autobox.post.form.postType')"
+            :placeholder="$t('page.org.post.form.postType')"
           />
         </NFormItem>
-        <NFormItem :label="$t('page.autobox.post.orderNum')" path="orderNum">
+        <NFormItem :label="$t('page.org.post.orderNum')" path="orderNum">
           <NInputNumber v-model:value="model.orderNum" class="w-full" :min="0" />
         </NFormItem>
         <NFormItem :label="$t('page.manage.common.status.enable')" path="isEnabled">

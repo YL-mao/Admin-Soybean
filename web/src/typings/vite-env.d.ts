@@ -95,12 +95,7 @@ declare namespace Env {
     /** Whether to build with sourcemap */
     readonly VITE_SOURCE_MAP?: CommonType.YesOrNo;
     /**
-     * Iconify api provider url（备用）
-     *
-     * 默认已通过 @iconify-json/mdi 本地注册 MDI 全集；`mdi:*` 不走外网。
-     * 仅当仍使用未打包的其它图标集、或要指向自建 Iconify API 时再配置。
-     *
-     * @link https://docs.iconify.design/api/providers.html
+     * @deprecated 运行时已改用 `@iconify/vue/offline` + 本地 `@iconify-json/mdi`，此变量不再使用。
      */
     readonly VITE_ICONIFY_URL?: string;
     /** Used to differentiate storage across different domains */

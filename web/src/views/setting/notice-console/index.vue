@@ -13,7 +13,7 @@ const { routerPushByKey } = useRouterPush();
 onMounted(async () => {
   const noticeId = typeof route.query.noticeId === 'string' ? route.query.noticeId.trim() : '';
   if (!noticeId) {
-    window.$message?.warning($t('page.autobox.notice.consoleDirectVisitTip'));
+    window.$message?.warning($t('page.setting.notice.consoleDirectVisitTip'));
   }
   await routerPushByKey('setting_notice', noticeId ? { query: { noticeId } } : undefined);
 });

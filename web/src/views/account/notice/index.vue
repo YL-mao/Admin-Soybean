@@ -45,7 +45,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
     columns: () => [
       {
         key: 'noticeTitle',
-        title: $t('page.autobox.notice.noticeTitle'),
+        title: $t('page.setting.notice.noticeTitle'),
         align: 'center',
         // 各列只设 minWidth、不设 width：fixed 布局下剩余宽度均分，不会出现标题列独宽
         minWidth: 160,
@@ -54,23 +54,23 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
           <span class="notice-title" innerHTML={row.noticeTitle} onClick={() => openDetail(row)} />
         )
       },
-      { key: 'noticeTypeName', title: $t('page.autobox.notice.noticeType'), align: 'center', minWidth: 110 },
+      { key: 'noticeTypeName', title: $t('page.setting.notice.noticeType'), align: 'center', minWidth: 110 },
       {
         key: 'readState',
-        title: $t('page.autobox.account.noticeReadState'),
+        title: $t('page.account.noticeReadState'),
         align: 'center',
         minWidth: 100,
         render: row =>
           row.readState === 1 ? (
-            <NTag size="small">{$t('page.autobox.account.noticeRead')}</NTag>
+            <NTag size="small">{$t('page.account.noticeRead')}</NTag>
           ) : (
             <NTag type="warning" size="small">
-              {$t('page.autobox.account.noticeUnread')}
+              {$t('page.account.noticeUnread')}
             </NTag>
           )
       },
-      { key: 'sendTime', title: $t('page.autobox.notice.sendTime'), align: 'center', minWidth: 170 },
-      { key: 'readTime', title: $t('page.autobox.account.noticeReadTime'), align: 'center', minWidth: 170 },
+      { key: 'sendTime', title: $t('page.setting.notice.sendTime'), align: 'center', minWidth: 170 },
+      { key: 'readTime', title: $t('page.account.noticeReadTime'), align: 'center', minWidth: 170 },
       {
         key: 'operate',
         title: $t('common.operate'),
@@ -78,7 +78,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
         minWidth: 100,
         render: row => (
           <NButton type="primary" ghost size="small" onClick={() => openDetail(row)}>
-            {$t('page.autobox.account.noticeView')}
+            {$t('page.account.noticeView')}
           </NButton>
         )
       }
@@ -107,7 +107,7 @@ async function handleReadAll() {
   const { error } = await fetchReadAllUserNotices();
   readingAll.value = false;
   if (error) return;
-  window.$message?.success($t('page.autobox.account.noticeReadAllSuccess'));
+  window.$message?.success($t('page.account.noticeReadAllSuccess'));
   await Promise.all([getData(), noticeStore.fetchHeader()]);
 }
 
@@ -131,7 +131,7 @@ async function openFromQuery(noticeId: string) {
   await getData();
   const target = await resolveNoticeById(noticeId);
   if (!target) {
-    window.$message?.warning($t('page.autobox.account.noticeNotFound'));
+    window.$message?.warning($t('page.account.noticeNotFound'));
     clearNoticeQuery();
     return;
   }
@@ -161,7 +161,7 @@ watch(
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <UserNoticeSearch v-model:model="searchParams" @search="getDataByPage" />
     <NCard
-      :title="$t('page.autobox.account.noticeTitle')"
+      :title="$t('page.account.noticeTitle')"
       :bordered="false"
       size="small"
       class="card-wrapper sm:flex-1-hidden"
@@ -170,7 +170,7 @@ watch(
         <TableHeaderOperation v-model:columns="columnChecks" :loading="loading" @refresh="getData">
           <template #default>
             <NButton size="small" ghost type="primary" :loading="readingAll" @click="handleReadAll">
-              {{ $t('page.autobox.account.noticeReadAll') }}
+              {{ $t('page.account.noticeReadAll') }}
             </NButton>
           </template>
         </TableHeaderOperation>
@@ -191,7 +191,7 @@ watch(
 
       <NDrawer v-model:show="detailVisible" display-directive="if" :width="640">
         <NDrawerContent
-          :title="$t('page.autobox.account.noticeDetail')"
+          :title="$t('page.account.noticeDetail')"
           :native-scrollbar="false"
           closable
         >
