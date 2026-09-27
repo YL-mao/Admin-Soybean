@@ -335,7 +335,6 @@ const local: App.I18n.Schema = {
         roleDesc: 'Role Description',
         orderNum: 'Order',
         menuAuth: 'Menu Auth',
-        buttonAuth: 'Button Auth',
         expandAll: 'Expand All',
         collapseAll: 'Collapse All',
         checkAll: 'Check All',

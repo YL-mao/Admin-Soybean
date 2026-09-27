@@ -77,6 +77,11 @@ export default function useTable<ResponseData, ApiData, Column, Pagination exten
 
   const $columns = computed(() => getColumns(columns(), columnChecks.value));
 
+  /** 请求世代：后发覆盖先至，避免快筛/翻页串写 */
+  let loadSeq = 0;
+  /** 在途请求数：AbortError/过期响应勿提前熄灭较新请求的 loading */
+  let inflight = 0;
+
   function reloadColumns() {
     const checkMap = new Map(columnChecks.value.map(col => [col.key, col.checked]));
     const fixedMap = new Map(columnChecks.value.map(col => [col.key, col.fixed]));
@@ -91,10 +96,18 @@ export default function useTable<ResponseData, ApiData, Column, Pagination exten
   }
 
   async function getData() {
-    try {
+    const seq = ++loadSeq;
+    if (inflight === 0) {
       startLoading();
-
+    }
+    inflight += 1;
+    try {
       const response = await api();
+
+      // 已被更新请求取代：丢弃结果，勿写表
+      if (seq !== loadSeq) {
+        return;
+      }
 
       const transformed = transform(response);
 
@@ -108,9 +121,16 @@ export default function useTable<ResponseData, ApiData, Column, Pagination exten
       if (e instanceof Error && e.name === 'AbortError') {
         return;
       }
+      if (seq !== loadSeq) {
+        return;
+      }
       throw e;
     } finally {
-      endLoading();
+      inflight -= 1;
+      if (inflight <= 0) {
+        inflight = 0;
+        endLoading();
+      }
     }
   }
 

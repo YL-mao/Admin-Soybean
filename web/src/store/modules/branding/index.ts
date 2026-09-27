@@ -73,9 +73,14 @@ export const useBrandingStore = defineStore(SetupStoreId.Branding, () => {
     applyFavicon();
   }
 
+  /** 拉取世代：并发请求时丢弃过期响应，避免旧品牌盖住新配置 */
+  let brandingSeq = 0;
+
   /** 拉取免登录品牌快照；失败时保留上次或空值，不打断启动 */
   async function fetchBranding() {
+    const seq = ++brandingSeq;
     const { data, error } = await fetchGetBranding();
+    if (seq !== brandingSeq) return false;
     if (error || !data) return false;
     applyBranding(data);
     return true;

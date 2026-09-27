@@ -34,21 +34,28 @@ export const useTabStore = defineStore(SetupStoreId.Tab, () => {
   /** Get active tab */
   const homeTab = ref<App.Global.Tab>();
 
+  /** Active tab id */
+  const activeTabId = ref<string>('');
+
   /** Init home tab */
   function initHomeTab() {
     homeTab.value = getDefaultHomeTab(router, routeStore.routeHome);
   }
 
-  /** 权限路由热更新后剔除已不存在的标签 */
+  /** 权限路由热更新后剔除已不存在的标签，并修正悬空的 activeTabId */
   function pruneInvalidTabs() {
     tabs.value = extractTabsByAllRoutes(router, tabs.value);
+    const validIds = new Set(tabs.value.map(tab => tab.id));
+    if (homeTab.value?.id) {
+      validIds.add(homeTab.value.id);
+    }
+    if (activeTabId.value && !validIds.has(activeTabId.value)) {
+      activeTabId.value = homeTab.value?.id || tabs.value.at(-1)?.id || '';
+    }
   }
 
   /** Get all tabs */
   const allTabs = computed(() => getAllTabs(tabs.value, homeTab.value));
-
-  /** Active tab id */
-  const activeTabId = ref<string>('');
 
   /**
    * Set active tab id

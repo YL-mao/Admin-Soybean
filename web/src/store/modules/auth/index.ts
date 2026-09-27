@@ -44,6 +44,8 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
   /** 防止并发 401 重复 reset / 重复打注销 */
   let resetting = false;
+  /** 用户信息拉取世代，避免并发 refresh 旧响应盖住新 roles/buttons */
+  let userInfoSeq = 0;
 
   /** Reset auth store */
   async function resetStore() {
@@ -164,7 +166,12 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
   /** 从后端刷新用户信息到内存（不落 localStorage，刷新靠 token + 再请求） */
   async function getUserInfo() {
+    const seq = ++userInfoSeq;
     const { data: info, error } = await fetchGetUserInfo();
+    // 已被更新请求覆盖：勿当失败（避免授权保存误判会话失效）
+    if (seq !== userInfoSeq) {
+      return true;
+    }
     if (error || !info) {
       return false;
     }

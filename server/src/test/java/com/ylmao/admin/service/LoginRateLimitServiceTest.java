@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Collections;
@@ -60,6 +60,7 @@ class LoginRateLimitServiceTest {
     @Test
     void requireNonNegativeInt_missing() {
         when(valueOperations.get(RedisKeys.config(SecurityConfigCodes.CAPTCHA_IP_LIMIT))).thenReturn(null);
+        when(configMapper.selectOne(any())).thenReturn(null);
         assertThrows(IllegalStateException.class,
                 () -> configRuntimeService.requireNonNegativeInt(SecurityConfigCodes.CAPTCHA_IP_LIMIT));
     }
@@ -75,7 +76,7 @@ class LoginRateLimitServiceTest {
     void softRate_windowZero_skipsIncrement() {
         stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "0");
         assertTrue(loginRateLimitService.tryCaptchaIp("1.1.1.1"));
-        verify(stringRedisTemplate, never()).execute(any(DefaultRedisScript.class), anyList(), anyString());
+        verify(stringRedisTemplate, never()).execute(anyLongScript(), anyList(), anyString());
     }
 
     @Test
@@ -83,14 +84,14 @@ class LoginRateLimitServiceTest {
         stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "1");
         stubConfig(SecurityConfigCodes.CAPTCHA_IP_LIMIT, "0");
         assertTrue(loginRateLimitService.tryCaptchaIp("1.1.1.1"));
-        verify(stringRedisTemplate, never()).execute(any(DefaultRedisScript.class), anyList(), anyString());
+        verify(stringRedisTemplate, never()).execute(anyLongScript(), anyList(), anyString());
     }
 
     @Test
     void softRate_captchaOverLimit_returnsFalse() {
         stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "1");
         stubConfig(SecurityConfigCodes.CAPTCHA_IP_LIMIT, "2");
-        when(stringRedisTemplate.execute(any(DefaultRedisScript.class), eq(Collections.singletonList(RedisKeys.rateCaptchaIp("1.1.1.1"))), eq("60")))
+        when(stringRedisTemplate.execute(anyLongScript(), eq(Collections.singletonList(RedisKeys.rateCaptchaIp("1.1.1.1"))), eq("60")))
                 .thenReturn(3L);
         assertFalse(loginRateLimitService.tryCaptchaIp("1.1.1.1"));
     }
@@ -99,7 +100,7 @@ class LoginRateLimitServiceTest {
     void softRate_loginIpOverLimit_throws() {
         stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "1");
         stubConfig(SecurityConfigCodes.LOGIN_IP_LIMIT, "2");
-        when(stringRedisTemplate.execute(any(DefaultRedisScript.class), eq(Collections.singletonList(RedisKeys.rateLoginIp("1.1.1.1"))), eq("60")))
+        when(stringRedisTemplate.execute(anyLongScript(), eq(Collections.singletonList(RedisKeys.rateLoginIp("1.1.1.1"))), eq("60")))
                 .thenReturn(3L);
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> loginRateLimitService.checkLoginIp("1.1.1.1"));
@@ -111,19 +112,47 @@ class LoginRateLimitServiceTest {
         stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "5");
         stubConfig(SecurityConfigCodes.CAPTCHA_IP_LIMIT, "10");
         String key = RedisKeys.rateCaptchaIp("1.1.1.1");
-        when(stringRedisTemplate.execute(any(DefaultRedisScript.class), eq(Collections.singletonList(key)), eq("300")))
+        when(stringRedisTemplate.execute(anyLongScript(), eq(Collections.singletonList(key)), eq("300")))
                 .thenReturn(1L);
         assertTrue(loginRateLimitService.tryCaptchaIp("1.1.1.1"));
-        verify(stringRedisTemplate).execute(any(DefaultRedisScript.class), eq(Collections.singletonList(key)), eq("300"));
+        verify(stringRedisTemplate).execute(anyLongScript(), eq(Collections.singletonList(key)), eq("300"));
     }
 
     @Test
     void softRate_redisException_failClosed() {
         stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "1");
         stubConfig(SecurityConfigCodes.CAPTCHA_IP_LIMIT, "10");
-        when(stringRedisTemplate.execute(any(DefaultRedisScript.class), anyList(), anyString()))
+        when(stringRedisTemplate.execute(anyLongScript(), anyList(), anyString()))
                 .thenThrow(new RuntimeException("redis down"));
         assertFalse(loginRateLimitService.tryCaptchaIp("1.1.1.1"));
+    }
+
+    @Test
+    void softRate_redisException_loginUsesBusyMessage() {
+        stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "1");
+        stubConfig(SecurityConfigCodes.LOGIN_IP_LIMIT, "10");
+        when(stringRedisTemplate.execute(anyLongScript(), anyList(), anyString()))
+                .thenThrow(new RuntimeException("redis down"));
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> loginRateLimitService.checkLoginIp("1.1.1.1"));
+        assertEquals("服务繁忙，请稍后再试", ex.getMessage());
+    }
+
+    @Test
+    void requireNonNegativeInt_missFallsBackToDb() {
+        when(valueOperations.get(RedisKeys.config(SecurityConfigCodes.CAPTCHA_IP_LIMIT))).thenReturn(null);
+        com.ylmao.admin.entity.Config row = new com.ylmao.admin.entity.Config();
+        row.setConfigCode(SecurityConfigCodes.CAPTCHA_IP_LIMIT);
+        row.setConfigValue("7");
+        row.setValueType("number");
+        row.setIsEnabled(1);
+        when(configMapper.selectOne(any())).thenReturn(row);
+        assertEquals(7, configRuntimeService.requireNonNegativeInt(SecurityConfigCodes.CAPTCHA_IP_LIMIT));
+    }
+
+    /** 匹配任意返回 Long 的 RedisScript，避免 any(DefaultRedisScript.class) 的未检查赋值告警。 */
+    private static RedisScript<Long> anyLongScript() {
+        return org.mockito.ArgumentMatchers.any();
     }
 
     private void stubConfig(String configCode, String value) {

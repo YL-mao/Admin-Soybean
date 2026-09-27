@@ -40,12 +40,13 @@ public class LoginService {
 
     public void login(LoginDto.LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
         String clientIp = ServletUtils.getIP(request);
-        // IP / 账号固定窗口限流（Redis），在业务校验前拦截刷登录。
+        // IP 软拦可在验证码前（防刷接口）；账号软拦须在验证码后，避免未鉴权打满目标账号。
         loginRateLimitService.checkLoginIp(clientIp);
-        loginRateLimitService.checkLoginAccount(loginRequest.userAccount());
 
-        // 验证码错误不计账号/IP 失败次数。
+        // 验证码错误不计账号失败次数，也不计账号软拦。
         captchaService.validateAndConsume(loginRequest.captcha(), request, response);
+
+        loginRateLimitService.checkLoginAccount(loginRequest.userAccount());
 
         // IP 白名单：跳过 IP 黑名单、IP 失败计数与自动拉黑；仍校验用户黑名单与账号规则。
         boolean ipWhitelisted = filterService.isIpWhitelisted(clientIp);

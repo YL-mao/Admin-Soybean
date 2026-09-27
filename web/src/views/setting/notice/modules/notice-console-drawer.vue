@@ -24,8 +24,12 @@ const prefetchedStats = defineModel<Api.SystemManage.NoticeConsoleStats | null>(
 
 const { hasAuth } = useAuth();
 
-/** 接收人请求过期（关抽屉 / 换公告）时抛出，供下方 catch 静默丢弃 */
-const RECEIVER_STALE = 'NOTICE_CONSOLE_RECEIVER_STALE';
+/** 接收人请求过期（关抽屉 / 换公告）时抛 AbortError，由 use-table 静默丢弃 */
+function abortReceiverStale() {
+  const err = new Error('NOTICE_CONSOLE_RECEIVER_STALE');
+  err.name = 'AbortError';
+  throw err;
+}
 
 const statsLoading = ref(false);
 const stats = ref<Api.SystemManage.NoticeConsoleStats | null>(null);
@@ -52,22 +56,18 @@ const {
 } = useNaivePaginatedTable({
   immediate: false,
   api: async () => {
-    if (!visible.value || !props.noticeId || !hasAuth('system:notice:console')) {
-      return Promise.resolve(emptyAuthListResponse<Api.SystemManage.NoticeConsoleReceiver>());
-    }
-    const seq = loadSeq;
+    const seq = ++loadSeq;
     const reqNoticeId = props.noticeId;
+    if (!visible.value || !reqNoticeId || !hasAuth('system:notice:console')) {
+      return emptyAuthListResponse<Api.SystemManage.NoticeConsoleReceiver>();
+    }
     const result = await fetchGetNoticeConsoleReceivers({
       ...receiverSearch.value,
       noticeId: reqNoticeId
     });
-    // 抽屉已关：回空即可（关闭时已清表）
-    if (!visible.value || !props.noticeId) {
-      return emptyAuthListResponse<Api.SystemManage.NoticeConsoleReceiver>();
-    }
-    // 已换公告：丢弃且勿写空表，避免盖住新抽屉正在展示/拉取的数据
-    if (seq !== loadSeq || props.noticeId !== reqNoticeId) {
-      throw new Error(RECEIVER_STALE);
+    // 已换公告/关抽屉：AbortError 丢弃，避免盖住新数据
+    if (seq !== loadSeq || !visible.value || props.noticeId !== reqNoticeId) {
+      abortReceiverStale();
     }
     return result;
   },
@@ -183,18 +183,13 @@ watch(
   }
 );
 
-/** 过期请求静默丢弃，避免空结果盖住新打开的抽屉 */
+/** 过期请求由 use-table 按 AbortError / 世代丢弃 */
 async function loadReceiversSafe() {
-  try {
-    await getReceiversByPage();
-  } catch (e) {
-    if (e instanceof Error && e.message === RECEIVER_STALE) return;
-    throw e;
-  }
+  await getReceiversByPage();
 }
 
 function handleReceiverSearch() {
-  loadReceiversSafe();
+  void loadReceiversSafe();
 }
 </script>
 

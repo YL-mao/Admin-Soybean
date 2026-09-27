@@ -31,6 +31,8 @@ const router = useRouter();
 const authStore = useAuthStore();
 const routeStore = useRouteStore();
 const saving = ref(false);
+/** 加载树世代：切换角色时丢弃过期响应 */
+let loadTreeSeq = 0;
 
 function closeModal() {
   visible.value = false;
@@ -187,7 +189,9 @@ function invertAll() {
 }
 
 async function loadTree() {
-  if (!props.roleId) {
+  const seq = ++loadTreeSeq;
+  const roleId = props.roleId;
+  if (!roleId) {
     tree.value = [];
     checks.value = [];
     expandedKeys.value = [];
@@ -197,7 +201,11 @@ async function loadTree() {
     childrenMap.value = new Map();
     return;
   }
-  const { error, data } = await fetchGetRoleMenuTree(props.roleId);
+  const { error, data } = await fetchGetRoleMenuTree(roleId);
+  // 已切换角色或关闭：丢弃过期树，避免误提交旧勾选
+  if (seq !== loadTreeSeq || !visible.value || props.roleId !== roleId) {
+    return;
+  }
   if (error || !data) {
     tree.value = [];
     checks.value = [];
@@ -217,37 +225,52 @@ async function handleConfirm() {
     return;
   }
   saving.value = true;
-  const { error } = await fetchSaveRoleMenu({
-    roleId: props.roleId,
-    menuIds: withAncestors(checks.value).join(',')
-  });
-  saving.value = false;
-  if (error) return;
+  try {
+    const { error } = await fetchSaveRoleMenu({
+      roleId: props.roleId,
+      menuIds: withAncestors(checks.value).join(',')
+    });
+    if (error) return;
 
-  const infoOk = await authStore.refreshUserInfo();
-  if (!infoOk) {
-    // 会话已失效，勿提示授权成功
-    return;
+    const infoOk = await authStore.refreshUserInfo();
+    if (!infoOk) {
+      // 会话已失效，勿提示授权成功
+      return;
+    }
+    const routeOk = await routeStore.reloadAuthRoute();
+    if (!routeOk) {
+      // 动态路由刷新失败已踢登录，勿再提示「更新成功」
+      return;
+    }
+    // 改掉自己角色后当前页可能已被摘掉，落到首页避免空白
+    const currentName = router.currentRoute.value.name;
+    if (typeof currentName === 'string' && currentName && !router.hasRoute(currentName)) {
+      await router.replace({ name: routeStore.routeHome as RouteKey });
+    }
+    window.$message?.success($t('common.updateSuccess'));
+    closeModal();
+  } finally {
+    // 整段 refresh/reload 结束前保持锁定，防连点重入
+    saving.value = false;
   }
-  const routeOk = await routeStore.reloadAuthRoute();
-  if (!routeOk) {
-    // 动态路由刷新失败已踢登录，勿再提示「更新成功」
-    return;
-  }
-  // 改掉自己角色后当前页可能已被摘掉，落到首页避免空白
-  const currentName = router.currentRoute.value.name;
-  if (typeof currentName === 'string' && currentName && !router.hasRoute(currentName)) {
-    await router.replace({ name: routeStore.routeHome as RouteKey });
-  }
-  window.$message?.success($t('common.updateSuccess'));
-  closeModal();
 }
 
 watch(visible, val => {
   if (val) {
     void loadTree();
+  } else {
+    loadTreeSeq += 1;
   }
 });
+
+watch(
+  () => props.roleId,
+  () => {
+    if (visible.value) {
+      void loadTree();
+    }
+  }
+);
 </script>
 
 <template>

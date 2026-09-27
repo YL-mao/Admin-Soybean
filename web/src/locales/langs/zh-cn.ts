@@ -265,7 +265,6 @@ const local: App.I18n.Schema = {
         roleDesc: '角色描述',
         orderNum: '排序',
         menuAuth: '菜单权限',
-        buttonAuth: '按钮权限',
         expandAll: '全部展开',
         collapseAll: '全部收起',
         checkAll: '全部选中',

@@ -15,6 +15,14 @@ public interface NoticeUserMapper extends BaseMapper<NoticeUser> {
 
      void insertBatch(@Param("noticeUserList") List<NoticeUser> noticeUserList);
 
+     /** 含软删行，供投递前判断与复活（绕过 TableLogic）。 */
+     List<NoticeUser> selectByNoticeIdIncludingDeleted(@Param("noticeId") String noticeId);
+
+     /**
+      * 将软删收件行复活为未读，避免 uk_user_notice 挡住重投。
+      */
+     void reviveSoftDeleted(@Param("noticeId") String noticeId, @Param("userIds") List<String> userIds);
+
      /** 当前用户收件箱分页：仅已发布且未过期的公告。 */
      IPage<NoticeVo.UserInboxQueryVo> selectUserInboxPage(
              Page<NoticeVo.UserInboxQueryVo> page,

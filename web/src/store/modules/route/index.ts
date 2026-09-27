@@ -131,9 +131,17 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
   /** Global breadcrumbs */
   const breadcrumbs = computed(() => getBreadcrumbsByRoute(router.currentRoute.value, menus.value));
 
+  /** 合并并发 init；reload/reset 前 bump generation 作废在途结果 */
+  let authRouteInitInflight: Promise<boolean> | null = null;
+  let authRouteInitGeneration = 0;
+
   /** Reset store */
   async function resetStore() {
     const routeStore = useRouteStore();
+
+    // 作废在途 init/reload，避免登出后旧动态路由写回
+    authRouteInitGeneration += 1;
+    authRouteInitInflight = null;
 
     routeStore.$reset();
 
@@ -163,20 +171,20 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     tabStore.initHomeTab();
   }
 
-  /** 合并并发 init；reload 前先等旧任务结束再开新一轮 */
-  let authRouteInitInflight: Promise<boolean> | null = null;
-  let authRouteInitGeneration = 0;
-
   /** Init auth route；userInfo / 动态路由失败时返回 false，由路由守卫回登录页 */
   async function initAuthRoute() {
     if (authRouteInitInflight) {
       return authRouteInitInflight;
     }
     const generation = authRouteInitGeneration;
-    authRouteInitInflight = runInitAuthRoute(generation).finally(() => {
-      authRouteInitInflight = null;
+    const task = runInitAuthRoute(generation).finally(() => {
+      // 仅清理本世代任务，避免旧 finally 误清新一轮 inflight
+      if (authRouteInitInflight === task) {
+        authRouteInitInflight = null;
+      }
     });
-    return authRouteInitInflight;
+    authRouteInitInflight = task;
+    return task;
   }
 
   async function runInitAuthRoute(generation: number) {

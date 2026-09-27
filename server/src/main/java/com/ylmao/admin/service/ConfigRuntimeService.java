@@ -21,10 +21,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 配置运行时读取：启用配置写入 Redis，读取时直读 Redis（方案 A）。
  * 索引与缓存值均为 string，避免客户端对索引 key 误 GET 时 WRONGTYPE。
+ * Redis miss 时回源 DB 并尝试回填，避免 FLUSH 后登录/验证码直接 500。
  */
 @Service
 @RequiredArgsConstructor
@@ -38,13 +40,31 @@ public class ConfigRuntimeService {
     private final JsonMapper jsonMapper;
     private final StringRedisTemplate stringRedisTemplate;
 
+    /**
+     * 配置整表刷 Redis 的版本号。
+     * 并发两次保存时后一次会把版本推高；先进锁的旧刷新若发现版本已变，说明有更新的刷新在等，本轮直接退出。
+     */
+    private final AtomicLong refreshVersion = new AtomicLong();
+    private final Object refreshLock = new Object();
+
     @PostConstruct
     public void initCache() {
         refreshCache();
     }
 
-    /** 全量重建 Redis 配置缓存；先覆盖写入再删孤儿，避免先 clear 造成读空窗。 */
+    /** 把库里所有启用配置整表写进 Redis；先覆盖写入再删孤儿 key，避免先清空造成读空窗。 */
     public void refreshCache() {
+        long myVersion = refreshVersion.incrementAndGet();
+        synchronized (refreshLock) {
+            // 等锁期间又有人发起了更新的刷新：丢弃本轮，由更新的那次写 Redis。
+            if (myVersion != refreshVersion.get()) {
+                return;
+            }
+            doRefreshCache();
+        }
+    }
+
+    private void doRefreshCache() {
         List<String> oldCodes = readCodeIndex();
         List<Config> enabledList = configMapper.selectList(new LambdaQueryWrapper<Config>()
                 .eq(Config::getIsEnabled, 1));
@@ -161,24 +181,45 @@ public class ConfigRuntimeService {
         if (StrUtil.isBlank(configCode)) {
             return Optional.empty();
         }
-        String json = stringRedisTemplate.opsForValue().get(RedisKeys.config(configCode));
-        if (StrUtil.isBlank(json)) {
-            return Optional.empty();
-        }
         try {
-            return Optional.of(jsonMapper.readValue(json, CacheEntry.class));
-        } catch (Exception ex) {
-            log.warn("配置缓存反序列化失败 configCode={} reason={}", configCode, ex.getMessage());
+            String json = stringRedisTemplate.opsForValue().get(RedisKeys.config(configCode));
+            if (StrUtil.isNotBlank(json)) {
+                try {
+                    return Optional.of(jsonMapper.readValue(json, CacheEntry.class));
+                } catch (Exception ex) {
+                    log.warn("配置缓存反序列化失败 configCode={} reason={}", configCode, ex.getMessage());
+                }
+            }
+        } catch (RuntimeException ex) {
+            log.warn("配置缓存读取失败 configCode={} reason={}", configCode, ex.getMessage());
+        }
+        // Redis miss / 故障：回源 DB，并尽量回填缓存。
+        return loadEnabledFromDbAndWarm(configCode);
+    }
+
+    private Optional<CacheEntry> loadEnabledFromDbAndWarm(String configCode) {
+        Config config = configMapper.selectOne(new LambdaQueryWrapper<Config>()
+                .eq(Config::getConfigCode, configCode)
+                .eq(Config::getIsEnabled, 1)
+                .last("LIMIT 1"));
+        if (config == null) {
             return Optional.empty();
         }
+        CacheEntry entry = new CacheEntry(config.getConfigValue(), config.getValueType());
+        try {
+            stringRedisTemplate.opsForValue().set(RedisKeys.config(configCode), jsonMapper.writeValueAsString(entry));
+        } catch (RuntimeException ex) {
+            log.warn("配置缓存回填失败 configCode={} reason={}", configCode, ex.getMessage());
+        }
+        return Optional.of(entry);
     }
 
     private List<String> readCodeIndex() {
-        String json = stringRedisTemplate.opsForValue().get(RedisKeys.CONFIG_INDEX);
-        if (StrUtil.isBlank(json)) {
-            return List.of();
-        }
         try {
+            String json = stringRedisTemplate.opsForValue().get(RedisKeys.CONFIG_INDEX);
+            if (StrUtil.isBlank(json)) {
+                return List.of();
+            }
             List<String> codes = jsonMapper.readValue(json, STRING_LIST_TYPE);
             return codes == null ? List.of() : codes;
         } catch (Exception ex) {

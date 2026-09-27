@@ -156,6 +156,7 @@ public class FileResourceService {
     }
 
     /** 覆盖重传：保持同一 fileId，校验场景后缀；展示名可随新文件更新且允许同名并存。 */
+    @Transactional
     public FileResourceVo.FileListVo overwrite(String fileId, MultipartFile file) {
         uploadConfigService.assertUploadEnabled();
         uploadConfigService.requireLocalStorage();
@@ -206,7 +207,8 @@ public class FileResourceService {
                 try {
                     Files.move(backupPath, newPath, StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException restoreEx) {
-                    log.error("覆盖失败后恢复备份失败 fileId={}", existing.getFileId(), restoreEx);
+                    log.error("覆盖失败后恢复备份失败 fileId={} bak={}", existing.getFileId(), backupPath, restoreEx);
+                    throw new BusinessException("文件保存失败，且备份恢复失败，请检查磁盘备份: " + backupPath.getFileName());
                 }
             }
             throw new BusinessException("文件保存失败");
@@ -234,7 +236,8 @@ public class FileResourceService {
                     Files.move(backupPath, newPath, StandardCopyOption.REPLACE_EXISTING);
                     backupPath = null;
                 } catch (IOException restoreEx) {
-                    log.error("覆盖入库失败后恢复备份失败 fileId={}", existing.getFileId(), restoreEx);
+                    log.error("覆盖入库失败后恢复备份失败 fileId={} bak={}", existing.getFileId(), backupPath, restoreEx);
+                    throw new BusinessException("文件入库失败，且备份恢复失败，请检查磁盘备份: " + backupPath.getFileName());
                 }
             } else if (!samePath) {
                 deleteQuietly(newPath);
@@ -242,8 +245,9 @@ public class FileResourceService {
             throw e;
         }
         deleteQuietly(backupPath);
+        // 换路径：旧盘文件等库事务提交后再删（无事务时立即删）。
         if (!samePath) {
-            deleteQuietly(oldPath);
+            deleteDiskAfterCommit(List.of(oldPath));
         }
         return FileResourceVo.FileListVo.from(existing, uploadConfigService.buildAccessUrl(existing.getFileId()));
     }
@@ -281,10 +285,13 @@ public class FileResourceService {
         if (StrUtil.isBlank(fileId)) {
             return false;
         }
-        // 与覆盖鉴权一致：去 query 后须以 /upload/{fileId} 结尾，避免 LIKE 子串误判。
+        // 与 Java endsWith 一致：去 query 后路径必须以 /upload/{fileId} 结尾（非子串误匹配）。
         String suffix = "/upload/" + fileId;
         Long count = userMapper.selectCount(new LambdaQueryWrapper<User>()
-                .apply("SUBSTRING_INDEX(IFNULL(user_avatar,''), '?', 1) LIKE CONCAT('%', {0})", suffix));
+                .apply(
+                        "RIGHT(SUBSTRING_INDEX(IFNULL(user_avatar,''), '?', 1), {0}) = {1}",
+                        suffix.length(),
+                        suffix));
         return count != null && count > 0;
     }
 
@@ -299,6 +306,10 @@ public class FileResourceService {
             FileResource file = fileResourceMapper.selectById(fileId);
             if (file == null || !Integer.valueOf(0).equals(file.getIsDel())) {
                 throw new BusinessException("文件不存在");
+            }
+            // 与目录级联删一致：头像引用时服务端直接拒绝，避免绕过前端 checkRef。
+            if (isReferencedByAvatar(fileId)) {
+                throw new BusinessException("文件仍被用户头像引用，请先更换头像后再删除");
             }
             files.add(file);
         }
@@ -339,10 +350,10 @@ public class FileResourceService {
         List<FileResource> files = fileResourceMapper.selectList(new LambdaQueryWrapper<FileResource>()
                 .eq(FileResource::getIsDel, 0)
                 .in(FileResource::getFolderId, folderIdsToDelete));
-        // 单文件删除走 checkRef 确认；目录级联删无该步骤，有头像引用时直接拒绝。
+        // 与单文件删除一致：有头像引用时直接拒绝。
         for (FileResource file : files) {
             if (isReferencedByAvatar(file.getFileId())) {
-                throw new BusinessException("目录下存在仍被用户头像引用的文件，请先在文件列表中处理后再删除目录");
+                throw new BusinessException("目录下存在仍被用户头像引用的文件，请先更换头像后再删除目录");
             }
         }
         LocalDateTime now = LocalDateTime.now();

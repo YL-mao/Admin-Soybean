@@ -3,14 +3,34 @@
 <mapper namespace="com.ylmao.admin.mapper.NoticeUserMapper">
 
 <insert id="insertBatch" parameterType="java.util.List">
-    <!-- IGNORE：并发首次发布撞 uk_user_notice 时跳过已有行，其余仍写入 -->
-    INSERT IGNORE INTO sys_notice_user
+    <!-- 普通 INSERT：UK 冲突由 Service 捕获 DuplicateKey；勿用 IGNORE 以免吞数据截断等错误 -->
+    INSERT INTO sys_notice_user
     (user_notice_id,notice_id,user_id,is_read)
     VALUES
     <foreach collection="noticeUserList" item="noticeUser" separator=",">
         (#{noticeUser.noticeUserId},#{noticeUser.noticeId},#{noticeUser.userId},#{noticeUser.readState})
     </foreach>
 </insert>
+
+    <!-- 含软删：用于投递前判断 / 复活，绕过 TableLogic -->
+    <select id="selectByNoticeIdIncludingDeleted" resultType="com.ylmao.admin.entity.NoticeUser">
+        SELECT user_notice_id, notice_id, user_id, is_read AS readState, read_time, is_del, create_time
+        FROM sys_notice_user
+        WHERE notice_id = #{noticeId}
+    </select>
+
+    <update id="reviveSoftDeleted">
+        UPDATE sys_notice_user
+        SET is_del = 0,
+            is_read = 0,
+            read_time = NULL
+        WHERE notice_id = #{noticeId}
+          AND user_id IN
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+          AND is_del = 1
+    </update>
 
     <sql id="userInboxJoinWhere">
         FROM sys_notice_user nu

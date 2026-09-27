@@ -12,6 +12,8 @@ import com.ylmao.admin.entity.Config;
 import com.ylmao.admin.mapper.ConfigMapper;
 import com.ylmao.admin.vo.ConfigVo;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -25,6 +27,8 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class ConfigService {
+
+    private static final Logger log = LoggerFactory.getLogger(ConfigService.class);
 
     private final ConfigMapper configMapper;
     private final ConfigRuntimeService configRuntimeService;
@@ -54,12 +58,21 @@ public class ConfigService {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    configRuntimeService.refreshCache();
+                    refreshConfigCacheSafe();
                 }
             });
             return;
         }
-        configRuntimeService.refreshCache();
+        refreshConfigCacheSafe();
+    }
+
+    private void refreshConfigCacheSafe() {
+        try {
+            configRuntimeService.refreshCache();
+        } catch (RuntimeException ex) {
+            // DB 已提交；刷新失败靠读路径 DB 回源兜底，勿抛回主流程。
+            log.error("配置提交后刷新 Redis 失败", ex);
+        }
     }
 
     private void updateGroupConfig(String configGroup, ConfigDto.GroupConfig groupConfig) {

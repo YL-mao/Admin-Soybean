@@ -28,6 +28,7 @@ import com.ylmao.admin.vo.NoticeVo;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -396,9 +397,32 @@ public class NoticeService {
         if (userIds.isEmpty()) {
             throw new BusinessException("未找到可投递的目标用户");
         }
+        // 含软删：活跃跳过；软删复活；其余新建（避免 uk 挡住重投且不用 INSERT IGNORE）。
+        List<NoticeUser> existing = noticeUserMapper.selectByNoticeIdIncludingDeleted(notice.getNoticeId());
+        Set<String> activeUserIds = new HashSet<>();
+        List<String> reviveUserIds = new ArrayList<>();
+        for (NoticeUser row : existing) {
+            if (row == null || StrUtil.isBlank(row.getUserId())) {
+                continue;
+            }
+            if (row.getIsDel() != null && row.getIsDel() == 1) {
+                reviveUserIds.add(row.getUserId());
+            } else {
+                activeUserIds.add(row.getUserId());
+            }
+        }
+        List<String> toRevive = reviveUserIds.stream()
+                .filter(userIds::contains)
+                .filter(id -> !activeUserIds.contains(id))
+                .distinct()
+                .toList();
+        if (!toRevive.isEmpty()) {
+            noticeUserMapper.reviveSoftDeleted(notice.getNoticeId(), toRevive);
+            activeUserIds.addAll(toRevive);
+        }
         List<NoticeUser> noticeUserList = new ArrayList<>();
         for (String userId : userIds) {
-            if (existsUserNotice(userId, notice.getNoticeId())) {
+            if (activeUserIds.contains(userId)) {
                 continue;
             }
             NoticeUser noticeUser = new NoticeUser();
@@ -410,8 +434,23 @@ public class NoticeService {
             noticeUserList.add(noticeUser);
         }
         if (!noticeUserList.isEmpty()) {
-            // insertBatch 使用 INSERT IGNORE，并发撞 uk 时跳过已有行、写其余用户。
+            insertNoticeUsersIgnoreDuplicate(noticeUserList);
+        }
+    }
+
+    /** 批量写入；并发撞 uk 时降级逐条插入并忽略仅 DuplicateKey。 */
+    private void insertNoticeUsersIgnoreDuplicate(List<NoticeUser> noticeUserList) {
+        try {
             noticeUserMapper.insertBatch(noticeUserList);
+        } catch (DuplicateKeyException batchEx) {
+            log.warn("公告投递批量撞唯一键，改为逐条写入 noticeCount={}", noticeUserList.size());
+            for (NoticeUser noticeUser : noticeUserList) {
+                try {
+                    noticeUserMapper.insertBatch(List.of(noticeUser));
+                } catch (DuplicateKeyException ignore) {
+                    // 并发另一请求已写入同一 (user_id, notice_id)
+                }
+            }
         }
     }
 
@@ -472,15 +511,10 @@ public class NoticeService {
                 .toList();
     }
 
-    private boolean existsUserNotice(String userId, String noticeId) {
-        return noticeUserMapper.selectCount(new LambdaQueryWrapper<NoticeUser>()
-                .eq(NoticeUser::getUserId, userId)
-                .eq(NoticeUser::getNoticeId, noticeId)) > 0;
-    }
-
     private boolean hasNoticeUserRecords(String noticeId) {
-        return noticeUserMapper.selectCount(new LambdaQueryWrapper<NoticeUser>()
-                .eq(NoticeUser::getNoticeId, noticeId)) > 0;
+        // 含软删：已投递过即禁止改回草稿。
+        List<NoticeUser> rows = noticeUserMapper.selectByNoticeIdIncludingDeleted(noticeId);
+        return rows != null && !rows.isEmpty();
     }
 
     /** 批量查询已投递到用户关联表的公告 ID。 */
