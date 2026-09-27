@@ -11,14 +11,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.time.Duration;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -72,7 +75,7 @@ class LoginRateLimitServiceTest {
     void softRate_windowZero_skipsIncrement() {
         stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "0");
         assertTrue(loginRateLimitService.tryCaptchaIp("1.1.1.1"));
-        verify(valueOperations, never()).increment(anyString());
+        verify(stringRedisTemplate, never()).execute(any(DefaultRedisScript.class), anyList(), anyString());
     }
 
     @Test
@@ -80,14 +83,15 @@ class LoginRateLimitServiceTest {
         stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "1");
         stubConfig(SecurityConfigCodes.CAPTCHA_IP_LIMIT, "0");
         assertTrue(loginRateLimitService.tryCaptchaIp("1.1.1.1"));
-        verify(valueOperations, never()).increment(anyString());
+        verify(stringRedisTemplate, never()).execute(any(DefaultRedisScript.class), anyList(), anyString());
     }
 
     @Test
     void softRate_captchaOverLimit_returnsFalse() {
         stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "1");
         stubConfig(SecurityConfigCodes.CAPTCHA_IP_LIMIT, "2");
-        when(valueOperations.increment(RedisKeys.rateCaptchaIp("1.1.1.1"))).thenReturn(3L);
+        when(stringRedisTemplate.execute(any(DefaultRedisScript.class), eq(Collections.singletonList(RedisKeys.rateCaptchaIp("1.1.1.1"))), eq("60")))
+                .thenReturn(3L);
         assertFalse(loginRateLimitService.tryCaptchaIp("1.1.1.1"));
     }
 
@@ -95,20 +99,31 @@ class LoginRateLimitServiceTest {
     void softRate_loginIpOverLimit_throws() {
         stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "1");
         stubConfig(SecurityConfigCodes.LOGIN_IP_LIMIT, "2");
-        when(valueOperations.increment(RedisKeys.rateLoginIp("1.1.1.1"))).thenReturn(3L);
+        when(stringRedisTemplate.execute(any(DefaultRedisScript.class), eq(Collections.singletonList(RedisKeys.rateLoginIp("1.1.1.1"))), eq("60")))
+                .thenReturn(3L);
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> loginRateLimitService.checkLoginIp("1.1.1.1"));
         assertEquals("操作过于频繁，请稍后再试", ex.getMessage());
     }
 
     @Test
-    void softRate_firstHit_setsExpire() {
+    void softRate_firstHit_usesLuaScript() {
         stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "5");
         stubConfig(SecurityConfigCodes.CAPTCHA_IP_LIMIT, "10");
         String key = RedisKeys.rateCaptchaIp("1.1.1.1");
-        when(valueOperations.increment(key)).thenReturn(1L);
+        when(stringRedisTemplate.execute(any(DefaultRedisScript.class), eq(Collections.singletonList(key)), eq("300")))
+                .thenReturn(1L);
         assertTrue(loginRateLimitService.tryCaptchaIp("1.1.1.1"));
-        verify(stringRedisTemplate).expire(eq(key), eq(Duration.ofMinutes(5)));
+        verify(stringRedisTemplate).execute(any(DefaultRedisScript.class), eq(Collections.singletonList(key)), eq("300"));
+    }
+
+    @Test
+    void softRate_redisException_failClosed() {
+        stubConfig(SecurityConfigCodes.RATE_WINDOW_MINUTES, "1");
+        stubConfig(SecurityConfigCodes.CAPTCHA_IP_LIMIT, "10");
+        when(stringRedisTemplate.execute(any(DefaultRedisScript.class), anyList(), anyString()))
+                .thenThrow(new RuntimeException("redis down"));
+        assertFalse(loginRateLimitService.tryCaptchaIp("1.1.1.1"));
     }
 
     private void stubConfig(String configCode, String value) {

@@ -103,6 +103,12 @@ export default function useTable<ResponseData, ApiData, Column, Pagination exten
       setEmpty(data.value.length === 0);
 
       await onFetched?.(transformed);
+    } catch (e) {
+      // 允许业务侧用 AbortError 丢弃过期请求，避免串写表格
+      if (e instanceof Error && e.name === 'AbortError') {
+        return;
+      }
+      throw e;
     } finally {
       endLoading();
     }

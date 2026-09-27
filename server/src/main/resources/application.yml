@@ -90,3 +90,9 @@ app:
   # 启动时权限与路由质量检查（只 WARN，不拦启动）；设为 false 可关闭。
   perm:
     quality-check: true
+  # 仅对这些对端采信 X-Real-IP；Docker/异机 Nginx 请追加代理地址。
+  client-ip:
+    trusted-proxies:
+      - 127.0.0.1
+      - "::1"
+      - "0:0:0:0:0:0:0:1"

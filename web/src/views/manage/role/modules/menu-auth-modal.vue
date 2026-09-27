@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import type { TreeOption } from 'naive-ui';
+import type { RouteKey } from '@elegant-router/types';
 import { fetchGetRoleMenuTree, fetchSaveRoleMenu } from '@/service/api';
 import { useAuthStore } from '@/store/modules/auth';
 import { useRouteStore } from '@/store/modules/route';
@@ -25,6 +27,7 @@ const visible = defineModel<boolean>('visible', {
   default: false
 });
 
+const router = useRouter();
 const authStore = useAuthStore();
 const routeStore = useRouteStore();
 const saving = ref(false);
@@ -221,11 +224,20 @@ async function handleConfirm() {
   saving.value = false;
   if (error) return;
 
-  await authStore.refreshUserInfo();
+  const infoOk = await authStore.refreshUserInfo();
+  if (!infoOk) {
+    // 会话已失效，勿提示授权成功
+    return;
+  }
   const routeOk = await routeStore.reloadAuthRoute();
   if (!routeOk) {
     // 动态路由刷新失败已踢登录，勿再提示「更新成功」
     return;
+  }
+  // 改掉自己角色后当前页可能已被摘掉，落到首页避免空白
+  const currentName = router.currentRoute.value.name;
+  if (typeof currentName === 'string' && currentName && !router.hasRoute(currentName)) {
+    await router.replace({ name: routeStore.routeHome as RouteKey });
   }
   window.$message?.success($t('common.updateSuccess'));
   closeModal();

@@ -185,7 +185,7 @@ pnpm build
 # 产物：web/dist
 ```
 
-同域部署时，将 `VITE_SERVICE_BASE_URL` 配为站点根或留空（按你的构建环境），由 Nginx 分流静态与 API。示例：[`server/doc/nginx-admin.example.conf`](server/doc/nginx-admin.example.conf)（须转发 `X-Forwarded-For`）。
+同域部署时，将 `VITE_SERVICE_BASE_URL` 配为站点根或留空（按你的构建环境），由 Nginx 分流静态与 API。示例：[`server/doc/nginx-admin.example.conf`](server/doc/nginx-admin.example.conf)（须传 `X-Real-IP`；代理非本机回环时把对端地址加入 `app.client-ip.trusted-proxies`）。
 
 **上线前注意：** `SaTokenConfigure` 中生产 CORS 白名单当前为占位域名（`example.com`）。真正部署时必须改成你的前端站点源，否则浏览器会拦跨域请求。
 

@@ -14,6 +14,8 @@ import com.ylmao.admin.vo.ConfigVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
@@ -42,6 +44,20 @@ public class ConfigService {
     public void updateGroup(ConfigDto.GroupUpdate groupUpdate) {
         for (ConfigDto.GroupConfig groupConfig : groupUpdate.configs()) {
             updateGroupConfig(groupUpdate.configGroup(), groupConfig);
+        }
+        // 提交后再刷 Redis，避免回滚后缓存已是新值。
+        refreshConfigCacheAfterCommit();
+    }
+
+    private void refreshConfigCacheAfterCommit() {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    configRuntimeService.refreshCache();
+                }
+            });
+            return;
         }
         configRuntimeService.refreshCache();
     }

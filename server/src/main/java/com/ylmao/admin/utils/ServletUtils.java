@@ -12,6 +12,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 客户端工具类
@@ -20,6 +23,36 @@ import java.io.IOException;
 public class ServletUtils
 {
     private static final Logger log = LoggerFactory.getLogger(ServletUtils.class);
+
+    /** 可信反代对端；由 {@code app.client-ip.trusted-proxies} 注入。 */
+    private static final Set<String> TRUSTED_PROXIES = ConcurrentHashMap.newKeySet();
+
+    static {
+        TRUSTED_PROXIES.add("127.0.0.1");
+        TRUSTED_PROXIES.add("::1");
+        TRUSTED_PROXIES.add("0:0:0:0:0:0:0:1");
+    }
+
+    /** 启动时刷新可信反代列表（含回环与 IPv4 映射形式）。 */
+    public static void setTrustedProxies(Iterable<String> proxies) {
+        TRUSTED_PROXIES.clear();
+        TRUSTED_PROXIES.add("127.0.0.1");
+        TRUSTED_PROXIES.add("::1");
+        TRUSTED_PROXIES.add("0:0:0:0:0:0:0:1");
+        if (proxies == null) {
+            return;
+        }
+        for (String proxy : proxies) {
+            if (StrUtil.isBlank(proxy)) {
+                continue;
+            }
+            String normalized = normalizeRemoteAddr(proxy.trim());
+            TRUSTED_PROXIES.add(normalized);
+            if (normalized.startsWith("::ffff:")) {
+                TRUSTED_PROXIES.add(normalized.substring("::ffff:".length()));
+            }
+        }
+    }
 
     /**
      * 获取String参数
@@ -131,21 +164,33 @@ public class ServletUtils
         return !SaFoxUtil.isEmpty(ip) && !"unknown".equalsIgnoreCase(ip);
     }
 
-	/** 对端是否为本机回环（典型：同机 Nginx 反代到 127.0.0.1）。 */
-	private static boolean isLoopbackRemote(String remoteAddr) {
-		return "127.0.0.1".equals(remoteAddr)
-				|| "0:0:0:0:0:0:0:1".equals(remoteAddr)
-				|| "::1".equals(remoteAddr);
+	/** 规范化对端地址（小写；剥掉 IPv4 映射前缀便于匹配）。 */
+	private static String normalizeRemoteAddr(String remoteAddr) {
+		if (remoteAddr == null) {
+			return "";
+		}
+		String addr = remoteAddr.trim().toLowerCase(Locale.ROOT);
+		if (addr.startsWith("::ffff:")) {
+			return addr.substring("::ffff:".length());
+		}
+		return addr;
+	}
+
+	/** 对端是否在可信反代列表（含回环与 ::ffff:127.0.0.1）。 */
+	private static boolean isTrustedProxy(String remoteAddr) {
+		String normalized = normalizeRemoteAddr(remoteAddr);
+		return TRUSTED_PROXIES.contains(normalized)
+				|| TRUSTED_PROXIES.contains(remoteAddr == null ? "" : remoteAddr.trim());
 	}
     
 	/**
 	 * 返回请求端 IP。
-	 * 仅当对端是本机回环时采信 Nginx 的 X-Real-IP；应用被直连时忽略该头，防伪造。
+	 * 仅当对端属于 app.client-ip.trusted-proxies 时采信 X-Real-IP，防直连伪造。
 	 */
 	public static String getIP(HttpServletRequest request) {
 		String remote = request.getRemoteAddr();
 		String ip = null;
-		if (isLoopbackRemote(remote)) {
+		if (isTrustedProxy(remote)) {
 			ip = request.getHeader("X-Real-IP");
 		}
 		if (!checkIp(ip)) {
@@ -154,7 +199,9 @@ public class ServletUtils
 		if (ip != null) {
 			ip = ip.trim();
 		}
-		return "0:0:0:0:0:0:0:1".equals(ip) ? "127.0.0.1" : ip;
+		String normalized = normalizeRemoteAddr(ip);
+		return normalized.isEmpty() ? ip : (
+				"0:0:0:0:0:0:0:1".equals(ip) || "::1".equalsIgnoreCase(ip) ? "127.0.0.1" : normalized);
 	}
 
 }

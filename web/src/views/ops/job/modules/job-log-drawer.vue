@@ -21,9 +21,8 @@ const visible = defineModel<boolean>('visible', { default: false });
 
 const { hasAuth } = useAuth();
 
-/** 打开/切换/翻页世代号：过期响应抛错，避免串写表格 */
+/** 每次请求开始自增；过期响应用 AbortError 丢弃，避免串写 */
 let loadSeq = 0;
-const JOB_LOG_STALE = 'JOB_LOG_STALE';
 
 const searchParams = ref<Api.SystemManage.JobLogSearchParams>({
   current: 1,
@@ -44,16 +43,22 @@ const drawerTitle = computed(() => {
   return props.jobName ? `${base}（${props.jobName}）` : base;
 });
 
+function abortStale() {
+  const err = new Error('JOB_LOG_STALE');
+  err.name = 'AbortError';
+  throw err;
+}
+
 const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination } = useNaivePaginatedTable({
   api: async () => {
-    const seq = loadSeq;
+    const seq = ++loadSeq;
     const reqJobId = props.jobId;
     if (!visible.value || !reqJobId || !hasAuth('system:job:log')) {
       return emptyAuthListResponse<Api.SystemManage.JobLog>();
     }
     const response = await fetchGetJobLogList({ ...searchParams.value, jobId: reqJobId });
     if (seq !== loadSeq || !visible.value || props.jobId !== reqJobId) {
-      throw new Error(JOB_LOG_STALE);
+      abortStale();
     }
     return response;
   },
@@ -85,18 +90,14 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
   ]
 });
 
-function refreshLogs() {
-  loadSeq += 1;
-  void getDataByPage().catch((e: unknown) => {
-    if (e instanceof Error && e.message === JOB_LOG_STALE) return;
-    throw e;
-  });
-}
-
 watch(
   () => (visible.value ? props.jobId : ''),
   id => {
-    if (!id) return;
+    if (!id) {
+      // 关闭抽屉作废在途请求
+      loadSeq += 1;
+      return;
+    }
     // 打开或切换任务时重置筛选并拉对应日志（抽屉不关直接点另一行也会刷新）。
     searchParams.value = {
       current: 1,
@@ -104,7 +105,7 @@ watch(
       jobId: id,
       runStatus: null
     };
-    refreshLogs();
+    void getDataByPage();
   }
 );
 </script>
@@ -118,7 +119,7 @@ watch(
           v-model:model="searchParams"
           :job-name="jobName"
           :job-code="jobCode"
-          @search="refreshLogs"
+          @search="getDataByPage"
         />
         <NCard
           :title="$t('page.ops.jobLog.title')"
@@ -132,15 +133,7 @@ watch(
               :show-add="false"
               :show-delete="false"
               :loading="loading"
-              @refresh="
-                () => {
-                  loadSeq += 1;
-                  void getData().catch((e: unknown) => {
-                    if (e instanceof Error && e.message === JOB_LOG_STALE) return;
-                    throw e;
-                  });
-                }
-              "
+              @refresh="getData"
             />
           </template>
           <NDataTable

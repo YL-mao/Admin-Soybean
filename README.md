@@ -172,7 +172,7 @@ pnpm build
 # output: web/dist
 ```
 
-For same-origin deploy, set `VITE_SERVICE_BASE_URL` to the site root or leave empty per your env; use Nginx to split static vs API. Sample: [`server/doc/nginx-admin.example.conf`](server/doc/nginx-admin.example.conf) (forward `X-Forwarded-For`).
+For same-origin deploy, set `VITE_SERVICE_BASE_URL` to the site root or leave empty per your env; use Nginx to split static vs API. Sample: [`server/doc/nginx-admin.example.conf`](server/doc/nginx-admin.example.conf) (set `X-Real-IP`; add the proxy address to `app.client-ip.trusted-proxies` if it is not loopback).
 
 **Before real production:** update the prod CORS allowlist in `SaTokenConfigure` (currently placeholder `example.com`). Without your real frontend origin, browsers will block cross-origin API calls.
 

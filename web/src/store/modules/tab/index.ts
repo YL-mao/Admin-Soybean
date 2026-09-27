@@ -39,6 +39,11 @@ export const useTabStore = defineStore(SetupStoreId.Tab, () => {
     homeTab.value = getDefaultHomeTab(router, routeStore.routeHome);
   }
 
+  /** 权限路由热更新后剔除已不存在的标签 */
+  function pruneInvalidTabs() {
+    tabs.value = extractTabsByAllRoutes(router, tabs.value);
+  }
+
   /** Get all tabs */
   const allTabs = computed(() => getAllTabs(tabs.value, homeTab.value));
 
@@ -363,6 +368,7 @@ export const useTabStore = defineStore(SetupStoreId.Tab, () => {
     activeTabId,
     homeTab,
     initHomeTab,
+    pruneInvalidTabs,
     initTabStore,
     addTab,
     removeTab,

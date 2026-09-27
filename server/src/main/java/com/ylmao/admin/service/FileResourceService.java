@@ -187,15 +187,28 @@ public class FileResourceService {
         }
         Path newPath = resolveDiskPath(storageKey);
         boolean samePath = Objects.equals(oldPath, newPath);
-        // 先写临时/新路径，库更新成功后再替换或删旧文件，避免库失败后旧字节已丢。
-        Path stagingPath = samePath
-                ? newPath.resolveSibling(newPath.getFileName() + ".uploading-" + IdWorker.getIdStr())
-                : newPath;
+        // 始终先落 staging；同路径时用 .bak 保住旧文件，先完成盘替换再 updateById，失败可回滚盘。
+        Path stagingPath = newPath.resolveSibling(newPath.getFileName() + ".uploading-" + IdWorker.getIdStr());
+        Path backupPath = null;
         try {
             Files.createDirectories(stagingPath.getParent());
             file.transferTo(stagingPath);
+            if (samePath && Files.isRegularFile(newPath)) {
+                backupPath = newPath.resolveSibling(newPath.getFileName() + ".bak-" + IdWorker.getIdStr());
+                Files.move(newPath, backupPath, StandardCopyOption.REPLACE_EXISTING);
+            }
+            Files.move(stagingPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+            stagingPath = null;
         } catch (IOException e) {
             log.error("覆盖写入本地文件失败 fileId={}", existing.getFileId(), e);
+            deleteQuietly(stagingPath);
+            if (backupPath != null) {
+                try {
+                    Files.move(backupPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException restoreEx) {
+                    log.error("覆盖失败后恢复备份失败 fileId={}", existing.getFileId(), restoreEx);
+                }
+            }
             throw new BusinessException("文件保存失败");
         }
         existing.setStorageKey(storageKey);
@@ -212,22 +225,25 @@ public class FileResourceService {
         try {
             int rows = fileResourceMapper.updateById(existing);
             if (rows <= 0) {
-                deleteQuietly(stagingPath);
                 throw new BusinessException("文件不存在或修改失败");
             }
         } catch (RuntimeException e) {
-            deleteQuietly(stagingPath);
+            // 库失败：同路径恢复备份；换路径删掉新文件，旧路径不动。
+            if (backupPath != null) {
+                try {
+                    Files.move(backupPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                    backupPath = null;
+                } catch (IOException restoreEx) {
+                    log.error("覆盖入库失败后恢复备份失败 fileId={}", existing.getFileId(), restoreEx);
+                }
+            } else if (!samePath) {
+                deleteQuietly(newPath);
+            }
             throw e;
         }
-        try {
-            if (samePath) {
-                Files.move(stagingPath, newPath, StandardCopyOption.REPLACE_EXISTING);
-            } else {
-                deleteQuietly(oldPath);
-            }
-        } catch (IOException e) {
-            log.error("覆盖落盘最终化失败 fileId={}", existing.getFileId(), e);
-            throw new BusinessException("文件保存失败");
+        deleteQuietly(backupPath);
+        if (!samePath) {
+            deleteQuietly(oldPath);
         }
         return FileResourceVo.FileListVo.from(existing, uploadConfigService.buildAccessUrl(existing.getFileId()));
     }

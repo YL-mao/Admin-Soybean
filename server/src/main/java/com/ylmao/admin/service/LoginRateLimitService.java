@@ -69,11 +69,16 @@ public class LoginRateLimitService {
             return true;
         }
         long windowSeconds = Math.max(1L, windowMinutes * 60L);
-        Long count = stringRedisTemplate.execute(
-                INCR_WITH_EXPIRE,
-                Collections.singletonList(redisKey),
-                String.valueOf(windowSeconds));
-        // Redis 异常时 fail-closed，避免限流失效被刷。
+        Long count;
+        try {
+            count = stringRedisTemplate.execute(
+                    INCR_WITH_EXPIRE,
+                    Collections.singletonList(redisKey),
+                    String.valueOf(windowSeconds));
+        } catch (RuntimeException ex) {
+            // Redis 异常时 fail-closed，避免限流失效被刷。
+            return false;
+        }
         if (count == null) {
             return false;
         }

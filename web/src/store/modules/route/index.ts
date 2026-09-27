@@ -163,25 +163,49 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     tabStore.initHomeTab();
   }
 
+  /** 合并并发 init；reload 前先等旧任务结束再开新一轮 */
+  let authRouteInitInflight: Promise<boolean> | null = null;
+  let authRouteInitGeneration = 0;
+
   /** Init auth route；userInfo / 动态路由失败时返回 false，由路由守卫回登录页 */
   async function initAuthRoute() {
+    if (authRouteInitInflight) {
+      return authRouteInitInflight;
+    }
+    const generation = authRouteInitGeneration;
+    authRouteInitInflight = runInitAuthRoute(generation).finally(() => {
+      authRouteInitInflight = null;
+    });
+    return authRouteInitInflight;
+  }
+
+  async function runInitAuthRoute(generation: number) {
     if (!authStore.userInfo.userId) {
       const pass = await authStore.initUserInfo();
       if (!pass) {
         return false;
       }
     }
+    // reload 已开新世代：本轮结果作废，勿写路由/勿踢登录
+    if (generation !== authRouteInitGeneration) {
+      return false;
+    }
 
     if (authRouteMode.value === 'static') {
       initStaticAuthRoute();
     } else {
-      const pass = await initDynamicAuthRoute();
+      const pass = await initDynamicAuthRoute(generation);
       if (!pass) {
         return false;
       }
     }
 
+    if (generation !== authRouteInitGeneration) {
+      return false;
+    }
+
     tabStore.initHomeTab();
+    tabStore.pruneInvalidTabs();
     return true;
   }
 
@@ -190,6 +214,10 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
    * @returns 初始化是否成功；失败时 initDynamicAuthRoute 已清会话
    */
   async function reloadAuthRoute() {
+    if (authRouteInitInflight) {
+      await authRouteInitInflight;
+    }
+    authRouteInitGeneration += 1;
     setIsInitAuthRoute(false);
     authRoutes.value = [];
     return initAuthRoute();
@@ -212,9 +240,13 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     setIsInitAuthRoute(true);
   }
 
-  /** Init dynamic auth route；失败时清会话并返回 false */
-  async function initDynamicAuthRoute() {
+  /** Init dynamic auth route；失败时清会话并返回 false（过期世代不踢登录、不写路由） */
+  async function initDynamicAuthRoute(generation: number) {
     const { data, error } = await fetchGetUserRoutes();
+
+    if (generation !== authRouteInitGeneration) {
+      return false;
+    }
 
     if (!error && data) {
       const { routes, home } = data;

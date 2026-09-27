@@ -2,10 +2,12 @@ package com.ylmao.admin;
 
 import cn.dev33.satoken.SaManager;
 import com.ylmao.admin.config.AppTimezones;
+import com.ylmao.admin.config.ClientIpProperties;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
@@ -19,6 +21,7 @@ import java.util.TimeZone;
 @SpringBootApplication
 @MapperScan("com.ylmao.admin.mapper")
 @EnableScheduling
+@EnableConfigurationProperties(ClientIpProperties.class)
 public class AdminApp {
 
     public static void main(String[] args) throws Exception {
