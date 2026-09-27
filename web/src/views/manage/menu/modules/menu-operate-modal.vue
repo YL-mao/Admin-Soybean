@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { computed, ref, watch } from 'vue';
 import type { SelectOption, TreeSelectOption } from 'naive-ui';
-import { getIcon, Icon, loadIcons } from '@iconify/vue';
+import { getIcon, Icon } from '@iconify/vue';
 import { enabledFlagOptions, menuIconTypeOptions, menuTypeOptions } from '@/constants/business';
 import {
   fetchCheckMenuCodeUnique,
@@ -12,7 +12,7 @@ import {
 } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { translateOptions } from '@/utils/common';
-import { getLocalIcons } from '@/utils/icon';
+import { getLocalIcons, getMdiIconNames } from '@/utils/icon';
 import { $t } from '@/locales';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 import {
@@ -158,13 +158,13 @@ const localIconOptions = localIcons.map<SelectOption>(item => ({
   value: item
 }));
 
-/** 项目侧栏常用 Iconify + 菜单已用图标，供下拉点选；filterable+tag 可手输其它名 */
+/** 无关键字时展示的常用 / 已用图标，避免一次塞入全量 MDI */
 const ICONIFY_PRESET = [
   'mdi:monitor-dashboard',
-  'carbon:cloud-service-management',
-  'material-symbols:route',
-  'carbon:user-role',
-  'ic:round-manage-accounts',
+  'mdi:cloud-cog-outline',
+  'mdi:routes',
+  'mdi:account-badge-outline',
+  'mdi:account-cog-outline',
   'mdi:account-group-outline',
   'mdi:sitemap-outline',
   'mdi:briefcase-outline',
@@ -182,38 +182,51 @@ const ICONIFY_PRESET = [
   'mdi:history',
   'mdi:tools',
   'mdi:api',
-  'ic:round-person',
+  'mdi:account',
   'mdi:bell-outline'
 ];
 
-/** 预加载后递增，迫使 NSelect 选项用已缓存的 SVG 数据重渲（异步 Icon 在下拉里常不刷新） */
-const iconifyReadyTick = ref(0);
+/** 远程检索每次最多展示条数，防止 7000+ 选项卡死下拉 */
+const ICONIFY_SEARCH_LIMIT = 80;
 
-function collectIconifyNames(): string[] {
+const iconifyKeyword = ref('');
+
+function defaultIconifyCandidates(): string[] {
   const set = new Set<string>([...ICONIFY_PRESET, ...props.iconifyIcons]);
   if (model.value.menuIcon && model.value.iconType === 1) {
     set.add(model.value.menuIcon);
   }
-  return [...set].filter(Boolean);
+  return [...set].filter(Boolean).sort();
 }
 
-/** 从 Iconify API 拉齐候选图标；回调在全部完成（含失败）后 resolve */
-function preloadIconify(names: string[]) {
-  const list = [...new Set(names.filter(n => n.includes(':')))];
-  if (!list.length) {
-    return Promise.resolve();
+/** 按关键字检索本地 MDI；空关键字回常用列表。优先前缀匹配 */
+function searchMdiIcons(keyword: string): string[] {
+  const raw = keyword.trim().toLowerCase();
+  if (!raw) {
+    return defaultIconifyCandidates();
   }
-  return new Promise<void>(resolve => {
-    loadIcons(list, (_loaded, _missing, pending) => {
-      if (pending.length) return;
-      iconifyReadyTick.value += 1;
-      resolve();
-    });
-  });
+
+  const q = raw.startsWith('mdi:') ? raw.slice(4) : raw;
+  const starts: string[] = [];
+  const includes: string[] = [];
+
+  for (const name of getMdiIconNames()) {
+    const id = name.slice(4).toLowerCase();
+    if (id.startsWith(q)) {
+      starts.push(name);
+    } else if (id.includes(q)) {
+      includes.push(name);
+    }
+    if (starts.length >= ICONIFY_SEARCH_LIMIT) {
+      break;
+    }
+  }
+
+  return [...starts, ...includes].slice(0, ICONIFY_SEARCH_LIMIT);
 }
 
 function renderIconifyOptionLabel(name: string) {
-  // 用 getIcon 对象喂给 Icon，跳过组件内二次异步，避免下拉空白
+  // 本地 addCollection 后 getIcon 同步可读，避免下拉空白
   const data = getIcon(name);
   return (
     <div class="flex-y-center gap-12px min-w-0">
@@ -225,16 +238,29 @@ function renderIconifyOptionLabel(name: string) {
   );
 }
 
-const iconifyOptions = computed<SelectOption[]>(() => {
-  // 依赖 tick，预加载完成后重建 label
-  void iconifyReadyTick.value;
-  return collectIconifyNames()
-    .sort()
-    .map(item => ({
-      label: () => renderIconifyOptionLabel(item),
-      value: item
-    }));
-});
+function toIconifyOption(name: string): SelectOption {
+  return {
+    label: () => renderIconifyOptionLabel(name),
+    value: name
+  };
+}
+
+const iconifyOptions = computed<SelectOption[]>(() => searchMdiIcons(iconifyKeyword.value).map(toIconifyOption));
+
+/** 当前值不在候选里时仍能显示图标文字 */
+function fallbackIconifyOption(value: string | number) {
+  return toIconifyOption(String(value));
+}
+
+function handleIconifySearch(query: string) {
+  iconifyKeyword.value = query;
+}
+
+function handleIconifyDropdownShow(show: boolean) {
+  if (show) {
+    iconifyKeyword.value = '';
+  }
+}
 
 const showLayout = computed(() => model.value.menuType === 0);
 const showPage = computed(() => model.value.menuType === 1);
@@ -410,12 +436,12 @@ async function handleSubmit() {
   emit('submitted');
 }
 
-watch(visible, async () => {
+watch(visible, () => {
   if (visible.value) {
     handleInitModel();
     restoreValidation();
-    // 先预加载再打开下拉，避免选项里图标空白
-    await Promise.all([loadParentOptions(), preloadIconify(collectIconifyNames())]);
+    iconifyKeyword.value = '';
+    void loadParentOptions();
   }
 });
 
@@ -427,15 +453,6 @@ watch(
     if (type !== 2) {
       model.value.permCode = '';
     }
-  }
-);
-
-// 手输新 Iconify 名时补拉一次，保证选中态也能画出图标
-watch(
-  () => model.value.menuIcon,
-  name => {
-    if (!visible.value || model.value.iconType !== 1 || !name?.includes(':')) return;
-    void preloadIconify([name]);
   }
 );
 
@@ -543,15 +560,18 @@ watch(
             />
           </NFormItemGi>
           <NFormItemGi span="24 m:12" :label="$t('page.manage.menu.icon')" path="menuIcon">
-            <!-- Soybean：本地图标用下拉；Iconify 官方是手输，这里补可筛下拉便于点选 -->
+            <!-- Iconify：本地 MDI 全集按关键字检索；无关键字时只展示常用/已用 -->
             <NSelect
               v-if="model.iconType === 1"
               v-model:value="model.menuIcon"
               filterable
-              tag
+              remote
               clearable
               :options="iconifyOptions"
+              :fallback-option="fallbackIconifyOption"
               :placeholder="$t('page.manage.menu.form.icon')"
+              @search="handleIconifySearch"
+              @update:show="handleIconifyDropdownShow"
             />
             <NSelect
               v-else

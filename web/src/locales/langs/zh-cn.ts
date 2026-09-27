@@ -377,7 +377,7 @@ const local: App.I18n.Schema = {
           page: '请选择页面组件',
           layout: '请选择布局组件',
           i18nKey: '请输入国际化key',
-          icon: '请输入图标',
+          icon: '搜索 MDI 图标，如 home',
           localIcon: '请选择本地图标',
           order: '请输入排序',
           keepAlive: '请选择是否缓存路由',

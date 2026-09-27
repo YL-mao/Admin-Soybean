@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@better-scroll/core": "2.5.1",
+    "@iconify-json/mdi": "1.2.3",
     "@iconify/vue": "5.0.1",
     "@sa/axios": "workspace:*",
     "@sa/color": "workspace:*",

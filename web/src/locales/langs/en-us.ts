@@ -304,7 +304,7 @@ const local: App.I18n.Schema = {
           page: 'Please select page',
           layout: 'Please select layout',
           i18nKey: 'Please enter i18n key',
-          icon: 'Please enter icon',
+          icon: 'Search MDI icon, e.g. home',
           localIcon: 'Please select local icon',
           order: 'Please enter order',
           keepAlive: 'Please select keep alive',

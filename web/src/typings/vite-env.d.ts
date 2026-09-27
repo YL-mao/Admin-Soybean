@@ -95,9 +95,10 @@ declare namespace Env {
     /** Whether to build with sourcemap */
     readonly VITE_SOURCE_MAP?: CommonType.YesOrNo;
     /**
-     * Iconify api provider url
+     * Iconify api provider url（备用）
      *
-     * If the project is deployed in intranet, you can set the api provider url to the local iconify server
+     * 默认已通过 @iconify-json/mdi 本地注册 MDI 全集；`mdi:*` 不走外网。
+     * 仅当仍使用未打包的其它图标集、或要指向自建 Iconify API 时再配置。
      *
      * @link https://docs.iconify.design/api/providers.html
      */

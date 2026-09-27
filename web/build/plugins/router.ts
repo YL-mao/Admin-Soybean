@@ -5,10 +5,10 @@ import type { RouteKey } from '@elegant-router/types';
 /** 与 example 分支一致的菜单 Iconify 图标（侧栏二级路由） */
 const ROUTE_MENU_ICONS: Partial<Record<RouteKey, string>> = {
   home: 'mdi:monitor-dashboard',
-  manage: 'carbon:cloud-service-management',
-  manage_menu: 'material-symbols:route',
-  manage_role: 'carbon:user-role',
-  manage_user: 'ic:round-manage-accounts',
+  manage: 'mdi:cloud-cog-outline',
+  manage_menu: 'mdi:routes',
+  manage_role: 'mdi:account-badge-outline',
+  manage_user: 'mdi:account-cog-outline',
   org: 'mdi:account-group-outline',
   org_dept: 'mdi:sitemap-outline',
   org_post: 'mdi:briefcase-outline',
@@ -26,7 +26,7 @@ const ROUTE_MENU_ICONS: Partial<Record<RouteKey, string>> = {
   'ops_operate-log': 'mdi:history',
   dev: 'mdi:tools',
   dev_apidoc: 'mdi:api',
-  account_info: 'ic:round-person',
+  account_info: 'mdi:account',
   account_notice: 'mdi:bell-outline'
 };
 

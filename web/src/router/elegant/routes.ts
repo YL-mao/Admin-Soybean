@@ -56,7 +56,7 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'account_info',
           i18nKey: 'route.account_info',
-          icon: 'ic:round-person'
+          icon: 'mdi:account'
         }
       },
       {
@@ -137,7 +137,7 @@ export const generatedRoutes: GeneratedRoute[] = [
     meta: {
       title: 'manage',
       i18nKey: 'route.manage',
-      icon: 'carbon:cloud-service-management',
+      icon: 'mdi:cloud-cog-outline',
       order: 2
     },
     children: [
@@ -148,7 +148,7 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'manage_menu',
           i18nKey: 'route.manage_menu',
-          icon: 'material-symbols:route'
+          icon: 'mdi:routes'
         }
       },
       {
@@ -158,7 +158,7 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'manage_role',
           i18nKey: 'route.manage_role',
-          icon: 'carbon:user-role'
+          icon: 'mdi:account-badge-outline'
         }
       },
       {
@@ -168,7 +168,7 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'manage_user',
           i18nKey: 'route.manage_user',
-          icon: 'ic:round-manage-accounts'
+          icon: 'mdi:account-cog-outline'
         }
       }
     ]
