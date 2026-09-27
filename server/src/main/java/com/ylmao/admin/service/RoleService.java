@@ -25,7 +25,7 @@ public class RoleService {
 
     private final RoleMapper roleMapper;
     private final RoleUserService roleUserService;
-    private final MenuRoleService menuRoleService;
+    private final RoleMenuService roleMenuService;
     private final MenuService menuService;
 
     public List<RoleVo.RoleOptionVo> listOptions() {
@@ -115,7 +115,7 @@ public class RoleService {
             throw new BusinessException("角色已分配给用户，不能删除");
         }
         // 角色菜单属于角色自身配置，删除角色时同步清理授权关系。
-        menuRoleService.deleteByRoleIds(idList);
+        roleMenuService.deleteByRoleIds(idList);
         LambdaQueryWrapper<Role> roleQueryWrapper = new LambdaQueryWrapper<>();
         roleQueryWrapper.in(Role::getRoleId,idList);
         int rows = roleMapper.delete(roleQueryWrapper);

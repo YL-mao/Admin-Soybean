@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.ylmao.admin.dto.ConfigDto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -46,31 +45,4 @@ public final class Config {
     @TableLogic
     @TableField(fill = FieldFill.INSERT)
     private Integer isDel;
-
-    public Config(ConfigDto.ConfigInsert configInsert) {
-        // DTO 只承接页面提交字段，PO 负责映射系统配置表字段。
-        this.configName = configInsert.configName();
-        this.configCode = configInsert.configCode();
-        this.configValue = configInsert.configValue();
-        this.configGroup = configInsert.configGroup();
-        this.valueType = configInsert.valueType();
-        this.isBuiltin = configInsert.isBuiltin();
-        this.isEnabled = configInsert.isEnabled();
-        this.orderNum = configInsert.orderNum();
-        this.configDesc = configInsert.configDesc();
-    }
-
-    public Config(ConfigDto.ConfigUpdate configUpdate) {
-        // DTO 只承接页面提交字段，PO 负责映射系统配置表字段。
-        this.configId = configUpdate.configId();
-        this.configName = configUpdate.configName();
-        this.configCode = configUpdate.configCode();
-        this.configValue = configUpdate.configValue();
-        this.configGroup = configUpdate.configGroup();
-        this.valueType = configUpdate.valueType();
-        this.isBuiltin = configUpdate.isBuiltin();
-        this.isEnabled = configUpdate.isEnabled();
-        this.orderNum = configUpdate.orderNum();
-        this.configDesc = configUpdate.configDesc();
-    }
 }

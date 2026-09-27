@@ -3,16 +3,16 @@
 <mapper namespace="com.ylmao.admin.mapper.MenuMapper">
 
     <select id="queryMenuCheckArrByRoleId" parameterType="string" resultType="com.ylmao.admin.entity.Menu">
-        SELECT a.*, IF(count(b.menu_role_id) > 0, '1', '0') checkArr
+        SELECT a.*, IF(count(b.role_menu_id) > 0, '1', '0') checkArr
         FROM sys_menu a
-        LEFT JOIN (SELECT * FROM sys_menu_role WHERE role_id = #{roleId}) b ON a.menu_id = b.menu_id
+        LEFT JOIN (SELECT * FROM sys_role_menu WHERE role_id = #{roleId}) b ON a.menu_id = b.menu_id
         GROUP BY a.menu_id
     </select>
 
     <!-- 多角色一次 JOIN，去重后供菜单树与 StpInterface 鉴权复用 -->
     <select id="selectMenusByRoleIds" resultType="com.ylmao.admin.entity.Menu">
         SELECT m.* FROM sys_menu m
-        INNER JOIN sys_menu_role mr ON m.menu_id = mr.menu_id
+        INNER JOIN sys_role_menu mr ON m.menu_id = mr.menu_id
         WHERE mr.role_id IN
         <foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
             #{roleId}

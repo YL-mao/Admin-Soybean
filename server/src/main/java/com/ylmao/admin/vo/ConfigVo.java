@@ -21,7 +21,4 @@ public class ConfigVo {
                     config.getConfigDesc(), config.getCreateTime());
         }
     }
-
-    public record ConfigGroupVo(String configGroup, Long configCount) {
-    }
 }

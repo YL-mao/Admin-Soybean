@@ -1,9 +1,9 @@
 import { request } from '../request';
 
-/** get user routes（动态侧栏，来自 sys_menu） */
+/** 当前用户动态路由（侧栏，来自 sys_menu） */
 export function fetchGetUserRoutes() {
   return request<Api.Route.UserRoute>({
-    url: '/api/admin/auth/getUserRoutes',
+    url: '/api/admin/auth/userRoutes',
     method: 'get'
   });
 }
@@ -15,7 +15,7 @@ export function fetchGetUserRoutes() {
  */
 export function fetchIsRouteExist(routeName: string) {
   return request<boolean>({
-    url: '/api/admin/auth/isRouteExist',
+    url: '/api/admin/auth/routeExist',
     method: 'get',
     params: { routeName }
   });

@@ -61,29 +61,29 @@ public class AdminAuthController {
 
     /** 免登录品牌快照：登录页 / 布局配活用，字段来自 system.*。 */
     @Operation(summary = "登录页品牌信息")
-    @GetMapping("/getBranding")
-    public R<AdminAuthVo.BrandingResult> adminAuthGetBranding() {
+    @GetMapping("/branding")
+    public R<AdminAuthVo.BrandingResult> adminAuthBranding() {
         return R.ok(adminAuthService.buildBranding());
     }
 
     /** 薄版用户信息：角色码 + 按钮权限码（来自 sys_menu）。 */
     @Operation(summary = "当前用户信息")
-    @GetMapping("/getUserInfo")
-    public R<AdminAuthVo.UserInfoResult> adminAuthGetUserInfo() {
+    @GetMapping("/userInfo")
+    public R<AdminAuthVo.UserInfoResult> adminAuthUserInfo() {
         return R.ok(adminAuthService.buildUserInfo());
     }
 
     /** 动态路由树：按当前用户角色过滤 sys_menu（目录/菜单）。 */
     @Operation(summary = "当前用户路由")
-    @GetMapping("/getUserRoutes")
-    public R<AdminAuthVo.UserRouteResult> adminAuthGetUserRoutes() {
+    @GetMapping("/userRoutes")
+    public R<AdminAuthVo.UserRouteResult> adminAuthUserRoutes() {
         return R.ok(adminAuthService.buildUserRoutes());
     }
 
     /** 动态模式下探测路由是否存在于当前授权菜单。 */
     @Operation(summary = "路由是否存在")
-    @GetMapping("/isRouteExist")
-    public R<Boolean> adminAuthIsRouteExist(@RequestParam String routeName) {
+    @GetMapping("/routeExist")
+    public R<Boolean> adminAuthRouteExist(@RequestParam String routeName) {
         return R.ok(adminAuthService.isRouteExist(routeName));
     }
 }

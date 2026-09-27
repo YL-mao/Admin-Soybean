@@ -76,7 +76,7 @@ public class SaTokenConfigure implements WebMvcConfigurer {
             "/api/admin/auth/login",
             "/api/admin/auth/captchaImage",
             // 登录前品牌引导：系统名称 / Logo / 版权等
-            "/api/admin/auth/getBranding",
+            "/api/admin/auth/branding",
             // 注销幂等：无会话 / 已失效 / 已冻结也放行，避免再抛 token 文案
             "/api/admin/auth/logout",
             // 文件预览：匿名/登录校验在控制器内按 need_login 判断

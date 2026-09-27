@@ -143,7 +143,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     return false;
   }
 
-  /** 落地 token 后拉 getUserInfo（roles/buttons），严格 Header 模式 */
+  /** 落地 token 后拉 userInfo（roles/buttons），严格 Header 模式 */
   async function loginByToken(loginToken: Api.Auth.LoginToken) {
     if (!loginToken?.token) {
       return false;
@@ -212,7 +212,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     return getUserInfo();
   }
 
-  /** 刷新恢复：有 token 则打 getUserInfo 校验会话并刷新角色/按钮 */
+  /** 刷新恢复：有 token 则打 userInfo 校验会话并刷新角色/按钮 */
   async function initUserInfo() {
     const maybeToken = getToken();
 

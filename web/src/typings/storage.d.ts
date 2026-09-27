@@ -16,7 +16,7 @@ declare namespace StorageType {
     token: string;
     /** Fixed sider with mix-menu */
     mixSiderFixed: CommonType.YesOrNo;
-    /** getUserInfo 写入的用户信息（roles/buttons） */
+    /** userInfo 写入的用户信息（roles/buttons） */
     userInfo: Api.Auth.UserInfo;
     /** The theme color */
     themeColor: string;

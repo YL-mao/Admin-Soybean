@@ -73,7 +73,16 @@ springdoc:
   swagger-ui:
     enabled: false
 
-# 生产 HTTPS 下 Cookie 仅安全通道（Sa-Token 正常已不读写 Cookie；验证码 Cookie 等另行配置）。
+# 生产环境：Sa-Token 日志与 Cookie 安全标记。
 sa-token:
   cookie:
+    # 仅 HTTPS 生效；生产走 HTTPS 时开 true（Sa-Token 正常已不读写 Cookie；验证码 Cookie 等另行配置）。
     secure: true
+  # 启动时是否打印 Sa-Token 版本字符画。
+  is-print: false
+  # 是否输出 Sa-Token 操作日志。
+  is-log: false
+  # Sa-Token 日志等级，可选 trace、debug、info、warn、error、fatal。
+  log-level: warn
+  # Sa-Token 日志等级数值；1=trace，2=debug，3=info，4=warn，5=error，6=fatal。
+  log-level-int: 4

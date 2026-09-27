@@ -14,12 +14,12 @@ import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
-@TableName("sys_menu_role")
+@TableName("sys_role_menu")
 @EqualsAndHashCode(callSuper = false)
-public class MenuRole {
+public class RoleMenu {
 
     @TableId(type = IdType.ASSIGN_ID)
-    private String menuRoleId;
+    private String roleMenuId;
     private String roleId;
     private String menuId;
 

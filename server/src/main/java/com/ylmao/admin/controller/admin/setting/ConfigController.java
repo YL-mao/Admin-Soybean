@@ -3,57 +3,30 @@ package com.ylmao.admin.controller.admin.setting;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaMode;
 import cn.dev33.satoken.stp.StpUtil;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ylmao.admin.common.ConfigAuditCodes;
 import com.ylmao.admin.common.R;
 import com.ylmao.admin.config.base.BaseController;
 import com.ylmao.admin.config.exception.BusinessException;
 import com.ylmao.admin.config.log.Log;
 import com.ylmao.admin.dto.ConfigDto;
-import com.ylmao.admin.dto.PageQuery;
 import com.ylmao.admin.service.ConfigService;
-import com.ylmao.admin.vo.ConfigVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
-@Tag(name = "系统配置", description = "系统参数维护与分组配置")
+@Tag(name = "系统配置", description = "按分组读取与保存系统参数")
 @RestController
 @RequestMapping("/api/admin/config")
 @RequiredArgsConstructor
 public class ConfigController extends BaseController {
 
     private final ConfigService configService;
-
-    @Operation(summary = "配置分页列表")
-    @Log(title = "系统配置分页查询", businessType = "QUERY")
-    @SaCheckPermission("system:config:maintain")
-    @GetMapping("/list")
-    public R<?> configList(@Valid PageQuery pageQuery, @Valid ConfigDto.ConfigList configList) {
-        IPage<ConfigVo.ConfigListVo> configPage = configService.selectPage(pageQuery, configList);
-        return pageData(configPage.getRecords(), configPage.getTotal());
-    }
-
-    @Operation(summary = "配置分组列表")
-    @Log(title = "系统配置分组查询", businessType = "QUERY")
-    @SaCheckPermission("system:config:maintain")
-    @GetMapping("/groups")
-    public R<?> configGroups(@Valid ConfigDto.GroupList groupList) {
-        String configGroup = groupList == null ? null : groupList.configGroup();
-        List<ConfigVo.ConfigGroupVo> groups = configService.selectGroupList(configGroup);
-        return pageData(groups, groups.size());
-    }
 
     @Operation(summary = "配置分组明细")
     @Log(title = "系统配置分组明细", businessType = "QUERY")
@@ -73,50 +46,6 @@ public class ConfigController extends BaseController {
         checkGroupPermission(groupUpdate == null ? null : groupUpdate.configGroup());
         configService.updateGroup(groupUpdate);
         return success();
-    }
-
-    @Operation(summary = "新增配置")
-    @Log(title = ConfigAuditCodes.OPERATE_TITLE, businessType = "ADD", isSaveResponseData = true)
-    @SaCheckPermission("system:config:insert")
-    @PostMapping("/add")
-    public R<?> configInsert(@Valid @RequestBody ConfigDto.ConfigInsert configInsert) {
-        configService.insert(configInsert);
-        return success();
-    }
-
-    @Operation(summary = "修改配置")
-    @Log(title = ConfigAuditCodes.OPERATE_TITLE, businessType = "UPDATE", isSaveResponseData = true)
-    @SaCheckPermission("system:config:update")
-    @PutMapping("/update")
-    public R<?> configUpdate(@Valid @RequestBody ConfigDto.ConfigUpdate configUpdate) {
-        configService.updateById(configUpdate);
-        return success();
-    }
-
-    @Operation(summary = "删除配置")
-    @Log(title = ConfigAuditCodes.OPERATE_TITLE, businessType = "DELETE", isSaveResponseData = true)
-    @SaCheckPermission("system:config:delete")
-    @DeleteMapping("/delete")
-    public R<?> configDelete(String ids) {
-        configService.deleteById(ids);
-        return success();
-    }
-
-    @Operation(summary = "修改配置启停状态")
-    @Log(title = ConfigAuditCodes.OPERATE_TITLE, businessType = "UPDATE", isSaveResponseData = true)
-    @SaCheckPermission("system:config:updateEnabled")
-    @PatchMapping("/updateEnabled")
-    public R<?> updateConfigEnabled(@Valid @RequestBody ConfigDto.UpdateEnabled updateEnabled) {
-        configService.updateEnabled(updateEnabled);
-        return success();
-    }
-
-    @Operation(summary = "配置编码是否唯一")
-    @Log(title = "查询系统配置编码是否唯一", businessType = "QUERY")
-    @SaCheckPermission(value = {"system:config:insert", "system:config:update"}, mode = SaMode.OR)
-    @GetMapping("/checkCode")
-    public R<Boolean> checkConfigCodeUnique(String configCode) {
-        return R.ok(configService.checkConfigCodeUnique(configCode) == null);
     }
 
     private void checkGroupPermission(String configGroup) {

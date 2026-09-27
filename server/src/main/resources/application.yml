@@ -72,19 +72,11 @@ sa-token:
   # Cookie 模式是否自动补 token 前缀。
   cookie-auto-fill-prefix: false
   # 若框架仍写出 Cookie，按严格属性收紧（正常路径已不读写 Cookie）。
+  # cookie.secure 与 is-print / is-log / log-level / log-level-int 按环境见 application-dev.yml、application-prod.yml。
   cookie:
     httpOnly: true
-    secure: false
     sameSite: Lax
     path: /
-  # 启动时是否打印 Sa-Token 版本字符画。
-  is-print: true
-  # 是否输出 Sa-Token 操作日志。
-  is-log: false
-  # Sa-Token 日志等级，可选 trace、debug、info、warn、error、fatal。
-  log-level: trace
-  # Sa-Token 日志等级数值；1=trace，2=debug，3=info，4=warn，5=error，6=fatal。
-  log-level-int: 1
   # 是否打印彩色日志；空值表示由框架根据运行终端自行判断。
   is-color-log:
   # 当前项目网络访问地址；为空时由框架按请求上下文处理。

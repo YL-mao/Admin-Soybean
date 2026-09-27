@@ -69,6 +69,20 @@ app:
   mybatis:
     verify: true
 
+# 开发环境：Sa-Token 日志与 Cookie 安全标记。
+sa-token:
+  cookie:
+    # 仅 HTTPS 生效；本地 HTTP 必须 false，否则浏览器不带 Cookie。
+    secure: false
+  # 启动时是否打印 Sa-Token 版本字符画。
+  is-print: true
+  # 是否输出 Sa-Token 操作日志。
+  is-log: false
+  # Sa-Token 日志等级，可选 trace、debug、info、warn、error、fatal。
+  log-level: trace
+  # Sa-Token 日志等级数值；1=trace，2=debug，3=info，4=warn，5=error，6=fatal。
+  log-level-int: 1
+
 # 开发环境开启在线接口文档（springdoc）；生产见 application-prod.yml。
 springdoc:
   api-docs:

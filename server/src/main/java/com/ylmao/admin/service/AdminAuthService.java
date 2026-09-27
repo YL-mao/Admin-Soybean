@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Soybean 管理端认证：登录最小信息 + getUserInfo / 动态路由。 */
+/** Soybean 管理端认证：登录最小信息 + userInfo / 动态路由。 */
 @Service
 @RequiredArgsConstructor
 public class AdminAuthService {

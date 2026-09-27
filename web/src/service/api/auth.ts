@@ -26,7 +26,7 @@ export function fetchLogout() {
 /** 当前用户信息：角色码 + 按钮权限码 */
 export function fetchGetUserInfo() {
   return request<Api.Auth.UserInfo>({
-    url: '/api/admin/auth/getUserInfo',
+    url: '/api/admin/auth/userInfo',
     method: 'get'
   });
 }
@@ -34,7 +34,7 @@ export function fetchGetUserInfo() {
 /** 免登录品牌引导：系统名称 / Logo / 版权等展示快照 */
 export function fetchGetBranding() {
   return request<Api.Auth.Branding>({
-    url: '/api/admin/auth/getBranding',
+    url: '/api/admin/auth/branding',
     method: 'get'
   });
 }

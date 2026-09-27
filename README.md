@@ -174,6 +174,8 @@ pnpm build
 
 For same-origin deploy, set `VITE_SERVICE_BASE_URL` to the site root or leave empty per your env; use Nginx to split static vs API. Sample: [`server/doc/nginx-admin.example.conf`](server/doc/nginx-admin.example.conf) (forward `X-Forwarded-For`).
 
+**Before real production:** update the prod CORS allowlist in `SaTokenConfigure` (currently placeholder `example.com`). Without your real frontend origin, browsers will block cross-origin API calls.
+
 ### Multi-instance
 
 All app nodes must share the **same Redis** for online users, kick, captcha, and rate limits.

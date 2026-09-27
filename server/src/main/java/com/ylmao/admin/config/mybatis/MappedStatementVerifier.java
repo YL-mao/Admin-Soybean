@@ -3,6 +3,8 @@ package com.ylmao.admin.config.mybatis;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(name = "app.mybatis.verify", havingValue = "true")
 public class MappedStatementVerifier implements ApplicationListener<ApplicationReadyEvent> {
 
+    private static final Logger log = LoggerFactory.getLogger(MappedStatementVerifier.class);
+
     private final SqlSessionFactory sqlSessionFactory;
 
     public MappedStatementVerifier(SqlSessionFactory sqlSessionFactory) {
@@ -27,7 +31,7 @@ public class MappedStatementVerifier implements ApplicationListener<ApplicationR
         Configuration configuration = sqlSessionFactory.getConfiguration();
         String statementId = "com.ylmao.admin.mapper.UserMapper.selectList";
         boolean has = configuration.hasStatement(statementId, false);
-        System.out.println("[MyBatis-Verify] hasStatement=" + has + ", id=" + statementId);
+        log.info("[MyBatis-Verify] hasStatement={}, id={}", has, statementId);
     }
 }
 

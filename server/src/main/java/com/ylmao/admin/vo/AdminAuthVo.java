@@ -10,7 +10,7 @@ public class AdminAuthVo {
 
     /**
      * 登录成功：token + 最小用户信息，便于立刻跳转；
-     * 完整 roles/buttons 仍以 getUserInfo 为准。
+     * 完整 roles/buttons 仍以 userInfo 为准。
      */
     public record LoginResult(
             String token,

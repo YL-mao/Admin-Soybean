@@ -25,7 +25,7 @@ import java.util.Set;
 public class MenuService {
 
     private final MenuMapper menuMapper;
-    private final MenuRoleService menuRoleService;
+    private final RoleMenuService roleMenuService;
     private final RoleUserService roleUserService;
 
     /** 按用户角色并集组装侧栏菜单树（model.Menu）。 */
@@ -89,7 +89,7 @@ public class MenuService {
         Set<String> menuIdSet = StrUtil.isBlank(menuIds)
                 ? Set.of()
                 : expandMenuIdsWithAncestors(new LinkedHashSet<>(StrUtil.splitTrim(menuIds, ',')));
-        menuRoleService.replaceRoleMenus(roleId, menuIdSet);
+        roleMenuService.replaceRoleMenus(roleId, menuIdSet);
         // 授权保存后让在线用户下次鉴权重新加载角色与权限码。
         clearAuthCacheByRole(roleId);
     }
@@ -127,7 +127,7 @@ public class MenuService {
 
     /** 菜单启停后，清理绑定该菜单的所有角色对应用户的权限码缓存。 */
     private void clearAuthCacheByMenu(String menuId) {
-        for (String roleId : menuRoleService.listRoleIdsByMenuId(menuId)) {
+        for (String roleId : roleMenuService.listRoleIdsByMenuId(menuId)) {
             clearAuthCacheByRole(roleId);
         }
     }
@@ -165,7 +165,7 @@ public class MenuService {
             throw new BusinessException("请选择要删除的菜单");
         }
         List<String> idList = StrUtil.splitTrim(ids, ',');
-        if (menuRoleService.countByMenuIds(idList) > 0) {
+        if (roleMenuService.countByMenuIds(idList) > 0) {
             throw new BusinessException("菜单已分配给角色，不能删除");
         }
         Long childCount = menuMapper.selectCount(new LambdaQueryWrapper<Menu>().in(Menu::getParentId, idList));
