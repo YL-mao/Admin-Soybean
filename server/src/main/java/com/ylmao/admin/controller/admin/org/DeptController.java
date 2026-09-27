@@ -18,7 +18,7 @@ import java.util.List;
 
 @Tag(name = "部门", description = "部门树与 CRUD")
 @RestController
-@RequestMapping("/dept")
+@RequestMapping("/api/admin/dept")
 @RequiredArgsConstructor
 public class DeptController extends BaseController {
 

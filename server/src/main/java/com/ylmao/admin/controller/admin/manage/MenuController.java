@@ -18,7 +18,7 @@ import java.util.List;
 
 @Tag(name = "菜单", description = "菜单/权限树与授权")
 @RestController
-@RequestMapping("/menu")
+@RequestMapping("/api/admin/menu")
 @RequiredArgsConstructor
 public class MenuController extends BaseController {
 

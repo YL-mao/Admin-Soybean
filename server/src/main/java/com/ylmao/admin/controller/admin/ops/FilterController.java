@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "访问控制", description = "IP 黑白名单")
 @RestController
-@RequestMapping("/filter")
+@RequestMapping("/api/admin/filter")
 @RequiredArgsConstructor
 public class FilterController extends BaseController {
 

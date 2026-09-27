@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "字典类型", description = "字典类型 CRUD")
 @RestController
-@RequestMapping("/dictType")
+@RequestMapping("/api/admin/dictType")
 @RequiredArgsConstructor
 public class DictTypeController extends BaseController {
 

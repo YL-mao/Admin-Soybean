@@ -30,7 +30,7 @@ import java.util.List;
 
 @Tag(name = "系统配置", description = "系统参数维护与分组配置")
 @RestController
-@RequestMapping("/config")
+@RequestMapping("/api/admin/config")
 @RequiredArgsConstructor
 public class ConfigController extends BaseController {
 

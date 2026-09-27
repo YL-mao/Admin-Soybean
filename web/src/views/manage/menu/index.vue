@@ -191,7 +191,7 @@ async function handleDelete(menuId: string) {
   onDeleted();
 }
 
-/** 列表开关直接启停，走 /menu/updateEnabled */
+/** 列表开关直接启停，走 /api/admin/menu/updateEnabled */
 async function handleUpdateEnabled(row: Api.SystemManage.Menu, checked: boolean) {
   if (!guardAuth('system:menu:updateEnabled')) {
     return;

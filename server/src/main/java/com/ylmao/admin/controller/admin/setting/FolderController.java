@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "文件夹", description = "文件目录树维护")
 @RestController
-@RequestMapping("/folder")
+@RequestMapping("/api/admin/folder")
 @RequiredArgsConstructor
 public class FolderController extends BaseController {
 

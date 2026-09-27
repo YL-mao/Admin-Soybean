@@ -42,10 +42,10 @@
 
 ## URL 风格（后端）
 
-- URL 不重复模块主语。
-- 主语只放在 Controller 类级映射，如 `@RequestMapping("/post")`。
-- 方法级只用动作或业务含义：`/list`、`/add`、`/update`、`/delete`、`/checkName`、`/checkCode`、`/updateEnabled` 等。
-- 禁止 `/post/postList`、`/role/checkRoleName` 这类重复主语。
+- 管理端 JSON 接口统一前缀 `/api/admin`；类级映射为 `/api/admin/{模块}`，如 `@RequestMapping("/api/admin/post")`。
+- URL 不重复模块主语；方法级只用动作或业务含义：`/list`、`/add`、`/update`、`/delete`、`/checkName`、`/checkCode`、`/updateEnabled` 等。
+- 禁止 `/api/admin/post/postList`、`/api/admin/role/checkRoleName` 这类重复主语。
+- 文件预览流等非 JSON 管理接口可保持独立路径（如默认 `/upload/**`），不强制挂 `/api/admin`。
 
 ## 方法命名（后端）
 

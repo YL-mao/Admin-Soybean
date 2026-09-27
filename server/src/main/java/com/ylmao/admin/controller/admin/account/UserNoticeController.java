@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "我的公告", description = "当前用户收件箱")
 @RestController
-@RequestMapping("/user/notice")
+@RequestMapping("/api/admin/user/notice")
 @RequiredArgsConstructor
 public class UserNoticeController extends BaseController {
 

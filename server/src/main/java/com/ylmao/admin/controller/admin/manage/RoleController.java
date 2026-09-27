@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "角色", description = "角色 CRUD 与下拉")
 @RestController
-@RequestMapping("/role")
+@RequestMapping("/api/admin/role")
 @RequiredArgsConstructor
 public class RoleController extends BaseController {
 

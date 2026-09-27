@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "公告", description = "通知公告与控制台")
 @RestController
-@RequestMapping("/notice")
+@RequestMapping("/api/admin/notice")
 @RequiredArgsConstructor
 public class NoticeController extends BaseController {
 

@@ -29,7 +29,7 @@ import java.util.List;
 
 @Tag(name = "字典数据", description = "字典项 CRUD 与运行时选项")
 @RestController
-@RequestMapping("/dictData")
+@RequestMapping("/api/admin/dictData")
 @RequiredArgsConstructor
 public class DictDataController extends BaseController {
 

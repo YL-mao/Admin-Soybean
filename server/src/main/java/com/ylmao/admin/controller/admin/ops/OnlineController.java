@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "在线用户", description = "在线会话查询与强退")
 @RestController
-@RequestMapping("/online")
+@RequestMapping("/api/admin/online")
 @RequiredArgsConstructor
 public class OnlineController extends BaseController {
 

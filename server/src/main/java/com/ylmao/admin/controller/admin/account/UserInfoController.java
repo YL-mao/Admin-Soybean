@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "个人中心", description = "当前用户资料与密码")
 @RestController
-@RequestMapping("/user/info")
+@RequestMapping("/api/admin/user/info")
 @RequiredArgsConstructor
 public class UserInfoController extends BaseController {
 

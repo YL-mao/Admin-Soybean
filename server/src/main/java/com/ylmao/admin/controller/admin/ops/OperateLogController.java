@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "操作日志", description = "行为日志查询与按保留天数清理")
 @RestController
-@RequestMapping("/operateLog")
+@RequestMapping("/api/admin/operateLog")
 @RequiredArgsConstructor
 public class OperateLogController extends BaseController {
 

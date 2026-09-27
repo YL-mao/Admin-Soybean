@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "岗位", description = "岗位 CRUD 与下拉")
 @RestController
-@RequestMapping("/post")
+@RequestMapping("/api/admin/post")
 @RequiredArgsConstructor
 public class PostController extends BaseController {
 

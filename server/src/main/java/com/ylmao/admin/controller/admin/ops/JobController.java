@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "定时任务", description = "任务启停、手动执行与执行日志")
 @RestController
-@RequestMapping("/job")
+@RequestMapping("/api/admin/job")
 @RequiredArgsConstructor
 public class JobController extends BaseController {
 

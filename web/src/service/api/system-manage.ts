@@ -4,7 +4,7 @@ import { request } from '../request';
 export function fetchGetRoleList(params?: Api.SystemManage.RoleSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.Role[]>({
-    url: '/role/list',
+    url: '/api/admin/role/list',
     method: 'get',
     params: {
       ...rest,
@@ -26,7 +26,7 @@ export function fetchGetAllRoles() {
 /** 角色下拉（用户分配） */
 export function fetchGetRoleOptions() {
   return request<Api.SystemManage.RoleOption[]>({
-    url: '/role/options',
+    url: '/api/admin/role/options',
     method: 'get'
   });
 }
@@ -34,7 +34,7 @@ export function fetchGetRoleOptions() {
 /** 新增角色 */
 export function fetchCreateRole(data: Api.SystemManage.RoleInsert) {
   return request<null>({
-    url: '/role/add',
+    url: '/api/admin/role/add',
     method: 'post',
     data
   });
@@ -43,7 +43,7 @@ export function fetchCreateRole(data: Api.SystemManage.RoleInsert) {
 /** 修改角色 */
 export function fetchUpdateRole(data: Api.SystemManage.RoleUpdate) {
   return request<null>({
-    url: '/role/update',
+    url: '/api/admin/role/update',
     method: 'put',
     data
   });
@@ -52,7 +52,7 @@ export function fetchUpdateRole(data: Api.SystemManage.RoleUpdate) {
 /** 删除角色（逗号分隔 id） */
 export function fetchDeleteRole(ids: string) {
   return request<null>({
-    url: '/role/delete',
+    url: '/api/admin/role/delete',
     method: 'delete',
     params: { ids }
   });
@@ -61,7 +61,7 @@ export function fetchDeleteRole(ids: string) {
 /** 启停角色 */
 export function fetchUpdateRoleEnabled(data: { roleId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
   return request<null>({
-    url: '/role/updateEnabled',
+    url: '/api/admin/role/updateEnabled',
     method: 'patch',
     data
   });
@@ -70,7 +70,7 @@ export function fetchUpdateRoleEnabled(data: { roleId: string; isEnabled: Api.Sy
 /** 角色名称是否可用 */
 export function fetchCheckRoleNameUnique(params: { roleName: string }) {
   return request<boolean>({
-    url: '/role/checkName',
+    url: '/api/admin/role/checkName',
     method: 'get',
     params
   });
@@ -79,7 +79,7 @@ export function fetchCheckRoleNameUnique(params: { roleName: string }) {
 /** 角色编码是否可用 */
 export function fetchCheckRoleCodeUnique(params: { roleCode: string }) {
   return request<boolean>({
-    url: '/role/checkCode',
+    url: '/api/admin/role/checkCode',
     method: 'get',
     params
   });
@@ -88,7 +88,7 @@ export function fetchCheckRoleCodeUnique(params: { roleCode: string }) {
 /** 角色菜单授权树（平铺，含 checkArr） */
 export function fetchGetRoleMenuTree(roleId: string) {
   return request<Api.SystemManage.MenuCheck[]>({
-    url: '/menu/roleTree',
+    url: '/api/admin/menu/roleTree',
     method: 'get',
     params: { roleId }
   });
@@ -97,7 +97,7 @@ export function fetchGetRoleMenuTree(roleId: string) {
 /** 保存角色菜单授权（menuIds 逗号分隔，空串清空） */
 export function fetchSaveRoleMenu(data: { roleId: string; menuIds: string }) {
   return request<null>({
-    url: '/menu/roleMenu',
+    url: '/api/admin/menu/roleMenu',
     method: 'put',
     data
   });
@@ -107,7 +107,7 @@ export function fetchSaveRoleMenu(data: { roleId: string; menuIds: string }) {
 export function fetchGetPostList(params?: Api.SystemManage.PostSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.Post[]>({
-    url: '/post/list',
+    url: '/api/admin/post/list',
     method: 'get',
     params: {
       ...rest,
@@ -120,7 +120,7 @@ export function fetchGetPostList(params?: Api.SystemManage.PostSearchParams) {
 /** 新增岗位 */
 export function fetchCreatePost(data: Api.SystemManage.PostInsert) {
   return request<null>({
-    url: '/post/add',
+    url: '/api/admin/post/add',
     method: 'post',
     data
   });
@@ -129,7 +129,7 @@ export function fetchCreatePost(data: Api.SystemManage.PostInsert) {
 /** 修改岗位 */
 export function fetchUpdatePost(data: Api.SystemManage.PostUpdate) {
   return request<null>({
-    url: '/post/update',
+    url: '/api/admin/post/update',
     method: 'put',
     data
   });
@@ -138,7 +138,7 @@ export function fetchUpdatePost(data: Api.SystemManage.PostUpdate) {
 /** 删除岗位（逗号分隔 id） */
 export function fetchDeletePost(ids: string) {
   return request<null>({
-    url: '/post/delete',
+    url: '/api/admin/post/delete',
     method: 'delete',
     params: { ids }
   });
@@ -147,7 +147,7 @@ export function fetchDeletePost(ids: string) {
 /** 启停岗位 */
 export function fetchUpdatePostEnabled(data: { postId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
   return request<null>({
-    url: '/post/updateEnabled',
+    url: '/api/admin/post/updateEnabled',
     method: 'patch',
     data
   });
@@ -156,7 +156,7 @@ export function fetchUpdatePostEnabled(data: { postId: string; isEnabled: Api.Sy
 /** 岗位名称是否可用 */
 export function fetchCheckPostNameUnique(params: { postName: string }) {
   return request<boolean>({
-    url: '/post/checkName',
+    url: '/api/admin/post/checkName',
     method: 'get',
     params
   });
@@ -165,7 +165,7 @@ export function fetchCheckPostNameUnique(params: { postName: string }) {
 /** 岗位编码是否可用 */
 export function fetchCheckPostCodeUnique(params: { postCode: string }) {
   return request<boolean>({
-    url: '/post/checkCode',
+    url: '/api/admin/post/checkCode',
     method: 'get',
     params
   });
@@ -174,7 +174,7 @@ export function fetchCheckPostCodeUnique(params: { postCode: string }) {
 /** 岗位下拉（用户分配） */
 export function fetchGetPostOptions() {
   return request<Api.SystemManage.PostOption[]>({
-    url: '/post/options',
+    url: '/api/admin/post/options',
     method: 'get'
   });
 }
@@ -182,7 +182,7 @@ export function fetchGetPostOptions() {
 /** 部门列表（平铺，前端组树） */
 export function fetchGetDeptList(params?: Api.SystemManage.DeptSearchParams) {
   return request<Api.SystemManage.Dept[]>({
-    url: '/dept/list',
+    url: '/api/admin/dept/list',
     method: 'get',
     params
   });
@@ -191,7 +191,7 @@ export function fetchGetDeptList(params?: Api.SystemManage.DeptSearchParams) {
 /** 新增部门 */
 export function fetchCreateDept(data: Api.SystemManage.DeptInsert) {
   return request<null>({
-    url: '/dept/add',
+    url: '/api/admin/dept/add',
     method: 'post',
     data
   });
@@ -200,7 +200,7 @@ export function fetchCreateDept(data: Api.SystemManage.DeptInsert) {
 /** 修改部门 */
 export function fetchUpdateDept(data: Api.SystemManage.DeptUpdate) {
   return request<null>({
-    url: '/dept/update',
+    url: '/api/admin/dept/update',
     method: 'put',
     data
   });
@@ -209,7 +209,7 @@ export function fetchUpdateDept(data: Api.SystemManage.DeptUpdate) {
 /** 删除部门（逗号分隔 id） */
 export function fetchDeleteDept(ids: string) {
   return request<null>({
-    url: '/dept/delete',
+    url: '/api/admin/dept/delete',
     method: 'delete',
     params: { ids }
   });
@@ -218,7 +218,7 @@ export function fetchDeleteDept(ids: string) {
 /** 启停部门 */
 export function fetchUpdateDeptEnabled(data: { deptId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
   return request<null>({
-    url: '/dept/updateEnabled',
+    url: '/api/admin/dept/updateEnabled',
     method: 'patch',
     data
   });
@@ -227,7 +227,7 @@ export function fetchUpdateDeptEnabled(data: { deptId: string; isEnabled: Api.Sy
 /** 同级部门名称是否可用 */
 export function fetchCheckDeptNameUnique(params: { parentId: string; deptName: string }) {
   return request<boolean>({
-    url: '/dept/checkName',
+    url: '/api/admin/dept/checkName',
     method: 'get',
     params
   });
@@ -236,7 +236,7 @@ export function fetchCheckDeptNameUnique(params: { parentId: string; deptName: s
 /** 上级部门选项（平铺） */
 export function fetchGetDeptParentOptions() {
   return request<Api.SystemManage.DeptOption[]>({
-    url: '/dept/selectParent',
+    url: '/api/admin/dept/selectParent',
     method: 'get'
   });
 }
@@ -244,7 +244,7 @@ export function fetchGetDeptParentOptions() {
 /** 部门下拉（用户分配，仅启用） */
 export function fetchGetDeptOptions() {
   return request<Api.SystemManage.DeptOption[]>({
-    url: '/dept/options',
+    url: '/api/admin/dept/options',
     method: 'get'
   });
 }
@@ -253,7 +253,7 @@ export function fetchGetDeptOptions() {
 export function fetchGetUserList(params?: Api.SystemManage.UserSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.User[]>({
-    url: '/user/list',
+    url: '/api/admin/user/list',
     method: 'get',
     params: {
       ...rest,
@@ -266,7 +266,7 @@ export function fetchGetUserList(params?: Api.SystemManage.UserSearchParams) {
 /** 新增用户 */
 export function fetchCreateUser(data: Api.SystemManage.UserInsert) {
   return request<null>({
-    url: '/user/add',
+    url: '/api/admin/user/add',
     method: 'post',
     data
   });
@@ -275,7 +275,7 @@ export function fetchCreateUser(data: Api.SystemManage.UserInsert) {
 /** 修改用户 */
 export function fetchUpdateUser(data: Api.SystemManage.UserUpdate) {
   return request<null>({
-    url: '/user/update',
+    url: '/api/admin/user/update',
     method: 'put',
     data
   });
@@ -284,7 +284,7 @@ export function fetchUpdateUser(data: Api.SystemManage.UserUpdate) {
 /** 删除用户（逗号分隔 id） */
 export function fetchDeleteUser(ids: string) {
   return request<null>({
-    url: '/user/delete',
+    url: '/api/admin/user/delete',
     method: 'delete',
     params: { ids }
   });
@@ -293,7 +293,7 @@ export function fetchDeleteUser(ids: string) {
 /** 启停用户 */
 export function fetchUpdateUserEnabled(data: { userId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
   return request<null>({
-    url: '/user/updateEnabled',
+    url: '/api/admin/user/updateEnabled',
     method: 'patch',
     data
   });
@@ -302,7 +302,7 @@ export function fetchUpdateUserEnabled(data: { userId: string; isEnabled: Api.Sy
 /** 改锁定状态（0 正常 / 1 锁定） */
 export function fetchUpdateUserLock(data: { userId: string; isLock: Api.SystemManage.EnabledFlag }) {
   return request<null>({
-    url: '/user/updateLock',
+    url: '/api/admin/user/updateLock',
     method: 'patch',
     data
   });
@@ -311,7 +311,7 @@ export function fetchUpdateUserLock(data: { userId: string; isLock: Api.SystemMa
 /** 登录账号是否可用 */
 export function fetchCheckUserAccountUnique(params: { userAccount: string }) {
   return request<boolean>({
-    url: '/user/checkAccount',
+    url: '/api/admin/user/checkAccount',
     method: 'get',
     params
   });
@@ -322,7 +322,7 @@ export function fetchExportUserList(
   params?: Pick<Api.SystemManage.UserSearchParams, 'userAccount' | 'isEnabled' | 'isLock'>
 ) {
   return request<Blob, 'blob'>({
-    url: '/user/export',
+    url: '/api/admin/user/export',
     method: 'get',
     params: {
       userAccount: params?.userAccount,
@@ -336,7 +336,7 @@ export function fetchExportUserList(
 /** 管理员重置密码 */
 export function fetchUpdateUserPwd(data: Api.SystemManage.UserUpdatePwd) {
   return request<null>({
-    url: '/user/updatePwd',
+    url: '/api/admin/user/updatePwd',
     method: 'patch',
     data
   });
@@ -345,7 +345,7 @@ export function fetchUpdateUserPwd(data: Api.SystemManage.UserUpdatePwd) {
 /** 按用户强退全部会话（在线用户与用户列表共用） */
 export function fetchKickOnlineUser(data: { userId: string }) {
   return request<null>({
-    url: '/online/kickUser',
+    url: '/api/admin/online/kickUser',
     method: 'patch',
     data
   });
@@ -354,7 +354,7 @@ export function fetchKickOnlineUser(data: { userId: string }) {
 /** 用户最终权限详情（角色 + 并集权限平铺） */
 export function fetchGetUserPermDetail(userId: string) {
   return request<Api.SystemManage.UserPermDetail>({
-    url: '/user/permDetail',
+    url: '/api/admin/user/permDetail',
     method: 'get',
     params: { userId }
   });
@@ -363,7 +363,7 @@ export function fetchGetUserPermDetail(userId: string) {
 /** 菜单列表（平铺，前端组树） */
 export function fetchGetMenuList(params?: Api.SystemManage.MenuSearchParams) {
   return request<Api.SystemManage.Menu[]>({
-    url: '/menu/list',
+    url: '/api/admin/menu/list',
     method: 'get',
     params
   });
@@ -372,7 +372,7 @@ export function fetchGetMenuList(params?: Api.SystemManage.MenuSearchParams) {
 /** 新增菜单 */
 export function fetchCreateMenu(data: Api.SystemManage.MenuInsert) {
   return request<null>({
-    url: '/menu/add',
+    url: '/api/admin/menu/add',
     method: 'post',
     data
   });
@@ -381,7 +381,7 @@ export function fetchCreateMenu(data: Api.SystemManage.MenuInsert) {
 /** 修改菜单 */
 export function fetchUpdateMenu(data: Api.SystemManage.MenuUpdate) {
   return request<null>({
-    url: '/menu/update',
+    url: '/api/admin/menu/update',
     method: 'put',
     data
   });
@@ -390,7 +390,7 @@ export function fetchUpdateMenu(data: Api.SystemManage.MenuUpdate) {
 /** 删除菜单（逗号分隔 id） */
 export function fetchDeleteMenu(ids: string) {
   return request<null>({
-    url: '/menu/delete',
+    url: '/api/admin/menu/delete',
     method: 'delete',
     params: { ids }
   });
@@ -399,7 +399,7 @@ export function fetchDeleteMenu(ids: string) {
 /** 启停菜单 */
 export function fetchUpdateMenuEnabled(data: { menuId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
   return request<null>({
-    url: '/menu/updateEnabled',
+    url: '/api/admin/menu/updateEnabled',
     method: 'patch',
     data
   });
@@ -408,7 +408,7 @@ export function fetchUpdateMenuEnabled(data: { menuId: string; isEnabled: Api.Sy
 /** 上级菜单选项（平铺，含顶级） */
 export function fetchGetMenuParentOptions() {
   return request<Api.SystemManage.MenuParent[]>({
-    url: '/menu/selectParent',
+    url: '/api/admin/menu/selectParent',
     method: 'get'
   });
 }
@@ -416,7 +416,7 @@ export function fetchGetMenuParentOptions() {
 /** 同级菜单名称是否可用 */
 export function fetchCheckMenuNameUnique(params: { parentId: string; menuName: string }) {
   return request<boolean>({
-    url: '/menu/checkName',
+    url: '/api/admin/menu/checkName',
     method: 'get',
     params
   });
@@ -425,7 +425,7 @@ export function fetchCheckMenuNameUnique(params: { parentId: string; menuName: s
 /** 同父下权限标识是否可用（跨菜单允许复用同一码） */
 export function fetchCheckMenuCodeUnique(params: { parentId: string; permCode: string }) {
   return request<boolean>({
-    url: '/menu/checkCode',
+    url: '/api/admin/menu/checkCode',
     method: 'get',
     params
   });
@@ -435,7 +435,7 @@ export function fetchCheckMenuCodeUnique(params: { parentId: string; permCode: s
 export function fetchGetDictTypeList(params?: Api.SystemManage.DictTypeSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.DictType[]>({
-    url: '/dictType/list',
+    url: '/api/admin/dictType/list',
     method: 'get',
     params: {
       ...rest,
@@ -448,7 +448,7 @@ export function fetchGetDictTypeList(params?: Api.SystemManage.DictTypeSearchPar
 /** 新增字典类型 */
 export function fetchCreateDictType(data: Api.SystemManage.DictTypeInsert) {
   return request<null>({
-    url: '/dictType/add',
+    url: '/api/admin/dictType/add',
     method: 'post',
     data
   });
@@ -457,7 +457,7 @@ export function fetchCreateDictType(data: Api.SystemManage.DictTypeInsert) {
 /** 修改字典类型 */
 export function fetchUpdateDictType(data: Api.SystemManage.DictTypeUpdate) {
   return request<null>({
-    url: '/dictType/update',
+    url: '/api/admin/dictType/update',
     method: 'put',
     data
   });
@@ -466,7 +466,7 @@ export function fetchUpdateDictType(data: Api.SystemManage.DictTypeUpdate) {
 /** 删除字典类型（逗号分隔 id，后端会连带删除其字典数据） */
 export function fetchDeleteDictType(ids: string) {
   return request<null>({
-    url: '/dictType/delete',
+    url: '/api/admin/dictType/delete',
     method: 'delete',
     params: { ids }
   });
@@ -475,7 +475,7 @@ export function fetchDeleteDictType(ids: string) {
 /** 启停字典类型 */
 export function fetchUpdateDictTypeEnabled(data: { dictTypeId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
   return request<null>({
-    url: '/dictType/updateEnabled',
+    url: '/api/admin/dictType/updateEnabled',
     method: 'patch',
     data
   });
@@ -484,7 +484,7 @@ export function fetchUpdateDictTypeEnabled(data: { dictTypeId: string; isEnabled
 /** 字典编码是否可用 */
 export function fetchCheckDictTypeCodeUnique(params: { dictTypeCode: string }) {
   return request<boolean>({
-    url: '/dictType/checkCode',
+    url: '/api/admin/dictType/checkCode',
     method: 'get',
     params
   });
@@ -494,7 +494,7 @@ export function fetchCheckDictTypeCodeUnique(params: { dictTypeCode: string }) {
 export function fetchGetDictDataList(params?: Api.SystemManage.DictDataSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.DictData[]>({
-    url: '/dictData/list',
+    url: '/api/admin/dictData/list',
     method: 'get',
     params: {
       ...rest,
@@ -507,7 +507,7 @@ export function fetchGetDictDataList(params?: Api.SystemManage.DictDataSearchPar
 /** 新增字典数据 */
 export function fetchCreateDictData(data: Api.SystemManage.DictDataInsert) {
   return request<null>({
-    url: '/dictData/add',
+    url: '/api/admin/dictData/add',
     method: 'post',
     data
   });
@@ -516,7 +516,7 @@ export function fetchCreateDictData(data: Api.SystemManage.DictDataInsert) {
 /** 修改字典数据 */
 export function fetchUpdateDictData(data: Api.SystemManage.DictDataUpdate) {
   return request<null>({
-    url: '/dictData/update',
+    url: '/api/admin/dictData/update',
     method: 'put',
     data
   });
@@ -525,7 +525,7 @@ export function fetchUpdateDictData(data: Api.SystemManage.DictDataUpdate) {
 /** 删除字典数据（逗号分隔 id） */
 export function fetchDeleteDictData(ids: string) {
   return request<null>({
-    url: '/dictData/delete',
+    url: '/api/admin/dictData/delete',
     method: 'delete',
     params: { ids }
   });
@@ -534,7 +534,7 @@ export function fetchDeleteDictData(ids: string) {
 /** 启停字典数据 */
 export function fetchUpdateDictDataEnabled(data: { dictDataId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
   return request<null>({
-    url: '/dictData/updateEnabled',
+    url: '/api/admin/dictData/updateEnabled',
     method: 'patch',
     data
   });
@@ -543,7 +543,7 @@ export function fetchUpdateDictDataEnabled(data: { dictDataId: string; isEnabled
 /** 设置或取消默认项（同一类型只保留一个默认） */
 export function fetchUpdateDictDataDefault(data: { dictDataId: string; isDefault: Api.SystemManage.DictDefaultFlag }) {
   return request<null>({
-    url: '/dictData/updateDefault',
+    url: '/api/admin/dictData/updateDefault',
     method: 'patch',
     data
   });
@@ -552,7 +552,7 @@ export function fetchUpdateDictDataDefault(data: { dictDataId: string; isDefault
 /** 同一类型下数据标签是否可用 */
 export function fetchCheckDictDataLabelUnique(params: { dictTypeCode: string; dictDataLabel: string }) {
   return request<boolean>({
-    url: '/dictData/checkLabel',
+    url: '/api/admin/dictData/checkLabel',
     method: 'get',
     params
   });
@@ -561,7 +561,7 @@ export function fetchCheckDictDataLabelUnique(params: { dictTypeCode: string; di
 /** 同一类型下数据值是否可用 */
 export function fetchCheckDictDataValueUnique(params: { dictTypeCode: string; dictDataValue: string }) {
   return request<boolean>({
-    url: '/dictData/checkValue',
+    url: '/api/admin/dictData/checkValue',
     method: 'get',
     params
   });
@@ -570,7 +570,7 @@ export function fetchCheckDictDataValueUnique(params: { dictTypeCode: string; di
 /** 刷新指定字典编码的运行时缓存 */
 export function fetchRefreshDictCache(dictTypeCode: string) {
   return request<null>({
-    url: '/dictData/refreshCache',
+    url: '/api/admin/dictData/refreshCache',
     method: 'patch',
     params: { dictTypeCode }
   });
@@ -579,7 +579,7 @@ export function fetchRefreshDictCache(dictTypeCode: string) {
 /** 读取配置分组明细 */
 export function fetchGetConfigGroup(configGroup: string) {
   return request<Api.SystemManage.ConfigGroupItem[]>({
-    url: '/config/group',
+    url: '/api/admin/config/group',
     method: 'get',
     params: { configGroup }
   });
@@ -591,7 +591,7 @@ export function fetchUpdateConfigGroup(data: {
   configs: Api.SystemManage.ConfigGroupSaveItem[];
 }) {
   return request<null>({
-    url: '/config/updateGroup',
+    url: '/api/admin/config/updateGroup',
     method: 'put',
     data
   });
@@ -601,7 +601,7 @@ export function fetchUpdateConfigGroup(data: {
 export function fetchOperateLogList(params?: Api.SystemManage.OperateLogSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.OperateLog[]>({
-    url: '/operateLog/list',
+    url: '/api/admin/operateLog/list',
     method: 'get',
     params: {
       ...rest,
@@ -614,7 +614,7 @@ export function fetchOperateLogList(params?: Api.SystemManage.OperateLogSearchPa
 /** 按保留天数清理过期日志 */
 export function fetchCleanOperateLogByRetention() {
   return request<number>({
-    url: '/operateLog/cleanByRetention',
+    url: '/api/admin/operateLog/cleanByRetention',
     method: 'delete'
   });
 }
@@ -623,7 +623,7 @@ export function fetchCleanOperateLogByRetention() {
 export function fetchGetFilterList(params?: Api.SystemManage.FilterSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.Filter[]>({
-    url: '/filter/list',
+    url: '/api/admin/filter/list',
     method: 'get',
     params: {
       ...rest,
@@ -636,7 +636,7 @@ export function fetchGetFilterList(params?: Api.SystemManage.FilterSearchParams)
 /** 新增访问控制 */
 export function fetchCreateFilter(data: Api.SystemManage.FilterInsert) {
   return request<null>({
-    url: '/filter/add',
+    url: '/api/admin/filter/add',
     method: 'post',
     data
   });
@@ -645,7 +645,7 @@ export function fetchCreateFilter(data: Api.SystemManage.FilterInsert) {
 /** 修改访问控制 */
 export function fetchUpdateFilter(data: Api.SystemManage.FilterUpdate) {
   return request<null>({
-    url: '/filter/update',
+    url: '/api/admin/filter/update',
     method: 'put',
     data
   });
@@ -654,7 +654,7 @@ export function fetchUpdateFilter(data: Api.SystemManage.FilterUpdate) {
 /** 删除访问控制 */
 export function fetchDeleteFilter(ids: string) {
   return request<null>({
-    url: '/filter/delete',
+    url: '/api/admin/filter/delete',
     method: 'delete',
     params: { ids }
   });
@@ -663,7 +663,7 @@ export function fetchDeleteFilter(ids: string) {
 /** 启停访问控制 */
 export function fetchUpdateFilterEnabled(data: { filterId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
   return request<null>({
-    url: '/filter/updateEnabled',
+    url: '/api/admin/filter/updateEnabled',
     method: 'patch',
     data
   });
@@ -673,7 +673,7 @@ export function fetchUpdateFilterEnabled(data: { filterId: string; isEnabled: Ap
 export function fetchGetJobList(params?: Api.SystemManage.JobSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.Job[]>({
-    url: '/job/list',
+    url: '/api/admin/job/list',
     method: 'get',
     params: {
       ...rest,
@@ -686,7 +686,7 @@ export function fetchGetJobList(params?: Api.SystemManage.JobSearchParams) {
 /** 启停定时任务 */
 export function fetchUpdateJobEnabled(data: { jobId: string; isEnabled: Api.SystemManage.EnabledFlag }) {
   return request<null>({
-    url: '/job/updateEnabled',
+    url: '/api/admin/job/updateEnabled',
     method: 'patch',
     data
   });
@@ -695,7 +695,7 @@ export function fetchUpdateJobEnabled(data: { jobId: string; isEnabled: Api.Syst
 /** 手动执行一次定时任务（不受启停限制） */
 export function fetchRunJob(data: { jobId: string }) {
   return request<null>({
-    url: '/job/run',
+    url: '/api/admin/job/run',
     method: 'post',
     data
   });
@@ -705,7 +705,7 @@ export function fetchRunJob(data: { jobId: string }) {
 export function fetchGetJobLogList(params?: Api.SystemManage.JobLogSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.JobLog[]>({
-    url: '/job/logList',
+    url: '/api/admin/job/logList',
     method: 'get',
     params: {
       ...rest,
@@ -719,7 +719,7 @@ export function fetchGetJobLogList(params?: Api.SystemManage.JobLogSearchParams)
 export function fetchGetOnlineUserList(params?: Api.SystemManage.OnlineSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.OnlineUser[]>({
-    url: '/online/list',
+    url: '/api/admin/online/list',
     method: 'get',
     params: {
       ...rest,
@@ -732,7 +732,7 @@ export function fetchGetOnlineUserList(params?: Api.SystemManage.OnlineSearchPar
 /** 按 Token 强退单个会话 */
 export function fetchKickOnlineSession(data: { tokenValue: string }) {
   return request<null>({
-    url: '/online/kick',
+    url: '/api/admin/online/kick',
     method: 'patch',
     data
   });
@@ -741,7 +741,7 @@ export function fetchKickOnlineSession(data: { tokenValue: string }) {
 /** 运行时字典选项（登录即可） */
 export function fetchGetDictOptions(dictTypeCode: string) {
   return request<Api.SystemManage.DictOption[]>({
-    url: '/dictData/options',
+    url: '/api/admin/dictData/options',
     method: 'get',
     params: { dictTypeCode }
   });
@@ -751,7 +751,7 @@ export function fetchGetDictOptions(dictTypeCode: string) {
 export function fetchGetNoticeList(params?: Api.SystemManage.NoticeSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.Notice[]>({
-    url: '/notice/list',
+    url: '/api/admin/notice/list',
     method: 'get',
     params: {
       ...rest,
@@ -764,7 +764,7 @@ export function fetchGetNoticeList(params?: Api.SystemManage.NoticeSearchParams)
 /** 新增公告 */
 export function fetchCreateNotice(data: Api.SystemManage.NoticeInsert) {
   return request<null>({
-    url: '/notice/add',
+    url: '/api/admin/notice/add',
     method: 'post',
     data
   });
@@ -773,7 +773,7 @@ export function fetchCreateNotice(data: Api.SystemManage.NoticeInsert) {
 /** 修改公告（已发布后端会拒绝） */
 export function fetchUpdateNotice(data: Api.SystemManage.NoticeUpdate) {
   return request<null>({
-    url: '/notice/update',
+    url: '/api/admin/notice/update',
     method: 'put',
     data
   });
@@ -782,7 +782,7 @@ export function fetchUpdateNotice(data: Api.SystemManage.NoticeUpdate) {
 /** 删除公告（逗号分隔 id） */
 export function fetchDeleteNotice(ids: string) {
   return request<null>({
-    url: '/notice/delete',
+    url: '/api/admin/notice/delete',
     method: 'delete',
     params: { ids }
   });
@@ -791,7 +791,7 @@ export function fetchDeleteNotice(ids: string) {
 /** 修改公告发布状态（已发布不能改回草稿） */
 export function fetchUpdateNoticeEnabled(data: { noticeId: string; isSend: 0 | 1 }) {
   return request<null>({
-    url: '/notice/updateEnabled',
+    url: '/api/admin/notice/updateEnabled',
     method: 'patch',
     data
   });
@@ -800,7 +800,7 @@ export function fetchUpdateNoticeEnabled(data: { noticeId: string; isSend: 0 | 1
 /** 公告控制台：阅读统计（仅已发布） */
 export function fetchGetNoticeConsoleStats(noticeId: string) {
   return request<Api.SystemManage.NoticeConsoleStats>({
-    url: '/notice/consoleStats',
+    url: '/api/admin/notice/consoleStats',
     method: 'get',
     params: { noticeId }
   });
@@ -810,7 +810,7 @@ export function fetchGetNoticeConsoleStats(noticeId: string) {
 export function fetchGetNoticeConsoleReceivers(params: Api.SystemManage.NoticeConsoleReceiverSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.NoticeConsoleReceiver[]>({
-    url: '/notice/receiverList',
+    url: '/api/admin/notice/receiverList',
     method: 'get',
     params: {
       ...rest,
@@ -823,7 +823,7 @@ export function fetchGetNoticeConsoleReceivers(params: Api.SystemManage.NoticeCo
 /** 用户远程检索（公告指定人、在线筛选等共用） */
 export function fetchSearchUser(keyword: string) {
   return request<Api.SystemManage.UserOption[]>({
-    url: '/user/search',
+    url: '/api/admin/user/search',
     method: 'get',
     params: { keyword }
   });
@@ -832,7 +832,7 @@ export function fetchSearchUser(keyword: string) {
 /** 目录树（平铺，前端组树） */
 export function fetchGetFolderTree() {
   return request<Api.SystemManage.FolderOption[]>({
-    url: '/folder/tree',
+    url: '/api/admin/folder/tree',
     method: 'get'
   });
 }
@@ -840,7 +840,7 @@ export function fetchGetFolderTree() {
 /** 新增目录 */
 export function fetchCreateFolder(data: Api.SystemManage.FolderInsert) {
   return request<null>({
-    url: '/folder/add',
+    url: '/api/admin/folder/add',
     method: 'post',
     data
   });
@@ -849,7 +849,7 @@ export function fetchCreateFolder(data: Api.SystemManage.FolderInsert) {
 /** 修改目录 */
 export function fetchUpdateFolder(data: Api.SystemManage.FolderUpdate) {
   return request<null>({
-    url: '/folder/update',
+    url: '/api/admin/folder/update',
     method: 'put',
     data
   });
@@ -858,7 +858,7 @@ export function fetchUpdateFolder(data: Api.SystemManage.FolderUpdate) {
 /** 删除目录（级联软删） */
 export function fetchDeleteFolder(ids: string) {
   return request<null>({
-    url: '/folder/delete',
+    url: '/api/admin/folder/delete',
     method: 'delete',
     params: { ids }
   });
@@ -877,7 +877,7 @@ export function fetchGetFileList(params?: Api.SystemManage.FileSearchParams) {
     delete query.folderId;
   }
   return request<Api.SystemManage.FileResource[]>({
-    url: '/file/list',
+    url: '/api/admin/file/list',
     method: 'get',
     params: query
   });
@@ -886,7 +886,7 @@ export function fetchGetFileList(params?: Api.SystemManage.FileSearchParams) {
 /** 上传规则（后缀/大小）；禁缓存，避免关开关后命中旧成功响应误开抽屉 */
 export function fetchGetFileUploadRules() {
   return request<Api.SystemManage.FileUploadRules>({
-    url: '/file/uploadRules',
+    url: '/api/admin/file/uploadRules',
     method: 'get',
     headers: {
       'Cache-Control': 'no-cache',
@@ -908,7 +908,7 @@ export function fetchUploadFile(file: File, data: Api.SystemManage.FileUploadPar
     formData.append('needLogin', String(data.needLogin));
   }
   return request<Api.SystemManage.FileResource>({
-    url: '/file/upload',
+    url: '/api/admin/file/upload',
     method: 'post',
     data: formData
   });
@@ -920,7 +920,7 @@ export function fetchOverwriteFile(fileId: string, file: File) {
   formData.append('fileId', fileId);
   formData.append('file', file);
   return request<Api.SystemManage.FileResource>({
-    url: '/file/overwrite',
+    url: '/api/admin/file/overwrite',
     method: 'post',
     data: formData
   });
@@ -929,7 +929,7 @@ export function fetchOverwriteFile(fileId: string, file: File) {
 /** 修改文件元数据（本期不改目录，仍需带上当前 folderId） */
 export function fetchUpdateFile(data: Api.SystemManage.FileUpdate) {
   return request<null>({
-    url: '/file/update',
+    url: '/api/admin/file/update',
     method: 'put',
     data
   });
@@ -938,7 +938,7 @@ export function fetchUpdateFile(data: Api.SystemManage.FileUpdate) {
 /** 删除文件 */
 export function fetchDeleteFile(ids: string) {
   return request<null>({
-    url: '/file/delete',
+    url: '/api/admin/file/delete',
     method: 'delete',
     params: { ids }
   });
@@ -947,7 +947,7 @@ export function fetchDeleteFile(ids: string) {
 /** 删除前引用检测 */
 export function fetchCheckFileRef(ids: string) {
   return request<Api.SystemManage.FileCheckRefResult>({
-    url: '/file/checkRef',
+    url: '/api/admin/file/checkRef',
     method: 'get',
     params: { ids }
   });
@@ -956,7 +956,7 @@ export function fetchCheckFileRef(ids: string) {
 /** 当前用户个人资料详情 */
 export function fetchGetUserProfileDetail() {
   return request<Api.SystemManage.UserProfileDetail>({
-    url: '/user/info/detail',
+    url: '/api/admin/user/info/detail',
     method: 'get'
   });
 }
@@ -964,7 +964,7 @@ export function fetchGetUserProfileDetail() {
 /** 保存当前用户可改资料 */
 export function fetchUpdateUserProfile(data: Api.SystemManage.UserProfileSave) {
   return request<null>({
-    url: '/user/info/update',
+    url: '/api/admin/user/info/update',
     method: 'put',
     data
   });
@@ -973,7 +973,7 @@ export function fetchUpdateUserProfile(data: Api.SystemManage.UserProfileSave) {
 /** 当前用户修改自己的密码（成功后后端强制注销） */
 export function fetchUpdateOwnPassword(data: Api.SystemManage.UserOwnPasswordUpdate) {
   return request<null>({
-    url: '/user/info/updatePwd',
+    url: '/api/admin/user/info/updatePwd',
     method: 'patch',
     data
   });
@@ -982,7 +982,7 @@ export function fetchUpdateOwnPassword(data: Api.SystemManage.UserOwnPasswordUpd
 /** 更新当前用户头像地址（上传接口返回的 accessUrl） */
 export function fetchUpdateOwnAvatar(userAvatar: string) {
   return request<null>({
-    url: '/user/info/updateAvatar',
+    url: '/api/admin/user/info/updateAvatar',
     method: 'patch',
     data: { userAvatar }
   });
@@ -992,7 +992,7 @@ export function fetchUpdateOwnAvatar(userAvatar: string) {
 export function fetchGetOwnLoginLogs(params?: Api.SystemManage.CommonSearchParams) {
   const { current, size } = params || {};
   return request<Api.SystemManage.UserOwnLoginLog[]>({
-    url: '/user/info/loginLog',
+    url: '/api/admin/user/info/loginLog',
     method: 'get',
     params: {
       page: current ?? 1,
@@ -1004,7 +1004,7 @@ export function fetchGetOwnLoginLogs(params?: Api.SystemManage.CommonSearchParam
 /** 顶栏/首页公告头：真实未读总数 + 按类型短列表（每类最多 8 条） */
 export function fetchGetUserNoticeHeader() {
   return request<Api.SystemManage.UserNoticeHeader>({
-    url: '/user/notice/header',
+    url: '/api/admin/user/notice/header',
     method: 'get'
   });
 }
@@ -1013,7 +1013,7 @@ export function fetchGetUserNoticeHeader() {
 export function fetchGetUserInboxNoticeList(params?: Api.SystemManage.UserInboxNoticeSearchParams) {
   const { current, size, ...rest } = params || {};
   return request<Api.SystemManage.UserInboxNotice[]>({
-    url: '/user/notice/list',
+    url: '/api/admin/user/notice/list',
     method: 'get',
     params: {
       ...rest,
@@ -1026,7 +1026,7 @@ export function fetchGetUserInboxNoticeList(params?: Api.SystemManage.UserInboxN
 /** 单条标记已读 */
 export function fetchUpdateUserNoticeRead(noticeId: string) {
   return request<null>({
-    url: '/user/notice/updateRead',
+    url: '/api/admin/user/notice/updateRead',
     method: 'patch',
     data: { noticeId }
   });
@@ -1035,7 +1035,7 @@ export function fetchUpdateUserNoticeRead(noticeId: string) {
 /** 全部标记已读 */
 export function fetchReadAllUserNotices() {
   return request<null>({
-    url: '/user/notice/readAll',
+    url: '/api/admin/user/notice/readAll',
     method: 'patch'
   });
 }
