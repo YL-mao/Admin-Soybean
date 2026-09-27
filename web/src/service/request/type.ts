@@ -1,7 +1,6 @@
 export interface RequestInstanceState {
-  /** the promise of refreshing token */
-  refreshTokenPromise: Promise<boolean> | null;
-  /** the request error message stack */
+  /** 业务错误提示去重栈 */
   errMsgStack: string[];
+  /** 兼容 createFlatRequest 的 state 约束 */
   [key: string]: unknown;
 }

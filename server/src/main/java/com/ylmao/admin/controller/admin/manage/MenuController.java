@@ -27,7 +27,7 @@ public class MenuController extends BaseController {
     @Operation(summary = "角色菜单授权树")
     @SaCheckPermission("system:role:auth")
     @GetMapping("/roleTree")
-    public R<?> queryRoleMenuTree(String roleId) {
+    public R<?> menuRoleTree(String roleId) {
         return okData(menuService.queryMenuCheckVoByRoleId(roleId));
     }
 
@@ -36,7 +36,7 @@ public class MenuController extends BaseController {
     // 保存后由 MenuService 清理在线用户的权限码 Session 缓存。
     @SaCheckPermission("system:role:auth")
     @PutMapping("/roleMenu")
-    public R<?> saveRoleMenu(@Valid @RequestBody MenuDto.RoleMenuSave roleMenuSave) {
+    public R<?> menuSaveRoleMenu(@Valid @RequestBody MenuDto.RoleMenuSave roleMenuSave) {
         menuService.updateRoleMenu(roleMenuSave.roleId(), roleMenuSave.menuIds());
         return success();
     }
@@ -105,7 +105,7 @@ public class MenuController extends BaseController {
     @Operation(summary = "查询上级菜单")
     @SaCheckPermission(value = {"system:menu:insert", "system:menu:update"}, mode = SaMode.OR)
     @GetMapping("/selectParent")
-    public R<?> selectMenuParent() {
+    public R<?> menuSelectParent() {
         return okData(menuService.selectParentVoList());
     }
 }

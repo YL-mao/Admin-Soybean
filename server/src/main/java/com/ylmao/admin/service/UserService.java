@@ -179,7 +179,7 @@ public class UserService {
     }
 
     @Transactional
-    public void updatePwd(UserDto.UpdatePwd updatePwd){
+    public void updateUserPwd(UserDto.UpdatePwd updatePwd){
         // 管理员重置密码走固定高复杂度策略。
         passwordPolicyService.validateNewPassword(updatePwd.userPassword());
         User oldUser=userMapper.selectById(updatePwd.userId());

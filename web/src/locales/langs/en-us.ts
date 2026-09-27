@@ -56,9 +56,7 @@ const local: App.I18n.Schema = {
     logout: 'Logout user after request failed',
     logoutMsg: 'Login has expired, please sign in again',
     logoutWithModal: 'Pop up modal after request failed and then log out user',
-    logoutWithModalMsg: 'Login has expired, please sign in again',
-    refreshToken: 'The requested token has expired, refresh the token',
-    tokenExpired: 'The requested token has expired'
+    logoutWithModalMsg: 'Login has expired, please sign in again'
   },
   theme: {
     themeDrawerTitle: 'Theme Configuration',

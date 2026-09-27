@@ -93,8 +93,8 @@ public class UserController extends BaseController {
     @Log(title = "管理员重置密码", businessType = "UPDATE", isSaveResponseData = true)
     @SaCheckPermission("system:user:updatePwd")
     @PatchMapping("/updatePwd")
-    public R<?> updatePwd(@Valid @RequestBody UserDto.UpdatePwd updatePwd) {
-        userService.updatePwd(updatePwd);
+    public R<?> updateUserPwd(@Valid @RequestBody UserDto.UpdatePwd updatePwd) {
+        userService.updateUserPwd(updatePwd);
         return success();
     }
 

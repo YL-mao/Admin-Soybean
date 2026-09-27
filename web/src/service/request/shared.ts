@@ -7,11 +7,6 @@ export function getAuthorization() {
   return token || null;
 }
 
-/** Sa-Token 使用 auto-renew 续签，无独立 refresh 接口。 */
-export async function handleExpiredRequest(_state: RequestInstanceState) {
-  return false;
-}
-
 export function showErrorMsg(state: RequestInstanceState, message: string) {
   if (!state.errMsgStack?.length) {
     state.errMsgStack = [];

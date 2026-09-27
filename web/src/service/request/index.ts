@@ -3,7 +3,7 @@ import { BACKEND_ERROR_CODE, createFlatRequest } from '@sa/axios';
 import { useAuthStore } from '@/store/modules/auth';
 import { getServiceBaseURL } from '@/utils/service';
 import { $t } from '@/locales';
-import { getAuthorization, handleExpiredRequest, showErrorMsg } from './shared';
+import { getAuthorization, showErrorMsg } from './shared';
 import type { RequestInstanceState } from './type';
 import { getDeviceId, DEVICE_ID_HEADER } from '@/utils/device-id';
 
@@ -17,8 +17,7 @@ export const request = createFlatRequest(
   },
   {
     defaultState: {
-      errMsgStack: [],
-      refreshTokenPromise: null
+      errMsgStack: []
     } as RequestInstanceState,
     transform(response: AxiosResponse<App.Service.Response<any>>) {
       return response.data.data;
@@ -43,7 +42,7 @@ export const request = createFlatRequest(
       // to change this logic by yourself, you can modify the `VITE_SERVICE_SUCCESS_CODE` in `.env` file
       return String(response.data.code) === import.meta.env.VITE_SERVICE_SUCCESS_CODE;
     },
-    async onBackendFail(response, instance) {
+    async onBackendFail(response) {
       const authStore = useAuthStore();
       const responseCode = String(response.data.code);
 
@@ -90,21 +89,7 @@ export const request = createFlatRequest(
         return null;
       }
 
-      // when the backend response code is in `expiredTokenCodes`, it means the token is expired, and refresh token
-      // the api `refreshToken` can not return error code in `expiredTokenCodes`, otherwise it will be a dead loop, should return `logoutCodes` or `modalLogoutCodes`
-      const expiredTokenCodes = import.meta.env.VITE_SERVICE_EXPIRED_TOKEN_CODES?.split(',') || [];
-      if (expiredTokenCodes.includes(responseCode)) {
-        const success = await handleExpiredRequest(request.state);
-        if (success) {
-          const token = getAuthorization();
-          if (token) {
-            Object.assign(response.config.headers, { saToken: token });
-          }
-
-          return instance.request(response.config) as Promise<AxiosResponse>;
-        }
-      }
-
+      // Sa-Token 自动续签，无独立 refresh；失效码应配置到 logout / modalLogout
       return null;
     },
     onError(error) {
@@ -136,12 +121,6 @@ export const request = createFlatRequest(
       // the error message is displayed in the modal
       const modalLogoutCodes = import.meta.env.VITE_SERVICE_MODAL_LOGOUT_CODES?.split(',') || [];
       if (modalLogoutCodes.includes(backendErrorCode)) {
-        return;
-      }
-
-      // when the token is expired, refresh token and retry request, so no need to show error message
-      const expiredTokenCodes = import.meta.env.VITE_SERVICE_EXPIRED_TOKEN_CODES?.split(',') || [];
-      if (expiredTokenCodes.includes(backendErrorCode)) {
         return;
       }
 

@@ -369,8 +369,6 @@ declare namespace App {
         logoutMsg: string;
         logoutWithModal: string;
         logoutWithModalMsg: string;
-        refreshToken: string;
-        tokenExpired: string;
       };
       theme: {
         themeDrawerTitle: string;

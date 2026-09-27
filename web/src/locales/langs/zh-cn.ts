@@ -56,9 +56,7 @@ const local: App.I18n.Schema = {
     logout: '请求失败后登出用户',
     logoutMsg: '登录已失效，请重新登录',
     logoutWithModal: '请求失败后弹出模态框再登出用户',
-    logoutWithModalMsg: '登录已失效，请重新登录',
-    refreshToken: '请求的token已过期，刷新token',
-    tokenExpired: 'token已过期'
+    logoutWithModalMsg: '登录已失效，请重新登录'
   },
   theme: {
     themeDrawerTitle: '主题配置',

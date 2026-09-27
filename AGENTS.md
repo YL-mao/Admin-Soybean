@@ -26,7 +26,7 @@
 
 - 默认不加数据库外键；用唯一索引、普通索引、Service 校验与种子一致性检查。
 - 为真实查询、唯一性、关系表使用建索引。
-- 关系表用唯一索引防重复，例如 `(user_id, role_id)`、`(role_id, perm_id)`。
+- 关系表用唯一索引防重复，例如 `(user_id, role_id)`、`(role_id, menu_id)`。
 - 基线默认值优先落库：
   - `create_time` 默认 `CURRENT_TIMESTAMP`
   - `is_enabled` 默认 `0`（禁用）

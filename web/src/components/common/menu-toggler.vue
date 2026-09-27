@@ -20,14 +20,15 @@ const props = withDefaults(defineProps<Props>(), {
 type NumberBool = 0 | 1;
 
 const icon = computed(() => {
+  // 本地 MDI（offline），勿用 line-md / ph 等外集
   const icons: Record<NumberBool, Record<NumberBool, string>> = {
     0: {
-      0: 'line-md:menu-fold-left',
-      1: 'line-md:menu-fold-right'
+      0: 'mdi:backburger',
+      1: 'mdi:forwardburger'
     },
     1: {
-      0: 'ph-caret-double-left-bold',
-      1: 'ph-caret-double-right-bold'
+      0: 'mdi:chevron-double-left',
+      1: 'mdi:chevron-double-right'
     }
   };
 

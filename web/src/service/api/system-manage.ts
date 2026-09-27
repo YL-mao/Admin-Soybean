@@ -14,15 +14,6 @@ export function fetchGetRoleList(params?: Api.SystemManage.RoleSearchParams) {
   });
 }
 
-/**
- * get all roles
- *
- * @deprecated 改用 fetchGetRoleOptions
- */
-export function fetchGetAllRoles() {
-  return fetchGetRoleOptions();
-}
-
 /** 角色下拉（用户分配） */
 export function fetchGetRoleOptions() {
   return request<Api.SystemManage.RoleOption[]>({
