@@ -23,6 +23,9 @@ public interface NoticeUserMapper extends BaseMapper<NoticeUser> {
       */
      void reviveSoftDeleted(@Param("noticeId") String noticeId, @Param("userIds") List<String> userIds);
 
+     /** 含软删：曾投递过的 noticeId（列表「已投递」与禁改草稿口径一致）。 */
+     List<String> selectNoticeIdsHavingRows(@Param("noticeIds") List<String> noticeIds);
+
      /** 当前用户收件箱分页：仅已发布且未过期的公告。 */
      IPage<NoticeVo.UserInboxQueryVo> selectUserInboxPage(
              Page<NoticeVo.UserInboxQueryVo> page,

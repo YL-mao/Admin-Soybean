@@ -206,12 +206,26 @@ public class ConfigRuntimeService {
             return Optional.empty();
         }
         CacheEntry entry = new CacheEntry(config.getConfigValue(), config.getValueType());
-        try {
-            stringRedisTemplate.opsForValue().set(RedisKeys.config(configCode), jsonMapper.writeValueAsString(entry));
-        } catch (RuntimeException ex) {
-            log.warn("配置缓存回填失败 configCode={} reason={}", configCode, ex.getMessage());
+        // 与全量刷新共用锁：回填值 key 时同步写入索引，避免孤儿清理扫不到而留下「假启用」缓存。
+        synchronized (refreshLock) {
+            try {
+                stringRedisTemplate.opsForValue().set(RedisKeys.config(configCode), jsonMapper.writeValueAsString(entry));
+                ensureCodeInIndex(configCode);
+            } catch (RuntimeException ex) {
+                log.warn("配置缓存回填失败 configCode={} reason={}", configCode, ex.getMessage());
+            }
         }
         return Optional.of(entry);
+    }
+
+    /** 单点回填时把 code 挂进 CONFIG_INDEX，供后续全量刷新做孤儿删除。 */
+    private void ensureCodeInIndex(String configCode) {
+        List<String> codes = new ArrayList<>(readCodeIndex());
+        if (codes.contains(configCode)) {
+            return;
+        }
+        codes.add(configCode);
+        stringRedisTemplate.opsForValue().set(RedisKeys.CONFIG_INDEX, jsonMapper.writeValueAsString(codes));
     }
 
     private List<String> readCodeIndex() {

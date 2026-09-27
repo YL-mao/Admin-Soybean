@@ -517,21 +517,16 @@ public class NoticeService {
         return rows != null && !rows.isEmpty();
     }
 
-    /** 批量查询已投递到用户关联表的公告 ID。 */
+    /** 批量查询已投递公告 ID（含软删收件行，与禁改草稿口径一致）。 */
     private Set<String> findDeliveredNoticeIds(List<String> noticeIds) {
         if (noticeIds == null || noticeIds.isEmpty()) {
             return Set.of();
         }
-        List<Object> deliveredIds = noticeUserMapper.selectObjs(new LambdaQueryWrapper<NoticeUser>()
-                .select(NoticeUser::getNoticeId)
-                .in(NoticeUser::getNoticeId, noticeIds)
-                .groupBy(NoticeUser::getNoticeId));
+        List<String> deliveredIds = noticeUserMapper.selectNoticeIdsHavingRows(noticeIds);
         if (deliveredIds == null || deliveredIds.isEmpty()) {
             return Set.of();
         }
-        return deliveredIds.stream()
-                .map(String::valueOf)
-                .collect(Collectors.toCollection(HashSet::new));
+        return new HashSet<>(deliveredIds);
     }
 
     /** 发布状态只允许草稿发布；已发布或已投递时不允许改回草稿。 */

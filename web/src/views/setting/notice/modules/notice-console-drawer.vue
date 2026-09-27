@@ -33,8 +33,9 @@ function abortReceiverStale() {
 
 const statsLoading = ref(false);
 const stats = ref<Api.SystemManage.NoticeConsoleStats | null>(null);
-/** 打开/切换公告时递增，用于丢弃过期的统计请求结果 */
-let loadSeq = 0;
+/** 统计与接收人分世代，避免互相 bump 导致 statsLoading 卡死 */
+let statsSeq = 0;
+let receiverSeq = 0;
 
 const receiverSearch = ref<Api.SystemManage.NoticeConsoleReceiverSearchParams>({
   current: 1,
@@ -56,7 +57,7 @@ const {
 } = useNaivePaginatedTable({
   immediate: false,
   api: async () => {
-    const seq = ++loadSeq;
+    const seq = ++receiverSeq;
     const reqNoticeId = props.noticeId;
     if (!visible.value || !reqNoticeId || !hasAuth('system:notice:console')) {
       return emptyAuthListResponse<Api.SystemManage.NoticeConsoleReceiver>();
@@ -66,7 +67,7 @@ const {
       noticeId: reqNoticeId
     });
     // 已换公告/关抽屉：AbortError 丢弃，避免盖住新数据
-    if (seq !== loadSeq || !visible.value || props.noticeId !== reqNoticeId) {
+    if (seq !== receiverSeq || !visible.value || props.noticeId !== reqNoticeId) {
       abortReceiverStale();
     }
     return result;
@@ -125,7 +126,7 @@ async function loadStats(noticeId: string, seq: number) {
   statsLoading.value = true;
   try {
     const { data, error } = await fetchGetNoticeConsoleStats(noticeId);
-    if (seq !== loadSeq) return 'stale' as const;
+    if (seq !== statsSeq) return 'stale' as const;
     if (error) {
       stats.value = null;
       return false;
@@ -133,8 +134,8 @@ async function loadStats(noticeId: string, seq: number) {
     stats.value = data;
     return true;
   } finally {
-    // 过期请求也要收掉转圈，避免切到 prefetch 路径后 loading 卡死
-    if (seq === loadSeq) {
+    // 仅本世代收转圈；过期请求也要关，避免 spinner 卡死
+    if (seq === statsSeq) {
       statsLoading.value = false;
     }
   }
@@ -145,14 +146,16 @@ watch(
   async id => {
     if (!id) {
       // 关闭时作废在途统计/接收人请求，防止关抽屉后仍写入
-      loadSeq += 1;
+      statsSeq += 1;
+      receiverSeq += 1;
       statsLoading.value = false;
       stats.value = null;
       receiverRows.value = [];
       receiverPaginationState.itemCount = 0;
       return;
     }
-    const seq = ++loadSeq;
+    const seq = ++statsSeq;
+    receiverSeq += 1;
     // 先清空旧统计与接收人，避免转圈下仍显示上一条
     stats.value = null;
     receiverRows.value = [];
@@ -174,7 +177,9 @@ watch(
     } else {
       ok = await loadStats(id, seq);
     }
-    if (ok === 'stale' || seq !== loadSeq) return;
+    if (ok === 'stale' || seq !== statsSeq) {
+      return;
+    }
     if (!ok) {
       visible.value = false;
       return;

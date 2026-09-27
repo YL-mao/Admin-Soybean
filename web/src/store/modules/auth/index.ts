@@ -44,8 +44,8 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
   /** 防止并发 401 重复 reset / 重复打注销 */
   let resetting = false;
-  /** 用户信息拉取世代，避免并发 refresh 旧响应盖住新 roles/buttons */
-  let userInfoSeq = 0;
+  /** 合并并发 getUserInfo，避免双登录/双 refresh 互相盖写或误判成功 */
+  let userInfoInflight: Promise<boolean> | null = null;
 
   /** Reset auth store */
   async function resetStore() {
@@ -111,38 +111,43 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
    * @param redirect Whether to redirect after login. Default is `true`
    */
   async function login(userAccount: string, userPassword: string, captcha: string, redirect = true) {
+    // 防连点：已在登录中则忽略后续提交
+    if (loginLoading.value) {
+      return false;
+    }
     startLoading();
 
-    const { data: loginToken, error } = await fetchLogin({
-      userAccount,
-      userPassword,
-      captcha
-    });
+    try {
+      const { data: loginToken, error } = await fetchLogin({
+        userAccount,
+        userPassword,
+        captcha
+      });
 
-    if (!error && loginToken) {
-      const pass = await loginByToken(loginToken);
+      if (!error && loginToken) {
+        const pass = await loginByToken(loginToken);
 
-      if (pass) {
-        const isClear = checkTabClear();
-        let needRedirect = redirect;
+        if (pass) {
+          const isClear = checkTabClear();
+          let needRedirect = redirect;
 
-        if (isClear) {
-          needRedirect = false;
+          if (isClear) {
+            needRedirect = false;
+          }
+          await redirectFromLogin(needRedirect);
+
+          window.$notification?.success({
+            title: $t('page.login.common.loginSuccess'),
+            content: $t('page.login.common.welcomeBack', { userName: userInfo.userName }),
+            duration: 4500
+          });
+          return true;
         }
-        await redirectFromLogin(needRedirect);
-
-        window.$notification?.success({
-          title: $t('page.login.common.loginSuccess'),
-          content: $t('page.login.common.welcomeBack', { userName: userInfo.userName }),
-          duration: 4500
-        });
-        endLoading();
-        return true;
       }
+      return false;
+    } finally {
+      endLoading();
     }
-
-    endLoading();
-    return false;
   }
 
   /** 落地 token 后拉 userInfo（roles/buttons），严格 Header 模式 */
@@ -166,24 +171,30 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
   /** 从后端刷新用户信息到内存（不落 localStorage，刷新靠 token + 再请求） */
   async function getUserInfo() {
-    const seq = ++userInfoSeq;
-    const { data: info, error } = await fetchGetUserInfo();
-    // 已被更新请求覆盖：勿当失败（避免授权保存误判会话失效）
-    if (seq !== userInfoSeq) {
-      return true;
+    if (userInfoInflight) {
+      return userInfoInflight;
     }
-    if (error || !info) {
-      return false;
-    }
+    const task = (async () => {
+      const { data: info, error } = await fetchGetUserInfo();
+      if (error || !info) {
+        return false;
+      }
 
-    Object.assign(userInfo, {
-      userId: info.userId,
-      userName: info.userName,
-      userAvatar: info.userAvatar || '',
-      roles: info.roles || [],
-      buttons: info.buttons || []
+      Object.assign(userInfo, {
+        userId: info.userId,
+        userName: info.userName,
+        userAvatar: info.userAvatar || '',
+        roles: info.roles || [],
+        buttons: info.buttons || []
+      });
+      return true;
+    })().finally(() => {
+      if (userInfoInflight === task) {
+        userInfoInflight = null;
+      }
     });
-    return true;
+    userInfoInflight = task;
+    return task;
   }
 
   /** 个人中心改昵称/头像后立刻同步顶栏，不必整页重登 */

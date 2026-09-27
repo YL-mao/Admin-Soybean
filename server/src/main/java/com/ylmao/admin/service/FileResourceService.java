@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -63,6 +64,7 @@ public class FileResourceService {
     private final UploadConfigService uploadConfigService;
     private final FolderService folderService;
     private final FingerprintService fingerprintService;
+    private final TransactionTemplate transactionTemplate;
 
     public IPage<FileResourceVo.FileListVo> selectPage(PageQuery pageQuery, FileResourceDto.FileList fileList) {
         LambdaQueryWrapper<FileResource> wrapper = new LambdaQueryWrapper<>();
@@ -155,8 +157,10 @@ public class FileResourceService {
         return FileResourceVo.FileListVo.from(entity, uploadConfigService.buildAccessUrl(fileId));
     }
 
-    /** 覆盖重传：保持同一 fileId，校验场景后缀；展示名可随新文件更新且允许同名并存。 */
-    @Transactional
+    /**
+     * 覆盖重传：保持同一 fileId，校验场景后缀；展示名可随新文件更新且允许同名并存。
+     * 磁盘 IO 在事务外；仅 updateById 走短事务，.bak / 旧路径在提交后再删。
+     */
     public FileResourceVo.FileListVo overwrite(String fileId, MultipartFile file) {
         uploadConfigService.assertUploadEnabled();
         uploadConfigService.requireLocalStorage();
@@ -188,7 +192,7 @@ public class FileResourceService {
         }
         Path newPath = resolveDiskPath(storageKey);
         boolean samePath = Objects.equals(oldPath, newPath);
-        // 始终先落 staging；同路径时用 .bak 保住旧文件，先完成盘替换再 updateById，失败可回滚盘。
+        // 始终先落 staging；同路径时用 .bak 保住旧文件，先完成盘替换再入库。
         Path stagingPath = newPath.resolveSibling(newPath.getFileName() + ".uploading-" + IdWorker.getIdStr());
         Path backupPath = null;
         try {
@@ -224,17 +228,28 @@ public class FileResourceService {
         if (isCurrentUserAvatarFile(existing.getFileId())) {
             existing.setNeedLogin(0);
         }
+        Path finalBackup = backupPath;
         try {
-            int rows = fileResourceMapper.updateById(existing);
-            if (rows <= 0) {
-                throw new BusinessException("文件不存在或修改失败");
-            }
+            // 短事务：只包 updateById；提交后再删 bak / 旧路径。
+            transactionTemplate.executeWithoutResult(status -> {
+                int rows = fileResourceMapper.updateById(existing);
+                if (rows <= 0) {
+                    throw new BusinessException("文件不存在或修改失败");
+                }
+                List<Path> discardAfterCommit = new ArrayList<>();
+                if (finalBackup != null) {
+                    discardAfterCommit.add(finalBackup);
+                }
+                if (!samePath) {
+                    discardAfterCommit.add(oldPath);
+                }
+                deleteDiskAfterCommit(discardAfterCommit);
+            });
         } catch (RuntimeException e) {
             // 库失败：同路径恢复备份；换路径删掉新文件，旧路径不动。
             if (backupPath != null) {
                 try {
                     Files.move(backupPath, newPath, StandardCopyOption.REPLACE_EXISTING);
-                    backupPath = null;
                 } catch (IOException restoreEx) {
                     log.error("覆盖入库失败后恢复备份失败 fileId={} bak={}", existing.getFileId(), backupPath, restoreEx);
                     throw new BusinessException("文件入库失败，且备份恢复失败，请检查磁盘备份: " + backupPath.getFileName());
@@ -243,11 +258,6 @@ public class FileResourceService {
                 deleteQuietly(newPath);
             }
             throw e;
-        }
-        deleteQuietly(backupPath);
-        // 换路径：旧盘文件等库事务提交后再删（无事务时立即删）。
-        if (!samePath) {
-            deleteDiskAfterCommit(List.of(oldPath));
         }
         return FileResourceVo.FileListVo.from(existing, uploadConfigService.buildAccessUrl(existing.getFileId()));
     }

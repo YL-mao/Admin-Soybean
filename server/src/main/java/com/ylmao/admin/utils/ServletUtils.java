@@ -3,6 +3,7 @@ import cn.hutool.core.util.StrUtil;
 
 import cn.dev33.satoken.util.SaFoxUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.lang.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.context.request.RequestAttributes;
@@ -12,8 +13,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -166,7 +165,7 @@ public class ServletUtils
         return !SaFoxUtil.isEmpty(ip) && !"unknown".equalsIgnoreCase(ip);
     }
 
-	/** 是否为单个合法 IPv4/IPv6（拒绝逗号列表、空格串、垃圾头）。 */
+	/** 是否为单个 IPv4/IPv6 字面量（拒主机名，避免 DNS；也拒逗号列表/空格串）。 */
 	private static boolean isSingleValidIp(String ip) {
 		if (SaFoxUtil.isEmpty(ip)) {
 			return false;
@@ -175,12 +174,7 @@ public class ServletUtils
 		if (trimmed.isEmpty() || trimmed.indexOf(',') >= 0 || trimmed.indexOf(' ') >= 0) {
 			return false;
 		}
-		try {
-			InetAddress.getByName(trimmed);
-			return true;
-		} catch (UnknownHostException ex) {
-			return false;
-		}
+		return Validator.isIpv4(trimmed) || Validator.isIpv6(trimmed);
 	}
 
 	/** 规范化对端地址（小写；剥掉 IPv4 映射前缀便于匹配）。 */

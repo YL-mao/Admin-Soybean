@@ -32,6 +32,15 @@
           AND is_del = 1
     </update>
 
+    <select id="selectNoticeIdsHavingRows" resultType="java.lang.String">
+        SELECT DISTINCT notice_id
+        FROM sys_notice_user
+        WHERE notice_id IN
+        <foreach collection="noticeIds" item="noticeId" open="(" separator="," close=")">
+            #{noticeId}
+        </foreach>
+    </select>
+
     <sql id="userInboxJoinWhere">
         FROM sys_notice_user nu
         INNER JOIN sys_notice n ON n.notice_id = nu.notice_id
