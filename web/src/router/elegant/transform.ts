@@ -181,7 +181,6 @@ const routeMap: RouteMap = {
   "ops": "/ops",
   "ops_filter": "/ops/filter",
   "ops_job": "/ops/job",
-  "ops_job-log": "/ops/job-log",
   "ops_online": "/ops/online",
   "ops_operate-log": "/ops/operate-log",
   "org": "/org",
@@ -191,8 +190,7 @@ const routeMap: RouteMap = {
   "setting_config": "/setting/config",
   "setting_dict": "/setting/dict",
   "setting_file": "/setting/file",
-  "setting_notice": "/setting/notice",
-  "setting_notice-console": "/setting/notice-console"
+  "setting_notice": "/setting/notice"
 };
 
 /**

@@ -236,13 +236,11 @@ const local: App.I18n.Schema = {
     setting: '系统设置',
     setting_dict: '数据字典',
     setting_notice: '公告管理',
-    'setting_notice-console': '公告控制台',
     setting_config: '系统信息',
     setting_file: '文件管理',
     ops: '安全运维',
     'ops_operate-log': '行为日志',
     ops_job: '定时任务',
-    'ops_job-log': '任务日志',
     ops_filter: '访问控制',
     ops_online: '在线用户',
     dev: '开发工具',
@@ -552,7 +550,6 @@ const local: App.I18n.Schema = {
         consoleReadTime: '阅读时间',
         consoleRead: '已读',
         consoleUnread: '未读',
-        consoleDirectVisitTip: '请从公告管理列表进入控制台',
         consoleUnpublishedTip: '仅已发布公告可查看控制台',
         consoleOpenFailedTip: '无法打开控制台，公告不存在或未发布'
       },
@@ -684,8 +681,6 @@ const local: App.I18n.Schema = {
         statusSuccess: '成功',
         statusFailed: '失败',
         statusSkipped: '跳过',
-        missingJobId: '请从定时任务列表进入执行日志',
-        useDrawerHint: '执行日志已改为任务列表内抽屉查看',
         form: {
           runStatus: '请选择执行结果'
         }

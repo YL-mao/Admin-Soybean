@@ -205,18 +205,6 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
-        name: 'ops_job-log',
-        path: '/ops/job-log',
-        component: 'view.ops_job-log',
-        meta: {
-          title: 'ops_job-log',
-          i18nKey: 'route.ops_job-log',
-          icon: 'mdi:text-box-outline',
-          hideInMenu: true,
-          activeMenu: 'ops_job'
-        }
-      },
-      {
         name: 'ops_online',
         path: '/ops/online',
         component: 'view.ops_online',
@@ -320,18 +308,6 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'setting_notice',
           i18nKey: 'route.setting_notice',
           icon: 'mdi:bullhorn-outline'
-        }
-      },
-      {
-        name: 'setting_notice-console',
-        path: '/setting/notice-console',
-        component: 'view.setting_notice-console',
-        meta: {
-          title: 'setting_notice-console',
-          i18nKey: 'route.setting_notice-console',
-          icon: 'mdi:chart-box-outline',
-          hideInMenu: true,
-          activeMenu: 'setting_notice'
         }
       }
     ]

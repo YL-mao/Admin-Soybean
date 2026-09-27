@@ -35,7 +35,6 @@ declare module "@elegant-router/types" {
     "ops": "/ops";
     "ops_filter": "/ops/filter";
     "ops_job": "/ops/job";
-    "ops_job-log": "/ops/job-log";
     "ops_online": "/ops/online";
     "ops_operate-log": "/ops/operate-log";
     "org": "/org";
@@ -46,7 +45,6 @@ declare module "@elegant-router/types" {
     "setting_dict": "/setting/dict";
     "setting_file": "/setting/file";
     "setting_notice": "/setting/notice";
-    "setting_notice-console": "/setting/notice-console";
   };
 
   /**
@@ -119,7 +117,6 @@ declare module "@elegant-router/types" {
     | "manage_role"
     | "manage_user"
     | "ops_filter"
-    | "ops_job-log"
     | "ops_job"
     | "ops_online"
     | "ops_operate-log"
@@ -128,7 +125,6 @@ declare module "@elegant-router/types" {
     | "setting_config"
     | "setting_dict"
     | "setting_file"
-    | "setting_notice-console"
     | "setting_notice"
   >;
 

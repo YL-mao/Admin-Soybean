@@ -201,7 +201,7 @@ function handleReceiverSearch() {
 <template>
   <NDrawer v-model:show="visible" display-directive="if" :width="860">
     <NDrawerContent
-      :title="$t('route.setting_notice-console')"
+      :title="$t('page.setting.notice.console')"
       :native-scrollbar="false"
       closable
       body-content-style="padding: 0"

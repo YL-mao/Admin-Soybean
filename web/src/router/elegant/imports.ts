@@ -28,7 +28,6 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   manage_role: () => import("@/views/manage/role/index.vue"),
   manage_user: () => import("@/views/manage/user/index.vue"),
   ops_filter: () => import("@/views/ops/filter/index.vue"),
-  "ops_job-log": () => import("@/views/ops/job-log/index.vue"),
   ops_job: () => import("@/views/ops/job/index.vue"),
   ops_online: () => import("@/views/ops/online/index.vue"),
   "ops_operate-log": () => import("@/views/ops/operate-log/index.vue"),
@@ -37,6 +36,5 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   setting_config: () => import("@/views/setting/config/index.vue"),
   setting_dict: () => import("@/views/setting/dict/index.vue"),
   setting_file: () => import("@/views/setting/file/index.vue"),
-  "setting_notice-console": () => import("@/views/setting/notice-console/index.vue"),
   setting_notice: () => import("@/views/setting/notice/index.vue"),
 };

@@ -152,7 +152,7 @@ function openConsole(row: Api.SystemManage.Notice) {
   consoleVisible.value = true;
 }
 
-/** 隐藏路由带 noticeId 跳回时，仅已发布才打开控制台并清掉 query */
+/** 列表页带 ?noticeId= 直访时，仅已发布才打开控制台并清掉 query */
 async function openConsoleFromQuery(noticeId: string) {
   const seq = ++consoleOpenSeq;
   // 尽量等当前列表回来，减少无谓探测

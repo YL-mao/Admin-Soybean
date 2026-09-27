@@ -240,13 +240,11 @@ const local: App.I18n.Schema = {
     setting: 'Settings',
     setting_dict: 'Dictionary',
     setting_notice: 'Notice',
-    'setting_notice-console': 'Notice Console',
     setting_config: 'System Info',
     setting_file: 'Files',
     ops: 'Security Ops',
     'ops_operate-log': 'Operation Log',
     ops_job: 'Scheduled Jobs',
-    'ops_job-log': 'Job Log',
     ops_filter: 'Access Control',
     ops_online: 'Online Users',
     dev: 'Development',
@@ -556,7 +554,6 @@ const local: App.I18n.Schema = {
         consoleReadTime: 'Read Time',
         consoleRead: 'Read',
         consoleUnread: 'Unread',
-        consoleDirectVisitTip: 'Open the console from the notice list',
         consoleUnpublishedTip: 'Only published notices have a console',
         consoleOpenFailedTip: 'Cannot open console: notice missing or unpublished'
       },
@@ -688,8 +685,6 @@ const local: App.I18n.Schema = {
         statusSuccess: 'Success',
         statusFailed: 'Failed',
         statusSkipped: 'Skipped',
-        missingJobId: 'Open job logs from the scheduled jobs list',
-        useDrawerHint: 'Job logs are now shown in a drawer on the jobs page',
         form: {
           runStatus: 'Please select result'
         }

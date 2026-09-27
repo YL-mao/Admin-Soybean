@@ -13,7 +13,6 @@ import com.ylmao.admin.vo.MenuVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -27,45 +26,6 @@ public class MenuService {
     private final MenuMapper menuMapper;
     private final RoleMenuService roleMenuService;
     private final RoleUserService roleUserService;
-
-    /** 按用户角色并集组装侧栏菜单树（model.Menu）。 */
-    public List<com.ylmao.admin.model.Menu> getUserMenuTree(String userId) {
-        List<String> roleIds = roleUserService.listRoleIdsByUserId(userId);
-        List<Menu> menuList = getMenuByRole(roleIds);
-        return buildModelMenuList(menuList, "0");
-    }
-
-    /** 按角色 ID 列表一次查出启用菜单，供侧边栏组装使用。 */
-    public List<Menu> getMenuByRole(List<String> roleIds) {
-        if (CollectionUtils.isEmpty(roleIds)) {
-            return new ArrayList<>();
-        }
-        return menuMapper.selectMenusByRoleIds(roleIds);
-    }
-
-    /** 递归组装前端菜单模型：外链优先，否则用路由 path。 */
-    public List<com.ylmao.admin.model.Menu> buildModelMenuList(List<Menu> menuList, String parentId) {
-        List<com.ylmao.admin.model.Menu> result = new ArrayList<>();
-        for (Menu item : menuList) {
-            if (item.getParentId().equals(parentId)) {
-                List<com.ylmao.admin.model.Menu> childMenu = buildModelMenuList(menuList, item.getMenuId());
-                com.ylmao.admin.model.Menu menu = new com.ylmao.admin.model.Menu();
-                menu.setId(item.getMenuId());
-                menu.setParentId(item.getParentId());
-                menu.setTitle(item.getMenuName());
-                menu.setType(item.getMenuType());
-                menu.setIsBlank(normalizeIsBlank(item.getIsBlank()));
-                menu.setIcon(item.getMenuIcon());
-                // 有外链用 menuHref，否则用站内 routePath
-                menu.setHref(StrUtil.isNotBlank(item.getMenuHref()) ? item.getMenuHref() : item.getRoutePath());
-                if (!childMenu.isEmpty()) {
-                    menu.setChildren(childMenu);
-                }
-                result.add(menu);
-            }
-        }
-        return result;
-    }
 
     /** 角色授权树接口出口，转换为 VO 避免暴露 PO。 */
     public List<MenuVo.MenuCheckVo> queryMenuCheckVoByRoleId(String roleId) {
